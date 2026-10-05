@@ -14,10 +14,10 @@
     }
 
     :root {
-      --navy: #111827;
-      --navy-light: #1f2937;
-      --teal: #14b8a6;
-      --cyan: #06b6d4;
+      --navy: #1d3c7a;
+      --navy-light: #162f61;
+      --teal: #ffffff;
+      --cyan: #1d3c7a;
       --light: #f3f4f6;
       --white: #ffffff;
       --text: #111827;
@@ -130,7 +130,7 @@
       background:
         radial-gradient(
           circle at 85% 30%,
-          rgba(20, 184, 166, 0.22),
+          rgba(255, 255, 255, 0.12),
           transparent 30%
         ),
         var(--navy);
@@ -203,12 +203,27 @@
       overflow: hidden;
     }
 
-    .organization-logo img {
+    .organization-logo img,
+    .organization-logo object {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      padding: 15px;
+      padding: 12px;
+      border: 0;
     }
+
+    .admin-preview-banner {
+      display: none;
+      background: #000;
+      color: #fff;
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.4px;
+    }
+    .admin-preview-banner.show { display: block; }
+    .admin-preview-banner a { color: #fff; text-decoration: underline; margin-left: 12px; }
 
     /* =====================================================
        DASHBOARD
@@ -740,6 +755,10 @@
 </head>
 
 <body>
+  <div class="admin-preview-banner" id="adminPreviewBanner">
+    SUPER ADMIN PREVIEW • YOU ARE VIEWING THIS PAGE AS THE CUSTOMER
+    <a href="./admin.html">RETURN TO SUPER ADMIN</a>
+  </div>
 
   <!-- TOP BAR -->
   <div class="top-bar">
@@ -981,7 +1000,7 @@
               class="connection-note"
               id="shopifyConnectionText"
             >
-              Shopify connection pending
+              Company Store connection pending
             </div>
           </div>
 
@@ -1173,7 +1192,7 @@
         <div class="api-row">
           <div>
             <div class="api-name">
-              Shopify
+              Online Company Store
             </div>
 
             <div class="api-description">
@@ -1266,7 +1285,11 @@
 
       status: "active",
 
-      logo: "",
+      logo: "https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Carolina_ENT_LC_Logo_-_ENT10004.pdf?v=1791221410",
+
+      primaryColor: "#1D3C7A",
+      secondaryColor: "#FFFFFF",
+      accentColor: "#000000",
 
       rewards: {
         enabled: true
@@ -1571,6 +1594,11 @@
 
     function renderOrganization() {
 
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("admin_preview") === "1") {
+        document.getElementById("adminPreviewBanner").classList.add("show");
+      }
+
       document.title =
         ORGANIZATION.name +
         " | AI Apparel Group";
@@ -1613,7 +1641,7 @@
       document.getElementById(
         "orderHistoryDescription"
       ).textContent =
-        "Available Shopify history for " +
+        "Available Company Store history for " +
         ORGANIZATION.name +
         ". Q3 2026 is partial and begins Aug 15.";
 
@@ -1623,13 +1651,17 @@
         );
 
 
+      document.documentElement.style.setProperty("--navy", ORGANIZATION.primaryColor || "#111827");
+
       if (ORGANIZATION.logo) {
 
-        logoContainer.innerHTML = `
-          <img
-            src="${ORGANIZATION.logo}"
-            alt="${ORGANIZATION.name}"
-          >
+        const isPdf = ORGANIZATION.logo.toLowerCase().includes(".pdf");
+        logoContainer.innerHTML = isPdf ? `
+          <object data="${ORGANIZATION.logo}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" aria-label="${ORGANIZATION.name} logo">
+            ${ORGANIZATION.shortName}
+          </object>
+        ` : `
+          <img src="${ORGANIZATION.logo}" alt="${ORGANIZATION.name}">
         `;
 
       } else {
