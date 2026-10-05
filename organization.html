@@ -1112,35 +1112,14 @@
       <div class="orders-card">
 
         <div class="order-tabs">
-
-          <button
-            class="order-tab active"
-            data-filter="ALL"
-          >
-            ALL
-          </button>
-
-          <button
-            class="order-tab"
-            data-filter="ONLINE"
-          >
-            ONLINE
-          </button>
-
-          <button
-            class="order-tab"
-            data-filter="QUOTE"
-          >
-            QUOTE / BULK
-          </button>
-
-          <button
-            class="order-tab"
-            data-filter="PROMO"
-          >
-            PROMO
-          </button>
-
+          <label for="quarterFilter" style="font-size:10px;font-weight:800;color:var(--muted);align-self:center;">
+            QUARTER
+          </label>
+          <select id="quarterFilter" style="padding:8px 13px;border:1px solid var(--border);border-radius:8px;background:white;font-weight:800;">
+            <option value="2026-Q3">Q3 2026 — Available history from Aug 15</option>
+            <option value="2026-Q4">Q4 2026 — Oct–Dec</option>
+            <option value="ALL">ALL AVAILABLE</option>
+          </select>
         </div>
 
         <div class="table-wrap">
@@ -1151,10 +1130,11 @@
               <tr>
                 <th>ORDER</th>
                 <th>TYPE</th>
-                <th>CUSTOMER</th>
-                <th>SOURCE</th>
-                <th>TOTAL</th>
-                <th>REWARD POINTS</th>
+                <th>PURCHASED BY</th>
+                <th>COUPON / DISCOUNT</th>
+                <th>DISCOUNT AMOUNT</th>
+                <th>QUALIFYING TOTAL</th>
+                <th>POINTS</th>
               </tr>
             </thead>
 
@@ -1240,7 +1220,7 @@
           </div>
 
           <div class="api-status connected">
-            DEVELOPMENT MODE
+            LIVE DATA
           </div>
         </div>
 
@@ -1294,7 +1274,7 @@
 
       shopify: {
 
-        connected: false,
+        connected: true,
 
         /*
         The Shopify customer/organization tag we will use
@@ -1377,84 +1357,6 @@
       }
 
     ];
-
-
-    /*
-    ============================================================
-    TEST DATA
-    ============================================================
-
-    These are PLACEHOLDER transactions.
-
-    They are only here so we can build and visually test the
-    Carolina ENT dashboard before connecting live APIs.
-
-    They will later be replaced by:
-
-    ONLINE  -> Shopify API
-    PROMO   -> PromoPlace API
-    QUOTE   -> AI Apparel quote/order database
-
-    ============================================================
-    */
-
-    const DEVELOPMENT_ORDERS = [
-
-      {
-        id: "AI-10548",
-        type: "ONLINE",
-        customer: "Example Customer",
-        source: "Shopify",
-        date: "2026-10-05",
-        total: 425.00
-      },
-
-      {
-        id: "Q-2041",
-        type: "QUOTE",
-        customer: "Carolina ENT",
-        source: "AI Apparel",
-        date: "2026-10-02",
-        total: 5000.00
-      },
-
-      {
-        id: "AI-10502",
-        type: "ONLINE",
-        customer: "Example Customer",
-        source: "Shopify",
-        date: "2026-09-28",
-        total: 189.00
-      },
-
-      {
-        id: "P-1094",
-        type: "PROMO",
-        customer: "Carolina ENT",
-        source: "PromoPlace",
-        date: "2026-09-21",
-        total: 850.00
-      },
-
-      {
-        id: "OPENING-BALANCE",
-        type: "ADJUSTMENT",
-        customer: "Carolina ENT",
-        source: "Rewards",
-        date: "2026-09-01",
-        total: 0,
-
-        /*
-        Temporary opening rewards balance.
-        This will disappear when live rewards data is connected.
-        */
-
-        manualPoints: 3123.22
-      }
-
-    ];
-
-
     /*
     ============================================================
     REWARD POINT CALCULATION
@@ -1520,7 +1422,27 @@
 
     async function getShopifyOrders(organizationId) {
 
-      return [];
+      const url =
+        "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" +
+        encodeURIComponent(organizationId);
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Unable to load organization orders.");
+      }
+
+      const payload = await response.json();
+
+      return (payload.orders || []).map(order => ({
+        ...order,
+        date: order.date || order.ordered_at,
+        coupon:
+          Array.isArray(order.discountCodes) && order.discountCodes.length
+            ? order.discountCodes.join(", ")
+            : "—",
+        discountAmount: Number(order.discountAmount || 0)
+      }));
 
     }
 
@@ -1559,52 +1481,9 @@
 
     async function getOrganizationOrders() {
 
-      /*
-      DEVELOPMENT MODE
-
-      For now, use our placeholder Carolina ENT transactions.
-      */
-
-      return DEVELOPMENT_ORDERS.map(order => ({
-        ...order,
-        organizationId: ORGANIZATION.id,
-        points: calculatePoints(order)
-      }));
-
-
-      /*
-      ==========================================================
-      FUTURE LIVE VERSION
-      ==========================================================
-
-      Once our APIs are connected, the development data above
-      will be removed and this will become:
-
-      const [
-        shopifyOrders,
-        promoOrders,
-        quoteOrders
-      ] = await Promise.all([
-
-        getShopifyOrders(ORGANIZATION.id),
-
-        getPromoPlaceOrders(ORGANIZATION.id),
-
-        getQuoteOrders(ORGANIZATION.id)
-
-      ]);
-
-      return [
-        ...shopifyOrders,
-        ...promoOrders,
-        ...quoteOrders
-      ];
-
-      ==========================================================
-      */
+      return await getShopifyOrders(ORGANIZATION.id);
 
     }
-
 
     /*
     ============================================================
@@ -1672,15 +1551,16 @@
 
     function formatDate(date) {
 
-      return new Date(
-        date + "T12:00:00"
-      ).toLocaleDateString(
+      return new Date(date).toLocaleDateString(
         "en-US",
         {
           month: "short",
           day: "numeric",
           year: "numeric"
         }
+      );
+
+    }
       );
 
     }
@@ -1736,10 +1616,9 @@
       document.getElementById(
         "orderHistoryDescription"
       ).textContent =
-        "Online, quote/bulk and promotional orders associated with " +
+        "Available Shopify history for " +
         ORGANIZATION.name +
-        ".";
-
+        ". Q3 2026 is partial and begins Aug 15.";
 
       const logoContainer =
         document.getElementById(
@@ -1984,124 +1863,93 @@
     ============================================================
     */
 
-    function renderOrders(
-      orders,
-      filter = "ALL"
-    ) {
+    function getQuarterKey(date) {
 
-      const tbody =
-        document.getElementById(
-          "ordersBody"
-        );
+      const d = new Date(date);
+      const quarter = Math.floor(d.getUTCMonth() / 3) + 1;
+
+      return d.getUTCFullYear() + "-Q" + quarter;
+
+    }
 
 
-      const empty =
-        document.getElementById(
-          "emptyOrders"
-        );
+    function renderOrders(orders, quarter = "2026-Q3") {
 
+      const tbody = document.getElementById("ordersBody");
+      const empty = document.getElementById("emptyOrders");
 
       tbody.innerHTML = "";
 
-
       const visibleOrders =
-        filter === "ALL"
+        quarter === "ALL"
           ? orders
           : orders.filter(
-              order =>
-                order.type === filter
+              order => getQuarterKey(order.date) === quarter
             );
-
 
       if (!visibleOrders.length) {
 
-        empty.style.display =
-          "block";
+        empty.style.display = "block";
+
+        empty.textContent =
+          quarter === "2026-Q4"
+            ? "No qualifying Carolina ENT orders in Q4 2026 yet."
+            : "No orders found for this quarter.";
 
         return;
 
       }
 
+      empty.style.display = "none";
 
-      empty.style.display =
-        "none";
+      visibleOrders.forEach(order => {
 
+        const row = document.createElement("tr");
 
-      visibleOrders.forEach(
-        order => {
+        const pointsClass =
+          order.points < 0
+            ? "points-earned points-negative"
+            : "points-earned";
 
-          const row =
-            document.createElement(
-              "tr"
-            );
+        const pointPrefix =
+          order.points > 0 ? "+" : "";
 
+        row.innerHTML = `
+          <td>
+            <div class="order-number">${order.id}</div>
+            <div class="order-date">${formatDate(order.date)}</div>
+          </td>
 
-          const pointsClass =
-            order.points < 0
-              ? "points-earned points-negative"
-              : "points-earned";
+          <td>
+            <span class="order-type ${getTypeClass(order.type)}">
+              ${getTypeLabel(order.type)}
+            </span>
+          </td>
 
+          <td>${order.customer || "—"}</td>
 
-          const pointPrefix =
-            order.points > 0
-              ? "+"
-              : "";
+          <td>${order.coupon || "—"}</td>
 
+          <td>
+            ${
+              Number(order.discountAmount || 0) > 0
+                ? formatMoney(order.discountAmount)
+                : "—"
+            }
+          </td>
 
-          row.innerHTML = `
+          <td>${formatMoney(order.total || 0)}</td>
 
-            <td>
+          <td class="${pointsClass}">
+            ${pointPrefix}${formatNumber(order.points)}
+          </td>
+        `;
 
-              <div class="order-number">
-                ${order.id}
-              </div>
+        tbody.appendChild(row);
 
-              <div class="order-date">
-                ${formatDate(order.date)}
-              </div>
-
-            </td>
-
-            <td>
-
-              <span
-                class="order-type ${getTypeClass(order.type)}"
-              >
-                ${getTypeLabel(order.type)}
-              </span>
-
-            </td>
-
-            <td>
-              ${order.customer || "—"}
-            </td>
-
-            <td>
-              ${order.source || "—"}
-            </td>
-
-            <td>
-              ${
-                Number(order.total) !== 0
-                  ? formatMoney(order.total)
-                  : "—"
-              }
-            </td>
-
-            <td class="${pointsClass}">
-              ${pointPrefix}${formatNumber(order.points)}
-            </td>
-
-          `;
-
-
-          tbody.appendChild(row);
-
-        }
-      );
+      });
 
     }
-
 
     /*
     ============================================================
@@ -2272,7 +2120,7 @@
         document.getElementById(
           "shopifyConnectionText"
         ).textContent =
-          "Connected to Shopify";
+          "Live online order data connected";
 
       }
 
@@ -2312,47 +2160,22 @@
 
     function configureOrderFilters(orders) {
 
-      document
-        .querySelectorAll(
-          ".order-tab"
-        )
-        .forEach(
-          button => {
+      const quarterFilter =
+        document.getElementById("quarterFilter");
 
-            button.addEventListener(
-              "click",
-              function() {
+      quarterFilter.addEventListener(
+        "change",
+        function() {
 
-                document
-                  .querySelectorAll(
-                    ".order-tab"
-                  )
-                  .forEach(
-                    tab =>
-                      tab.classList.remove(
-                        "active"
-                      )
-                  );
+          renderOrders(
+            orders,
+            this.value
+          );
 
-
-                this.classList.add(
-                  "active"
-                );
-
-
-                renderOrders(
-                  orders,
-                  this.dataset.filter
-                );
-
-              }
-            );
-
-          }
-        );
+        }
+      );
 
     }
-
 
     /*
     ============================================================
@@ -2429,7 +2252,8 @@
       */
 
       renderOrders(
-        orders
+        orders,
+        "2026-Q3"
       );
 
 
