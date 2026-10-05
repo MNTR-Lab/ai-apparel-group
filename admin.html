@@ -16,7 +16,7 @@ label{font-size:11px;font-weight:800;display:block;margin-bottom:6px;color:#4b55
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#fff;font-weight:800;cursor:pointer}.teal{background:#0f766e}
 .hidden{display:none!important}.bar{display:flex;align-items:end;gap:15px}.bar>div{flex:1}.status{padding:10px 0;font-size:13px;font-weight:700}
-.org-banner{background:#111827;color:white;border-radius:14px;padding:20px;margin-top:16px}.org-banner b{font-size:24px}
+.org-banner{background:#111827;color:white;border-radius:14px;padding:20px;margin-top:16px}.org-banner b{font-size:24px}.org-actions{display:flex;gap:10px;margin-top:14px}.view-customer{display:inline-block;border-radius:8px;padding:11px 16px;background:#fff;color:#111827;font-size:12px;font-weight:900;text-decoration:none}
 @media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.bar{display:block}.bar button{margin-top:12px;width:100%}}
 </style>
 </head><body>
@@ -78,7 +78,7 @@ async function loadAdmin(){
  const sel=document.getElementById("organizationSelect");sel.innerHTML=organizations.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
  renderOrg();
 }
-function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div>`:"No organizations available";}
+function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div><div class="org-actions"><a class="view-customer" href="./organization.html?organization_id=${encodeURIComponent(o.id)}&admin_preview=1" target="_blank">VIEW AS CUSTOMER ↗</a></div>`:"No organizations available";}
 document.getElementById("organizationSelect").onchange=renderOrg;
 document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}st.textContent="Sending secure sign-in link…";const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});st.textContent=error?error.message:"Check your email for the secure sign-in link.";};
 document.getElementById("logoutBtn").onclick=async()=>{await sb.auth.signOut();location.reload()};
