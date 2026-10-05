@@ -1561,9 +1561,6 @@
       );
 
     }
-      );
-
-    }
 
 
     /*
@@ -2268,7 +2265,14 @@
     }
 
 
-    initializeDashboard();
+    initializeDashboard().catch(error => {
+      console.error("Dashboard load error:", error);
+      const empty = document.getElementById("emptyOrders");
+      if (empty) {
+        empty.style.display = "block";
+        empty.textContent = "Unable to load live organization data. Please refresh or contact AI Apparel Group.";
+      }
+    });
 
   </script>
 
