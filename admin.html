@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Apparel Super Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f6f8fb;color:#111827}
+.top{background:#111827;color:#fff;padding:10px 22px;text-align:center;font-size:12px;font-weight:800;letter-spacing:1.5px}
+header{height:82px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+header img{height:55px}.wrap{max-width:1180px;margin:auto;padding:32px 22px 80px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 8px 25px rgba(15,23,42,.04)}
+h1{margin:0 0 6px;font-size:32px}h2{margin:0 0 18px}.muted{color:#6b7280;font-size:13px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font:inherit}
+label{font-size:11px;font-weight:800;display:block;margin-bottom:6px;color:#4b5563}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#fff;font-weight:800;cursor:pointer}.teal{background:#0f766e}
+.hidden{display:none!important}.bar{display:flex;align-items:end;gap:15px}.bar>div{flex:1}.status{padding:10px 0;font-size:13px;font-weight:700}
+.org-banner{background:#111827;color:white;border-radius:14px;padding:20px;margin-top:16px}.org-banner b{font-size:24px}
+@media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.bar{display:block}.bar button{margin-top:12px;width:100%}}
+</style>
+</head><body>
+<div class="top">AI APPAREL GROUP • SUPER ADMIN</div>
+<header><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110"><a href="./organization.html">Organization Dashboard</a></header>
+<main class="wrap">
+<section id="loginCard" class="card">
+<h1>Super Admin Sign In</h1><p class="muted">Authorized AI Apparel administrators only. A secure magic link will be emailed to you.</p>
+<div class="bar"><div><label>ADMIN EMAIL</label><input id="email" type="email" value="bikard@aiapparelgroup.com"></div><button id="loginBtn">EMAIL SIGN-IN LINK</button></div>
+<div id="loginStatus" class="status"></div>
+</section>
+
+<section id="adminArea" class="hidden">
+<div class="card">
+<div style="display:flex;justify-content:space-between;gap:15px;align-items:center"><div><h1>AI Apparel Super Admin</h1><div class="muted" id="adminEmail"></div></div><button id="logoutBtn">SIGN OUT</button></div>
+<hr style="border:0;border-top:1px solid #e5e7eb;margin:22px 0">
+<label>VIEW / MANAGE ORGANIZATION</label>
+<select id="organizationSelect"></select>
+<div id="orgBanner" class="org-banner"></div>
+</div>
+
+<div class="card">
+<h2>Add Missing Transaction</h2>
+<p class="muted">The transaction will be added to the selected organization, its rewards ledger, and the admin audit log.</p>
+<div class="grid3">
+<div><label>ORDER / REFERENCE #</label><input id="orderNumber" placeholder="Example: Q-2217"></div>
+<div><label>TYPE</label><select id="orderType"><option>ONLINE</option><option>QUOTE</option><option>PROMO</option><option>ADJUSTMENT</option><option>REFUND</option></select></div>
+<div><label>DATE</label><input id="orderedAt" type="date"></div>
+<div><label>PURCHASED BY</label><input id="customerName"></div>
+<div><label>CUSTOMER EMAIL</label><input id="customerEmail" type="email"></div>
+<div><label>QUALIFYING TOTAL</label><input id="subtotal" type="number" step=".01" min="0" value="0"></div>
+<div><label>COUPON / DISCOUNT CODE</label><input id="discountCode"></div>
+<div><label>DISCOUNT AMOUNT</label><input id="discountAmount" type="number" step=".01" min="0" value="0"></div>
+<div><label>POINTS OVERRIDE (OPTIONAL)</label><input id="pointsOverride" type="number" step=".01" placeholder="Auto calculate"></div>
+</div>
+<div style="margin-top:16px"><label>ADMIN NOTE</label><textarea id="note" rows="3" placeholder="Why this transaction is being added"></textarea></div>
+<div style="margin-top:18px"><button class="teal" id="addBtn">ADD TRANSACTION</button></div>
+<div id="saveStatus" class="status"></div>
+</div>
+</section>
+</main>
+<script>
+const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co";
+const PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+const ADMIN_API=SUPABASE_URL+"/functions/v1/ai-apparel-admin";
+const sb=supabase.createClient(SUPABASE_URL,PUBLISHABLE_KEY);
+let organizations=[];
+
+async function api(method,body){
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session) throw new Error("Please sign in.");
+ const r=await fetch(ADMIN_API,{method,headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json","apikey":PUBLISHABLE_KEY},body:body?JSON.stringify(body):undefined});
+ const j=await r.json(); if(!r.ok) throw new Error(j.error||"Request failed"); return j;
+}
+async function loadAdmin(){
+ const data=await api("GET"); organizations=data.organizations||[];
+ document.getElementById("loginCard").classList.add("hidden");document.getElementById("adminArea").classList.remove("hidden");
+ document.getElementById("adminEmail").textContent=data.admin.email+" • SUPER ADMIN";
+ const sel=document.getElementById("organizationSelect");sel.innerHTML=organizations.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
+ renderOrg();
+}
+function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div>`:"No organizations available";}
+document.getElementById("organizationSelect").onchange=renderOrg;
+document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}st.textContent="Sending secure sign-in link…";const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});st.textContent=error?error.message:"Check your email for the secure sign-in link.";};
+document.getElementById("logoutBtn").onclick=async()=>{await sb.auth.signOut();location.reload()};
+document.getElementById("addBtn").onclick=async()=>{const st=document.getElementById("saveStatus");try{st.textContent="Saving…";const points=document.getElementById("pointsOverride").value;const data=await api("POST",{action:"add_transaction",organization_id:document.getElementById("organizationSelect").value,order_number:document.getElementById("orderNumber").value.trim(),order_type:document.getElementById("orderType").value,ordered_at:document.getElementById("orderedAt").value,customer_name:document.getElementById("customerName").value.trim(),customer_email:document.getElementById("customerEmail").value.trim(),subtotal:document.getElementById("subtotal").value,discount_code:document.getElementById("discountCode").value.trim(),discount_amount:document.getElementById("discountAmount").value,rewards_points:points===""?null:Number(points),note:document.getElementById("note").value.trim()});st.textContent="Saved. "+data.order.order_number+" added with "+data.points+" points."; }catch(e){st.textContent=e.message}};
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(session){try{await loadAdmin()}catch(e){document.getElementById("loginStatus").textContent=e.message;await sb.auth.signOut()}}})();
+</script></body></html>
