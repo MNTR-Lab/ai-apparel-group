@@ -1,30 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>AI Apparel Group</title>
+  <title>AI Apparel Group | Apparel, Promo & Brand Solutions</title>
 
   <meta
     name="description"
-    content="AI Apparel Group — custom apparel, promotional products, company stores and brand solutions."
-  />
+    content="AI Apparel Group provides custom apparel, promotional products, company stores and brand solutions for businesses, teams and organizations."
+  >
 
   <style>
+    /* =========================================================
+       AI APPAREL GROUP
+       HOMEPAGE - VERSION 1
+       ========================================================= */
+
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     :root {
-      --black: #111111;
+      --navy: #111827;
+      --navy-light: #1f2937;
+      --teal: #14b8a6;
+      --cyan: #06b6d4;
+      --light: #f3f4f6;
       --white: #ffffff;
-      --light: #f5f5f5;
-      --gray: #707070;
-      --border: #e4e4e4;
-      --max-width: 1440px;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --max-width: 1400px;
     }
 
     html {
@@ -32,9 +41,18 @@
     }
 
     body {
-      font-family: Arial, Helvetica, sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+      color: var(--text);
       background: var(--white);
-      color: var(--black);
+      line-height: 1.5;
     }
 
     a {
@@ -42,638 +60,1031 @@
       text-decoration: none;
     }
 
-    button {
-      font: inherit;
+    img {
+      max-width: 100%;
     }
 
-    /* ==============================
+
+    /* =========================================================
        TOP BAR
-    ============================== */
+       ========================================================= */
 
     .top-bar {
-      background: var(--black);
+      background: var(--navy);
       color: var(--white);
+
+      min-height: 38px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 8px 20px;
+
       text-align: center;
-      padding: 9px 20px;
-      font-size: 13px;
+
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 1.5px;
     }
 
-    /* ==============================
-       HEADER
-    ============================== */
 
-    .header {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .site-header {
       position: sticky;
       top: 0;
       z-index: 1000;
+
+      background: rgba(255, 255, 255, 0.97);
+      border-bottom: 1px solid var(--border);
     }
 
     .header-inner {
+      width: 100%;
       max-width: var(--max-width);
-      margin: auto;
-      height: 90px;
-      padding: 0 30px;
+      height: 92px;
+
+      margin: 0 auto;
+      padding: 0 32px;
 
       display: grid;
-      grid-template-columns: 250px 1fr 250px;
+      grid-template-columns: 250px 1fr 220px;
       align-items: center;
       gap: 20px;
     }
 
-    /* OFFICIAL AI APPAREL LOGO */
 
-    .logo {
+    /* LOGO */
+
+    .brand-logo {
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      height: 72px;
     }
 
-    .logo img {
+    .brand-logo img {
       display: block;
       width: auto;
       height: 62px;
-      max-width: 230px;
+      max-width: 225px;
       object-fit: contain;
     }
 
+
     /* NAVIGATION */
 
-    .main-nav {
+    .desktop-nav {
       display: flex;
+      align-items: center;
       justify-content: center;
-      align-items: center;
-      gap: 28px;
+      gap: 34px;
     }
 
-    .main-nav a {
+    .desktop-nav a {
+      position: relative;
+
+      padding: 35px 0;
+
       font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.3px;
-      transition: opacity 0.2s ease;
-      white-space: nowrap;
+      font-weight: 700;
+      letter-spacing: 0.4px;
     }
 
-    .main-nav a:hover {
-      opacity: 0.55;
+    .desktop-nav a::after {
+      content: "";
+
+      position: absolute;
+      left: 0;
+      bottom: 26px;
+
+      width: 0;
+      height: 2px;
+
+      background: var(--teal);
+
+      transition: width 0.2s ease;
     }
 
-    /* HEADER ACTIONS */
+    .desktop-nav a:hover::after {
+      width: 100%;
+    }
 
-    .header-actions {
+
+    /* ACCOUNT */
+
+    .header-account {
       display: flex;
-      justify-content: flex-end;
       align-items: center;
-      gap: 22px;
+      justify-content: flex-end;
+      gap: 10px;
+
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 700;
     }
 
-    .header-action {
+    .account-icon {
+      width: 36px;
+      height: 36px;
+
+      border: 1px solid var(--border);
+      border-radius: 50%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 17px;
+    }
+
+    .mobile-menu-button {
+      display: none;
+
+      background: none;
+      border: 0;
+
+      font-size: 27px;
       cursor: pointer;
     }
 
-    .header-action:hover {
-      opacity: 0.6;
-    }
 
-    /* ==============================
+    /* =========================================================
        HERO
-    ============================== */
+       ========================================================= */
 
     .hero {
+      position: relative;
+
       min-height: 620px;
+
+      display: flex;
+      align-items: center;
+
+      overflow: hidden;
 
       background:
         linear-gradient(
           90deg,
-          rgba(0,0,0,.78),
-          rgba(0,0,0,.18)
-        ),
-        url('assets/hero.jpg') center/cover no-repeat;
+          rgba(17, 24, 39, 0.98) 0%,
+          rgba(17, 24, 39, 0.92) 45%,
+          rgba(17, 24, 39, 0.72) 100%
+        );
+    }
 
-      display: flex;
-      align-items: center;
+    /* Decorative graphic area.
+       We can replace this with photography later. */
+
+    .hero::after {
+      content: "";
+
+      position: absolute;
+
+      width: 650px;
+      height: 650px;
+
+      right: -120px;
+      top: -90px;
+
+      border-radius: 50%;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(20, 184, 166, 0.55),
+          rgba(6, 182, 212, 0.08)
+        );
+
+      filter: blur(4px);
+    }
+
+    .hero::before {
+      content: "";
+
+      position: absolute;
+
+      width: 420px;
+      height: 420px;
+
+      right: 280px;
+      bottom: -270px;
+
+      border-radius: 50%;
+
+      border: 80px solid rgba(255, 255, 255, 0.035);
     }
 
     .hero-inner {
+      position: relative;
+      z-index: 2;
+
       width: 100%;
       max-width: var(--max-width);
-      margin: auto;
-      padding: 70px 50px;
+
+      margin: 0 auto;
+      padding: 90px 50px;
     }
 
     .hero-content {
-      max-width: 700px;
-      color: white;
+      max-width: 790px;
     }
 
     .hero-eyebrow {
-      font-size: 15px;
+      margin-bottom: 18px;
+
+      color: var(--teal);
+
+      font-size: 14px;
       font-weight: 800;
       letter-spacing: 3px;
-      margin-bottom: 18px;
     }
 
     .hero h1 {
-      font-size: clamp(52px, 6vw, 88px);
-      line-height: .95;
-      letter-spacing: -4px;
-      margin-bottom: 25px;
+      color: var(--white);
+
+      max-width: 800px;
+
+      font-size: clamp(54px, 6vw, 88px);
+      font-weight: 800;
+      line-height: 0.98;
+      letter-spacing: -3px;
     }
 
-    .hero p {
-      max-width: 610px;
+    .hero-description {
+      max-width: 650px;
+
+      margin-top: 26px;
+
+      color: #d1d5db;
+
       font-size: 19px;
-      line-height: 1.6;
-      margin-bottom: 32px;
+      line-height: 1.65;
     }
 
     .hero-buttons {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 14px;
+
+      margin-top: 34px;
     }
 
-    /* ==============================
-       BUTTONS
-    ============================== */
 
-    .btn {
+    /* =========================================================
+       BUTTONS
+       ========================================================= */
+
+    .button {
+      min-height: 52px;
+
+      padding: 0 28px;
+
       display: inline-flex;
       align-items: center;
       justify-content: center;
 
-      min-height: 52px;
-      padding: 0 28px;
-
-      border: 2px solid white;
+      border-radius: 7px;
 
       font-size: 13px;
       font-weight: 800;
-      letter-spacing: .7px;
+      letter-spacing: 0.6px;
 
-      cursor: pointer;
-      transition: .2s ease;
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
     }
 
-    .btn-primary {
-      background: white;
-      color: black;
+    .button:hover {
+      transform: translateY(-2px);
     }
 
-    .btn-primary:hover {
-      background: transparent;
-      color: white;
+    .button-teal {
+      background: var(--teal);
+      color: var(--navy);
     }
 
-    .btn-secondary {
-      background: transparent;
-      color: white;
+    .button-white {
+      background: var(--white);
+      color: var(--navy);
     }
 
-    .btn-secondary:hover {
-      background: white;
-      color: black;
+    .button-outline {
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      color: var(--white);
     }
 
-    /* ==============================
-       STANDARD SECTION
-    ============================== */
-
-    .section {
-      max-width: var(--max-width);
-      margin: auto;
-      padding: 75px 30px;
+    .button-dark {
+      background: var(--navy);
+      color: var(--white);
     }
 
-    .section-heading {
+
+    /* =========================================================
+       INTRO
+       ========================================================= */
+
+    .intro {
+      max-width: 900px;
+
+      margin: 0 auto;
+      padding: 85px 30px 60px;
+
       text-align: center;
-      margin-bottom: 42px;
     }
 
-    .section-heading h2 {
-      font-size: 38px;
+    .section-label {
       margin-bottom: 10px;
+
+      color: var(--teal);
+
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
     }
 
-    .section-heading p {
-      color: var(--gray);
-      font-size: 16px;
+    .intro h2 {
+      font-size: 42px;
+      line-height: 1.1;
+      letter-spacing: -1px;
     }
 
-    /* ==============================
-       CATEGORY GRID
-    ============================== */
+    .intro p {
+      max-width: 720px;
 
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
+      margin: 18px auto 0;
+
+      color: var(--muted);
+
+      font-size: 17px;
+      line-height: 1.7;
     }
 
-    .category-card {
-      position: relative;
-      min-height: 410px;
-      overflow: hidden;
-      background: #dddddd;
-    }
 
-    .category-card img {
+    /* =========================================================
+       APPAREL / PROMO
+       ========================================================= */
+
+    .solutions {
       width: 100%;
-      height: 100%;
-      position: absolute;
-      inset: 0;
-      object-fit: cover;
-      transition: transform .4s ease;
+      max-width: var(--max-width);
+
+      margin: 0 auto;
+      padding: 20px 32px 90px;
+
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
     }
 
-    .category-card:hover img {
-      transform: scale(1.04);
-    }
+    .solution-card {
+      position: relative;
 
-    .category-overlay {
-      position: absolute;
-      inset: 0;
+      min-height: 490px;
 
-      background:
-        linear-gradient(
-          transparent 40%,
-          rgba(0,0,0,.82)
-        );
+      padding: 48px;
 
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
 
-      color: white;
-      padding: 28px;
-    }
-
-    .category-overlay h3 {
-      font-size: 25px;
-      margin-bottom: 8px;
-    }
-
-    .category-overlay span {
-      font-size: 13px;
-      font-weight: 800;
-      text-decoration: underline;
-    }
-
-    /* ==============================
-       FEATURE PANELS
-    ============================== */
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .feature {
-      min-height: 500px;
-      padding: 55px;
-
-      display: flex;
-      align-items: flex-end;
-
-      color: white;
-      background: #222 center/cover no-repeat;
-
-      position: relative;
+      border-radius: 16px;
       overflow: hidden;
-    }
 
-    .feature::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,.42);
-    }
-
-    .feature-content {
-      position: relative;
-      z-index: 2;
-      max-width: 520px;
-    }
-
-    .feature h2 {
-      font-size: 42px;
-      margin-bottom: 14px;
-    }
-
-    .feature p {
-      font-size: 17px;
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-
-    /* ==============================
-       REWARDS
-    ============================== */
-
-    .rewards {
-      background: var(--black);
       color: var(--white);
     }
 
-    .rewards-inner {
-      max-width: var(--max-width);
-      margin: auto;
-      padding: 80px 40px;
+    .solution-card::before {
+      content: "";
 
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-      gap: 80px;
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          0deg,
+          rgba(17, 24, 39, 0.98) 0%,
+          rgba(17, 24, 39, 0.75) 45%,
+          rgba(17, 24, 39, 0.18) 100%
+        );
     }
 
-    .rewards h2 {
-      font-size: 48px;
-      margin-bottom: 20px;
+    .apparel-card {
+      background:
+        linear-gradient(135deg, #374151, #111827);
     }
 
-    .rewards-description {
-      font-size: 18px;
-      line-height: 1.6;
-      color: #d2d2d2;
-      margin-bottom: 28px;
+    .promo-card {
+      background:
+        linear-gradient(135deg, #0f766e, #111827);
     }
 
-    .rewards-card {
-      background: white;
-      color: black;
-      border-radius: 14px;
-      padding: 38px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    .solution-content {
+      position: relative;
+      z-index: 2;
+
+      max-width: 520px;
     }
 
-    .rewards-card small {
-      color: var(--gray);
-      font-weight: 800;
-      letter-spacing: 1px;
-    }
+    .solution-number {
+      margin-bottom: 12px;
 
-    .organization-name {
-      font-size: 20px;
-      font-weight: 800;
-      margin-top: 18px;
-    }
+      color: var(--teal);
 
-    .rewards-points {
-      font-size: 54px;
-      font-weight: 900;
-      margin: 8px 0 0;
-    }
-
-    .points-label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
       letter-spacing: 2px;
     }
 
-    .progress {
-      height: 10px;
-      background: #dddddd;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 25px 0 12px;
+    .solution-card h3 {
+      margin-bottom: 14px;
+
+      font-size: 40px;
+      line-height: 1.05;
     }
 
-    .progress span {
-      display: block;
-      width: 14%;
-      height: 100%;
-      background: black;
+    .solution-card p {
+      margin-bottom: 26px;
+
+      color: #e5e7eb;
+
+      font-size: 16px;
+      line-height: 1.6;
     }
 
-    .rewards-status {
-      color: #555555;
-      font-size: 14px;
-    }
 
-    /* ==============================
-       SERVICES
-    ============================== */
+    /* =========================================================
+       REWARDS
+       ========================================================= */
 
-    .services {
+    .rewards-section {
       background: var(--light);
+
+      padding: 95px 30px;
     }
 
-    .services-grid {
-      max-width: var(--max-width);
-      margin: auto;
-      padding: 75px 30px;
+    .rewards-inner {
+      max-width: 1200px;
+
+      margin: 0 auto;
+
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .rewards-copy h2 {
+      margin-bottom: 20px;
+
+      font-size: 46px;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+    }
+
+    .rewards-copy > p {
+      margin-bottom: 28px;
+
+      color: var(--muted);
+
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+
+    /* REWARDS EXPLAINER CARD */
+
+    .rewards-card {
+      padding: 35px;
+
+      background: var(--white);
+
+      border-radius: 18px;
+
+      box-shadow:
+        0 20px 55px rgba(17, 24, 39, 0.10);
+    }
+
+    .rewards-card-title {
+      margin-bottom: 25px;
+
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .reward-stat {
+      display: grid;
+      grid-template-columns: 85px 1fr;
+      align-items: center;
+      gap: 20px;
+
+      padding: 19px 0;
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    .reward-stat:last-child {
+      border-bottom: 0;
+    }
+
+    .reward-stat-number {
+      color: var(--navy);
+
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .reward-stat-text strong {
+      display: block;
+
+      margin-bottom: 3px;
+
+      font-size: 15px;
+    }
+
+    .reward-stat-text span {
+      color: var(--muted);
+
+      font-size: 13px;
+    }
+
+
+    /* =========================================================
+       COMPANY STORE / ACCOUNT
+       ========================================================= */
+
+    .organization-section {
+      position: relative;
+
+      padding: 100px 30px;
+
+      overflow: hidden;
+
+      background: var(--navy);
+      color: var(--white);
+    }
+
+    .organization-inner {
+      position: relative;
+      z-index: 2;
+
+      max-width: 900px;
+
+      margin: 0 auto;
+
+      text-align: center;
+    }
+
+    .organization-section .section-label {
+      color: var(--teal);
+    }
+
+    .organization-inner h2 {
+      margin-bottom: 18px;
+
+      font-size: 48px;
+      line-height: 1.05;
+    }
+
+    .organization-inner p {
+      max-width: 700px;
+
+      margin: 0 auto 30px;
+
+      color: #d1d5db;
+
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .organization-features {
+      max-width: 800px;
+
+      margin: 45px auto 0;
 
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 25px;
+
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     }
 
-    .service-card {
-      background: white;
-      padding: 35px;
+    .organization-feature {
+      padding: 22px 10px;
+
+      border-right: 1px solid rgba(255, 255, 255, 0.15);
+
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .organization-feature:last-child {
+      border-right: 0;
+    }
+
+
+    /* =========================================================
+       WHY AI
+       ========================================================= */
+
+    .why-section {
+      max-width: var(--max-width);
+
+      margin: 0 auto;
+      padding: 90px 32px;
+    }
+
+    .why-header {
+      max-width: 700px;
+
+      margin-bottom: 50px;
+    }
+
+    .why-header h2 {
+      font-size: 42px;
+      line-height: 1.1;
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .why-card {
       min-height: 220px;
+
+      padding: 30px;
+
       border: 1px solid var(--border);
+      border-radius: 12px;
     }
 
-    .service-number {
+    .why-number {
+      margin-bottom: 35px;
+
+      color: var(--teal);
+
       font-size: 13px;
       font-weight: 800;
-      color: #999999;
-      margin-bottom: 30px;
     }
 
-    .service-card h3 {
-      font-size: 22px;
-      margin-bottom: 12px;
+    .why-card h3 {
+      margin-bottom: 10px;
+
+      font-size: 20px;
     }
 
-    .service-card p {
-      color: #666666;
-      line-height: 1.55;
+    .why-card p {
+      color: var(--muted);
+
       font-size: 14px;
+      line-height: 1.6;
     }
 
-    /* ==============================
+
+    /* =========================================================
+       CTA
+       ========================================================= */
+
+    .cta {
+      padding: 85px 30px;
+
+      background: var(--teal);
+    }
+
+    .cta-inner {
+      max-width: 1000px;
+
+      margin: 0 auto;
+
+      text-align: center;
+    }
+
+    .cta h2 {
+      margin-bottom: 15px;
+
+      color: var(--navy);
+
+      font-size: 44px;
+    }
+
+    .cta p {
+      max-width: 650px;
+
+      margin: 0 auto 26px;
+
+      color: var(--navy-light);
+
+      font-size: 17px;
+    }
+
+
+    /* =========================================================
        FOOTER
-    ============================== */
+       ========================================================= */
 
-    footer {
-      background: #080808;
-      color: white;
-      padding: 50px 30px;
+    .footer {
+      background: #090d14;
+      color: var(--white);
     }
 
-    .footer-inner {
+    .footer-main {
       max-width: var(--max-width);
-      margin: auto;
 
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 30px;
+      margin: 0 auto;
+      padding: 60px 32px 45px;
+
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 50px;
     }
 
-    .footer-logo img {
-      display: block;
-      max-width: 190px;
-      max-height: 65px;
+    .footer-logo {
       width: auto;
-      height: auto;
+      height: 65px;
+      max-width: 220px;
+
+      object-fit: contain;
+
+      margin-bottom: 18px;
     }
 
-    .footer-copy {
-      color: #888888;
+    .footer-about p {
+      max-width: 390px;
+
+      color: #9ca3af;
+
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .footer-column h4 {
+      margin-bottom: 18px;
+
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    .footer-column a {
+      display: block;
+
+      margin-bottom: 10px;
+
+      color: #9ca3af;
+
       font-size: 13px;
     }
 
-    /* ==============================
-       TABLET
-    ============================== */
+    .footer-column a:hover {
+      color: var(--white);
+    }
 
-    @media (max-width: 1100px) {
+    .footer-bottom {
+      max-width: var(--max-width);
+
+      margin: 0 auto;
+      padding: 22px 32px;
+
+      border-top: 1px solid #1f2937;
+
+      color: #6b7280;
+
+      font-size: 12px;
+    }
+
+
+    /* =========================================================
+       TABLET
+       ========================================================= */
+
+    @media (max-width: 1050px) {
 
       .header-inner {
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 220px 1fr;
       }
 
-      .main-nav {
+      .desktop-nav {
         display: none;
       }
 
-      .category-grid {
-        grid-template-columns: repeat(2, 1fr);
+      .header-account {
+        justify-self: end;
       }
 
-      .services-grid {
-        grid-template-columns: repeat(2, 1fr);
+      .mobile-menu-button {
+        display: block;
+      }
+
+      .solutions {
+        grid-template-columns: 1fr;
       }
 
       .rewards-inner {
         grid-template-columns: 1fr;
+        gap: 45px;
+      }
+
+      .why-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-main {
+        grid-template-columns: 2fr 1fr 1fr;
       }
     }
 
-    /* ==============================
-       MOBILE FOUNDATION
-    ============================== */
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
 
     @media (max-width: 700px) {
 
       .top-bar {
-        font-size: 10px;
+        min-height: 34px;
+
+        font-size: 9px;
+        letter-spacing: 0.8px;
       }
 
       .header-inner {
-        height: 78px;
+        height: 76px;
+
         padding: 0 18px;
+
+        grid-template-columns: 1fr auto;
       }
 
-      .logo {
-        height: 60px;
-      }
-
-      .logo img {
+      .brand-logo img {
         height: 50px;
-        max-width: 190px;
+        max-width: 185px;
       }
 
-      .header-actions .search-label {
+      .account-text {
         display: none;
       }
 
       .hero {
-        min-height: 530px;
+        min-height: 570px;
       }
 
       .hero-inner {
-        padding: 50px 24px;
+        padding: 70px 23px;
       }
 
       .hero h1 {
+        font-size: 52px;
         letter-spacing: -2px;
       }
 
-      .hero p {
+      .hero-description {
         font-size: 16px;
       }
 
-      .category-grid,
-      .feature-grid,
-      .services-grid {
-        grid-template-columns: 1fr;
+      .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
       }
 
-      .section {
-        padding: 55px 18px;
+      .button {
+        width: 100%;
       }
 
-      .feature {
-        min-height: 420px;
-        padding: 35px 25px;
+      .intro {
+        padding: 65px 22px 40px;
       }
 
-      .feature h2 {
+      .intro h2 {
         font-size: 34px;
       }
 
-      .rewards-inner {
-        padding: 55px 22px;
+      .solutions {
+        padding: 15px 18px 65px;
       }
 
-      .rewards h2 {
+      .solution-card {
+        min-height: 410px;
+        padding: 30px 25px;
+      }
+
+      .solution-card h3 {
+        font-size: 34px;
+      }
+
+      .rewards-section {
+        padding: 65px 20px;
+      }
+
+      .rewards-copy h2 {
         font-size: 38px;
       }
 
-      .footer-inner {
-        flex-direction: column;
-        align-items: flex-start;
+      .reward-stat {
+        grid-template-columns: 70px 1fr;
+      }
+
+      .organization-section {
+        padding: 70px 22px;
+      }
+
+      .organization-inner h2 {
+        font-size: 38px;
+      }
+
+      .organization-features {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .organization-feature:nth-child(2) {
+        border-right: 0;
+      }
+
+      .organization-feature:nth-child(-n+2) {
+        border-bottom: 1px solid rgba(255,255,255,0.15);
+      }
+
+      .why-section {
+        padding: 65px 18px;
+      }
+
+      .why-header h2 {
+        font-size: 34px;
+      }
+
+      .why-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cta {
+        padding: 65px 22px;
+      }
+
+      .cta h2 {
+        font-size: 36px;
+      }
+
+      .footer-main {
+        padding: 50px 22px;
+
+        grid-template-columns: 1fr;
+      }
+
+      .footer-bottom {
+        padding: 20px 22px;
       }
     }
 
   </style>
 </head>
 
+
 <body>
 
 
-  <!-- =====================================
-       TOP ANNOUNCEMENT BAR
-  ====================================== -->
+  <!-- =======================================================
+       TOP BAR
+       ======================================================= -->
 
   <div class="top-bar">
-    CUSTOM APPAREL • PROMOTIONAL PRODUCTS • COMPANY STORES • BRAND SOLUTIONS
+    APPAREL • PROMOTIONAL PRODUCTS • COMPANY STORES • BRAND SOLUTIONS
   </div>
 
 
-  <!-- =====================================
+  <!-- =======================================================
        HEADER
-  ====================================== -->
+       ======================================================= -->
 
-  <header class="header">
+  <header class="site-header">
 
     <div class="header-inner">
 
+
       <!-- OFFICIAL AI APPAREL GROUP LOGO -->
 
-      <a href="./" class="logo">
+      <a
+        href="./"
+        class="brand-logo"
+        aria-label="AI Apparel Group Home"
+      >
 
         <img
           src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110"
           alt="AI Apparel Group"
-        />
+        >
 
       </a>
 
 
       <!-- DESKTOP NAVIGATION -->
 
-      <nav class="main-nav">
+      <nav class="desktop-nav">
+
+        <a href="./">
+          HOME
+        </a>
 
         <a href="#apparel">
           APPAREL
@@ -684,35 +1095,45 @@
           target="_blank"
           rel="noopener"
         >
-          PROMOTIONAL PRODUCTS
+          PROMO
         </a>
 
         <a href="#rewards">
           REWARDS
         </a>
 
-        <a href="#stores">
-          COMPANY STORES
-        </a>
-
-        <a href="#services">
-          SERVICES
+        <a href="#account">
+          MY ACCOUNT
         </a>
 
       </nav>
 
 
-      <!-- HEADER ACTIONS -->
+      <!-- ACCOUNT -->
 
-      <div class="header-actions">
+      <div class="header-account">
 
-        <span class="header-action search-label">
-          SEARCH
-        </span>
+        <a
+          href="#account"
+          class="header-account"
+        >
 
-        <span class="header-action">
-          ACCOUNT
-        </span>
+          <div class="account-icon">
+            ♙
+          </div>
+
+          <span class="account-text">
+            MY ACCOUNT
+          </span>
+
+        </a>
+
+        <button
+          class="mobile-menu-button"
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
 
       </div>
 
@@ -721,14 +1142,11 @@
   </header>
 
 
-  <!-- =====================================
-       MAIN CONTENT
-  ====================================== -->
+  <!-- =======================================================
+       HERO
+       ======================================================= -->
 
   <main>
-
-
-    <!-- HERO -->
 
     <section class="hero">
 
@@ -745,27 +1163,34 @@
             BUILT BETTER.
           </h1>
 
-          <p>
-            Apparel, promotional products and custom brand
-            solutions built for organizations that expect more.
+          <p class="hero-description">
+            One partner for custom apparel, promotional products,
+            company stores and brand solutions.
           </p>
 
           <div class="hero-buttons">
 
             <a
               href="#apparel"
-              class="btn btn-primary"
+              class="button button-teal"
             >
-              SHOP APPAREL
+              EXPLORE APPAREL
             </a>
 
             <a
               href="https://promo.aiapparelgroup.com/"
               target="_blank"
               rel="noopener"
-              class="btn btn-secondary"
+              class="button button-white"
             >
               SHOP PROMOTIONAL PRODUCTS
+            </a>
+
+            <a
+              href="#account"
+              class="button button-outline"
+            >
+              MY ORGANIZATION
             </a>
 
           </div>
@@ -777,321 +1202,48 @@
     </section>
 
 
-    <!-- =====================================
-         APPAREL CATEGORIES
-    ====================================== -->
+    <!-- =====================================================
+         INTRODUCTION
+         ===================================================== -->
 
-    <section
-      class="section"
-      id="apparel"
-    >
+    <section class="intro">
 
-      <div class="section-heading">
-
-        <h2>
-          Shop AI Apparel
-        </h2>
-
-        <p>
-          Built for your team, organization and brand.
-        </p>
-
+      <div class="section-label">
+        EVERYTHING YOUR BRAND NEEDS
       </div>
 
+      <h2>
+        More Than an Apparel Company.
+      </h2>
 
-      <div class="category-grid">
-
-
-        <!-- MEN -->
-
-        <a
-          class="category-card"
-          href="#"
-        >
-
-          <img
-            src="assets/mens.jpg"
-            alt="Men's Apparel"
-          />
-
-          <div class="category-overlay">
-
-            <h3>
-              Men's
-            </h3>
-
-            <span>
-              SHOP NOW
-            </span>
-
-          </div>
-
-        </a>
-
-
-        <!-- WOMEN -->
-
-        <a
-          class="category-card"
-          href="#"
-        >
-
-          <img
-            src="assets/womens.jpg"
-            alt="Women's Apparel"
-          />
-
-          <div class="category-overlay">
-
-            <h3>
-              Women's
-            </h3>
-
-            <span>
-              SHOP NOW
-            </span>
-
-          </div>
-
-        </a>
-
-
-        <!-- HEADWEAR -->
-
-        <a
-          class="category-card"
-          href="#"
-        >
-
-          <img
-            src="assets/headwear.jpg"
-            alt="Headwear"
-          />
-
-          <div class="category-overlay">
-
-            <h3>
-              Headwear
-            </h3>
-
-            <span>
-              SHOP NOW
-            </span>
-
-          </div>
-
-        </a>
-
-
-        <!-- ACCESSORIES -->
-
-        <a
-          class="category-card"
-          href="#"
-        >
-
-          <img
-            src="assets/accessories.jpg"
-            alt="Accessories"
-          />
-
-          <div class="category-overlay">
-
-            <h3>
-              Accessories
-            </h3>
-
-            <span>
-              SHOP NOW
-            </span>
-
-          </div>
-
-        </a>
-
-      </div>
+      <p>
+        AI Apparel Group brings apparel, promotional products,
+        online company stores and partner rewards together under
+        one relationship — making it easier to build, manage and
+        grow your brand.
+      </p>
 
     </section>
 
 
-    <!-- =====================================
-         APPAREL / PROMOTIONAL PRODUCTS
-    ====================================== -->
+    <!-- =====================================================
+         APPAREL + PROMOTIONAL PRODUCTS
+         ===================================================== -->
 
-    <section class="feature-grid">
+    <section
+      class="solutions"
+      id="apparel"
+    >
 
 
       <!-- APPAREL -->
 
-      <div
-        class="feature"
-        style="
-          background-image:
-          url('assets/apparel-feature.jpg');
-        "
-      >
+      <article class="solution-card apparel-card">
 
-        <div class="feature-content">
+        <div class="solution-content">
 
-          <h2>
-            Custom Apparel
-          </h2>
-
-          <p>
-            Premium apparel, decoration and custom solutions
-            for businesses, organizations and teams.
-          </p>
-
-          <a
-            href="#apparel"
-            class="btn btn-primary"
-          >
-            EXPLORE APPAREL
-          </a>
-
-        </div>
-
-      </div>
-
-
-      <!-- PROMOTIONAL PRODUCTS -->
-
-      <div
-        class="feature"
-        style="
-          background-image:
-          url('assets/promo-feature.jpg');
-        "
-      >
-
-        <div class="feature-content">
-
-          <h2>
-            Promotional Products
-          </h2>
-
-          <p>
-            Put your brand on the products people use every day.
-          </p>
-
-          <a
-            href="https://promo.aiapparelgroup.com/"
-            target="_blank"
-            rel="noopener"
-            class="btn btn-primary"
-          >
-            EXPLORE PROMO
-          </a>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================
-         AI PARTNER REWARDS
-    ====================================== -->
-
-    <section
-      class="rewards"
-      id="rewards"
-    >
-
-      <div class="rewards-inner">
-
-
-        <!-- REWARDS INTRO -->
-
-        <div>
-
-          <h2>
-            AI Partner Rewards
-          </h2>
-
-          <p class="rewards-description">
-            Your purchases help your organization earn rewards.
-            Connect your individual account with your business
-            or organization and watch your rewards grow.
-          </p>
-
-          <a
-            href="#"
-            class="btn btn-primary"
-          >
-            SIGN IN TO REWARDS
-          </a>
-
-        </div>
-
-
-        <!--
-        =========================================
-
-        REWARDS ACCOUNT PLACEHOLDER
-
-        This will eventually pull from our API.
-
-        Planned endpoints:
-
-        /api/account
-        /api/organization
-        /api/rewards
-        /api/orders
-
-        =========================================
-        -->
-
-        <div class="rewards-card">
-
-          <small>
-            ORGANIZATION REWARDS
-          </small>
-
-          <div class="organization-name">
-            Your Organization
-          </div>
-
-          <div class="rewards-points">
-            12,051
-          </div>
-
-          <div class="points-label">
-            POINTS
-          </div>
-
-          <div class="progress">
-            <span></span>
-          </div>
-
-          <div class="rewards-status">
-            Advanced Partner • 14% toward Elite
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================
-         SERVICES
-    ====================================== -->
-
-    <section
-      class="services"
-      id="services"
-    >
-
-      <div class="services-grid">
-
-
-        <div class="service-card">
-
-          <div class="service-number">
-            01
+          <div class="solution-number">
+            01 / APPAREL
           </div>
 
           <h3>
@@ -1099,16 +1251,287 @@
           </h3>
 
           <p>
-            Apparel solutions designed around your
+            Branded apparel for businesses, teams and organizations.
+            From everyday gear to custom programs, we help bring your
+            brand to life.
+          </p>
+
+          <div>
+
+            <a
+              href="#"
+              class="button button-white"
+            >
+              EXPLORE APPAREL
+            </a>
+
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <!-- PROMOTIONAL PRODUCTS -->
+
+      <article class="solution-card promo-card">
+
+        <div class="solution-content">
+
+          <div class="solution-number">
+            02 / PROMOTIONAL PRODUCTS
+          </div>
+
+          <h3>
+            Put Your Brand Everywhere.
+          </h3>
+
+          <p>
+            Explore thousands of promotional products for events,
+            employees, customers, teams and organizations.
+          </p>
+
+          <div>
+
+            <a
+              href="https://promo.aiapparelgroup.com/"
+              target="_blank"
+              rel="noopener"
+              class="button button-white"
+            >
+              SHOP PROMO
+            </a>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- =====================================================
+         PARTNER REWARDS
+         ===================================================== -->
+
+    <section
+      class="rewards-section"
+      id="rewards"
+    >
+
+      <div class="rewards-inner">
+
+
+        <!-- LEFT -->
+
+        <div class="rewards-copy">
+
+          <div class="section-label">
+            AI PARTNER REWARDS
+          </div>
+
+          <h2>
+            Your Purchases Should Work for You.
+          </h2>
+
+          <p>
+            AI Partner Rewards turns your organization's purchasing
+            power into points, credits and tier-based savings across
+            your AI Apparel relationship.
+          </p>
+
+          <a
+            href="#account"
+            class="button button-dark"
+          >
+            VIEW YOUR REWARDS
+          </a>
+
+        </div>
+
+
+        <!-- RIGHT -->
+
+        <div class="rewards-card">
+
+          <div class="rewards-card-title">
+            How AI Partner Rewards Works
+          </div>
+
+
+          <div class="reward-stat">
+
+            <div class="reward-stat-number">
+              1 PT
+            </div>
+
+            <div class="reward-stat-text">
+
+              <strong>
+                For Every $1
+              </strong>
+
+              <span>
+                Apparel & promotional product purchases
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="reward-stat">
+
+            <div class="reward-stat-number">
+              2 PTS
+            </div>
+
+            <div class="reward-stat-text">
+
+              <strong>
+                For Every $1
+              </strong>
+
+              <span>
+                Purchases through online stores
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="reward-stat">
+
+            <div class="reward-stat-number">
+              $1
+            </div>
+
+            <div class="reward-stat-text">
+
+              <strong>
+                For Every 100 Points
+              </strong>
+
+              <span>
+                Redeem points for future order credit
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ORGANIZATION ACCOUNT
+         ===================================================== -->
+
+    <section
+      class="organization-section"
+      id="account"
+    >
+
+      <div class="organization-inner">
+
+        <div class="section-label">
+          YOUR AI APPAREL ACCOUNT
+        </div>
+
+        <h2>
+          Everything for Your Organization.
+          One Place.
+        </h2>
+
+        <p>
+          Access your organization's company store, promotional
+          products, AI Partner Rewards and order information through
+          your AI Apparel account.
+        </p>
+
+        <a
+          href="#"
+          class="button button-teal"
+        >
+          SIGN IN / MY ACCOUNT
+        </a>
+
+
+        <div class="organization-features">
+
+          <div class="organization-feature">
+            APPAREL STORE
+          </div>
+
+          <div class="organization-feature">
+            PROMO STORE
+          </div>
+
+          <div class="organization-feature">
+            REWARDS
+          </div>
+
+          <div class="organization-feature">
+            ORDERS
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         WHY AI APPAREL
+         ===================================================== -->
+
+    <section class="why-section">
+
+      <div class="why-header">
+
+        <div class="section-label">
+          WHY AI APPAREL GROUP
+        </div>
+
+        <h2>
+          One Relationship.
+          More Possibilities.
+        </h2>
+
+      </div>
+
+
+      <div class="why-grid">
+
+
+        <div class="why-card">
+
+          <div class="why-number">
+            01
+          </div>
+
+          <h3>
+            Apparel
+          </h3>
+
+          <p>
+            Custom apparel solutions designed around your
             organization and brand.
           </p>
 
         </div>
 
 
-        <div class="service-card">
+        <div class="why-card">
 
-          <div class="service-number">
+          <div class="why-number">
             02
           </div>
 
@@ -1117,19 +1540,16 @@
           </h3>
 
           <p>
-            Promotional merchandise that keeps
-            your brand in front of your audience.
+            Thousands of branded products through one
+            trusted partner.
           </p>
 
         </div>
 
 
-        <div
-          class="service-card"
-          id="stores"
-        >
+        <div class="why-card">
 
-          <div class="service-number">
+          <div class="why-number">
             03
           </div>
 
@@ -1138,26 +1558,26 @@
           </h3>
 
           <p>
-            Dedicated online stores built specifically
-            for your organization.
+            Dedicated online stores built specifically for
+            your employees, members, fans or customers.
           </p>
 
         </div>
 
 
-        <div class="service-card">
+        <div class="why-card">
 
-          <div class="service-number">
+          <div class="why-number">
             04
           </div>
 
           <h3>
-            Brand Solutions
+            Partner Rewards
           </h3>
 
           <p>
-            One partner for apparel, promotional
-            products and your brand.
+            Earn points and unlock additional value as your
+            relationship with AI Apparel grows.
           </p>
 
         </div>
@@ -1168,135 +1588,197 @@
     </section>
 
 
+    <!-- =====================================================
+         CALL TO ACTION
+         ===================================================== -->
+
+    <section class="cta">
+
+      <div class="cta-inner">
+
+        <h2>
+          Ready to Build Your Brand?
+        </h2>
+
+        <p>
+          Let's build an apparel, promotional product or
+          company store program designed around your organization.
+        </p>
+
+        <a
+          href="https://www.aiapparelgroup.com/pages/contact"
+          class="button button-dark"
+        >
+          CONTACT AI APPAREL GROUP
+        </a>
+
+      </div>
+
+    </section>
+
   </main>
 
 
-  <!-- =====================================
+  <!-- =======================================================
        FOOTER
-  ====================================== -->
+       ======================================================= -->
 
-  <footer>
+  <footer class="footer">
 
-    <div class="footer-inner">
+    <div class="footer-main">
 
 
-      <!-- LOGO -->
+      <!-- ABOUT -->
 
-      <div class="footer-logo">
+      <div class="footer-about">
 
         <img
+          class="footer-logo"
           src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110"
           alt="AI Apparel Group"
-        />
+        >
+
+        <p>
+          Custom apparel, promotional products, company stores
+          and brand solutions built around your organization.
+        </p>
 
       </div>
 
 
-      <!-- COPYRIGHT -->
+      <!-- SHOP -->
 
-      <div class="footer-copy">
+      <div class="footer-column">
 
-        © <span id="year"></span>
-        AI Apparel Group.
-        All rights reserved.
+        <h4>
+          SHOP
+        </h4>
+
+        <a href="#apparel">
+          Apparel
+        </a>
+
+        <a
+          href="https://promo.aiapparelgroup.com/"
+          target="_blank"
+          rel="noopener"
+        >
+          Promotional Products
+        </a>
+
+        <a href="#account">
+          Company Stores
+        </a>
 
       </div>
+
+
+      <!-- PARTNERS -->
+
+      <div class="footer-column">
+
+        <h4>
+          PARTNERS
+        </h4>
+
+        <a href="#rewards">
+          Partner Rewards
+        </a>
+
+        <a href="#account">
+          My Organization
+        </a>
+
+        <a href="#account">
+          My Account
+        </a>
+
+      </div>
+
+
+      <!-- COMPANY -->
+
+      <div class="footer-column">
+
+        <h4>
+          AI APPAREL
+        </h4>
+
+        <a
+          href="https://www.aiapparelgroup.com/"
+        >
+          Main Website
+        </a>
+
+        <a
+          href="https://www.aiapparelgroup.com/pages/contact"
+        >
+          Contact
+        </a>
+
+      </div>
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+      © <span id="currentYear"></span>
+      AI Apparel Group. All rights reserved.
 
     </div>
 
   </footer>
 
 
-  <!-- =====================================
+  <!-- =======================================================
        JAVASCRIPT
-  ====================================== -->
+       ======================================================= -->
 
   <script>
 
     /*
-    -----------------------------------------
-    COPYRIGHT YEAR
-    -----------------------------------------
-    */
+     * Automatically update copyright year.
+     */
 
-    document.getElementById("year").textContent =
+    document.getElementById("currentYear").textContent =
       new Date().getFullYear();
 
 
     /*
-    =========================================
-
-    FUTURE AI APPAREL APP API
-
-    The website/app will eventually communicate
-    with our API layer rather than having the
-    browser directly communicate with every
-    outside platform.
-
-    Proposed architecture:
-
-    AI APPAREL WEBSITE / APP
-             |
-             v
-       AI APPAREL API
-             |
-       -----------------
-       |       |       |
-    APPAREL   PROMO   REWARDS
-
-
-    Potential endpoints:
-
-    GET /api/account
-
-    GET /api/organization
-
-    GET /api/rewards
-
-    GET /api/orders
-
-    GET /api/apparel/products
-
-    GET /api/promo/products
-
-    GET /api/promo/orders
-
-
-    Example:
-
-    const API_BASE =
-      "https://YOUR-API-ADDRESS";
-
-
-    async function loadCustomerAccount() {
-
-      try {
-
-        const response =
-          await fetch(`${API_BASE}/account`);
-
-        const account =
-          await response.json();
-
-        console.log(account);
-
-      }
-
-      catch (error) {
-
-        console.error(
-          "Unable to load account:",
-          error
-        );
-
-      }
-
-    }
-
-    =========================================
-    */
+     * =====================================================
+     * FUTURE ACCOUNT SYSTEM
+     * =====================================================
+     *
+     * We will connect the account button to the
+     * AI Apparel organization/account system later.
+     *
+     * Planned flow:
+     *
+     * CUSTOMER
+     *    ↓
+     * LOGIN
+     *    ↓
+     * ORGANIZATION TAG
+     *    ↓
+     * ORGANIZATION DASHBOARD
+     *
+     * Dashboard:
+     *
+     * - Apparel Store
+     * - Personal Promo Store
+     * - Partner Rewards
+     * - Orders
+     *
+     * Rewards will be calculated from the organization's
+     * actual point balance rather than being hard-coded
+     * into the homepage.
+     *
+     * =====================================================
+     */
 
   </script>
+
 
 </body>
 </html>
