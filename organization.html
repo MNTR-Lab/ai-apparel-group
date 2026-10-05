@@ -1273,62 +1273,50 @@
     ============================================================
     */
 
+    const params = new URLSearchParams(window.location.search);
+    const requestedOrganizationId = params.get("organization_id") || "org_carolina_ent";
+
     const ORGANIZATION = {
-
-      id: "org_carolina_ent",
-
-      tag: "CAROLINA_ENT",
-
-      name: "Carolina ENT",
-
-      shortName: "CE",
-
+      id: requestedOrganizationId,
+      tag: "",
+      name: "Loading...",
+      shortName: "--",
       status: "active",
-
-      logo: "https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Carolina_ENT_LC_Logo_-_ENT10004.pdf?v=1791221410",
-
-      primaryColor: "#1D3C7A",
+      logo: "",
+      primaryColor: "#111827",
       secondaryColor: "#FFFFFF",
       accentColor: "#000000",
-
-      rewards: {
-        enabled: true
-      },
-
-      shopify: {
-
-        connected: true,
-
-        /*
-        The Shopify customer/organization tag we will use
-        to associate purchases with Carolina ENT.
-        */
-
-        customerTag: "CAROLINA_ENT",
-
-        /*
-        Add the Carolina ENT apparel store URL here later.
-        */
-
-        storeUrl: ""
-
-      },
-
-      promoPlace: {
-
-        connected: false,
-
-        /*
-        Add PromoPlace information here once available.
-        */
-
-        storeId: "",
-
-        storeUrl: ""
-
-      }
-
+      rewards: { enabled: true },
+      shopify: { connected: false, customerTag: "", storeUrl: "" },
+      promoPlace: { connected: false, storeId: "", storeUrl: "" }
     };
+
+    async function loadOrganizationProfile() {
+      const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" + encodeURIComponent(ORGANIZATION.id);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Unable to load organization profile.");
+      const payload = await response.json();
+      const org = payload.organization || {};
+      const integrations = payload.integrations || [];
+      const companyStore = integrations.find(x => x.provider === "shopify" && x.enabled);
+      const promotional = integrations.find(x => x.provider === "promoplace" && x.enabled);
+      const meta = (companyStore && companyStore.metadata) || {};
+
+      ORGANIZATION.tag = org.tag || "";
+      ORGANIZATION.name = org.name || "Organization";
+      ORGANIZATION.shortName = org.short_name || "--";
+      ORGANIZATION.status = org.status || "active";
+      ORGANIZATION.logo = org.logo_url || "";
+      ORGANIZATION.primaryColor = meta.primary_color || (ORGANIZATION.id === "org_lenoir_rhyne_bears" ? "#98002E" : "#1D3C7A");
+      ORGANIZATION.secondaryColor = meta.accent_color || "#FFFFFF";
+      ORGANIZATION.accentColor = meta.secondary_color || "#000000";
+      ORGANIZATION.shopify.connected = Boolean(companyStore);
+      ORGANIZATION.shopify.customerTag = companyStore?.customer_tag || "";
+      ORGANIZATION.shopify.storeUrl = companyStore?.store_url || "";
+      ORGANIZATION.promoPlace.connected = Boolean(promotional);
+      ORGANIZATION.promoPlace.storeUrl = promotional?.store_url || "";
+      return payload;
+    }
 
 
     /*
@@ -1472,7 +1460,7 @@
 
     /*
     ============================================================
-    FUTURE PROMOPLACE API
+    FUTURE PROMOTIONAL API
     ============================================================
     */
 
@@ -2240,11 +2228,12 @@
       Load organization identity.
       */
 
+      const profilePayload = await loadOrganizationProfile();
       renderOrganization();
 
 
       /*
-      Configure Shopify / PromoPlace buttons.
+      Configure Shopify / Promotional buttons.
       */
 
       configureStores();
@@ -2254,8 +2243,12 @@
       Load organization transactions.
       */
 
-      const orders =
-        await getOrganizationOrders();
+      const orders = (profilePayload.orders || []).map(order => ({
+        ...order,
+        date: order.date || order.ordered_at,
+        coupon: Array.isArray(order.discountCodes) && order.discountCodes.length ? order.discountCodes.join(", ") : "—",
+        discountAmount: Number(order.discountAmount || 0)
+      }));
 
 
       /*
