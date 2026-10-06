@@ -72,7 +72,7 @@ header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0
 .bannerin{border-radius:24px;background:var(--org2);color:#fff;padding:44px 50px;display:flex;align-items:center;justify-content:space-between}
 .banner h2{font-size:32px;margin:0 0 7px;letter-spacing:-1px}.banner p{margin:0;color:#e2edf5;font-size:13px}.banner button{border:0;background:#fff;color:var(--ink);border-radius:999px;padding:13px 19px;font-size:11px;font-weight:900}
 footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
-.quote-float{position:fixed;right:22px;bottom:20px;background:var(--ink);color:#fff;border-radius:999px;padding:14px 18px;font-size:11px;font-weight:900;box-shadow:0 12px 30px #0003;z-index:12}
+.quoteview{border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;background:#fff}.quoteview.ready{border-color:var(--org2)}.quoteview-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.quoteview-items{margin-top:14px;border-top:1px solid var(--line)}.quoteview-item{display:grid;grid-template-columns:1fr auto auto auto;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;align-items:center}.quote-summary{margin:14px 0 0 auto;max-width:390px}.quote-summary div{display:flex;justify-content:space-between;padding:5px 0;font-size:12px}.quote-summary .grand{font-size:18px;font-weight:900;border-top:2px solid var(--ink);margin-top:6px;padding-top:10px}.approvebtn{border:0;background:var(--org2);color:#fff;border-radius:10px;padding:13px 18px;font-size:11px;font-weight:900;margin-top:15px}.approvebtn:disabled{opacity:.55}.quote-note-box{background:var(--soft);border-radius:10px;padding:12px;margin-top:12px;font-size:12px;line-height:1.5}.quote-float{position:fixed;right:22px;bottom:20px;background:var(--ink);color:#fff;border-radius:999px;padding:14px 18px;font-size:11px;font-weight:900;box-shadow:0 12px 30px #0003;z-index:12}
 @media(max-width:1000px){.catgrid{grid-template-columns:repeat(3,1fr)}.products{grid-template-columns:repeat(2,1fr)}.hero-copy{width:70%}.hero-art{opacity:.45}.personalbox{grid-template-columns:1fr}.navlinks{display:none}}
 @media(max-width:620px){.nav{padding:0 16px}.navsearch{display:none}.hero,.section,.personal,.banner,.orgstrip{padding-left:16px;padding-right:16px}.hero-copy{width:100%;padding:38px 25px}.hero h1{font-size:42px}.hero-art{display:none}.big-search{flex-direction:column}.big-search button{padding:13px}.quick{display:none}.catgrid{grid-template-columns:repeat(2,1fr)}.cat{height:160px}.products{grid-template-columns:1fr}.photo{height:360px}.history{grid-template-columns:1fr}.personalbox{padding:28px}.bannerin{padding:30px;display:block}.banner button{margin-top:20px}footer{display:block;line-height:2}}
 
@@ -232,38 +232,18 @@ function renderPrevious(orders){
  $("#previousOrders").innerHTML=items.slice(0,4).map(({o,i})=>`<div class="historycard"><div class="histimg">PREVIOUS<br>ORDER</div><div><strong>${esc(i.description||i.itemNumber||"Promotional Product")}</strong><span>Previously ordered · ${esc(i.quantity||"")} units</span><br><button class="again" data-reorder="${esc(i.description||i.itemNumber||"")}">REQUEST AGAIN →</button></div></div>`).join("");
  document.querySelectorAll("[data-reorder]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.reorder));
 }
-function renderApprovedCard(p){
- const id=p.id||p.showroomProductId;
- const image=p.image||"";
- const price=p.price||"Request current pricing";
- return `<article class="product" data-approved-id="${esc(id)}" data-custom-approved="${p.showroomProductId?"1":"0"}"><div class="photo">${image?`<img src="${esc(sageImage(image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name||"Approved Product")}</h3><p>${esc(p.code||p.itemNumber||"Approved Promotional Product")}</p><div class="productbottom"><span class="price">${esc(price)}</span><button class="arrow" type="button">→</button></div></article>`;
-}
-function openCustomApprovedDetail(p){
- $("#productModal").classList.add("open");
- $("#detailBody").innerHTML=`<div class="detail"><div><div class="detailmain">${p.image?`<img id="mainPic" src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}">`:"PRODUCT IMAGE"}</div></div><div><div class="detailmeta">CAROLINA ENT APPROVED PRODUCT · ${esc(p.itemNumber||"")}</div><h2>${esc(p.name||"Approved Product")}</h2><p class="detaildesc">This product is part of your organization’s approved promotional collection. The displayed showroom pricing is a reference; AI Apparel will verify current pricing, availability, decoration and freight before preparing the quote.</p><div class="field"><label>QUANTITY</label><input id="detailQty" type="number" min="1" value="1"></div><div class="field"><label>COLOR / SIZE / OPTIONS</label><input id="detailColor" placeholder="Enter any preferred options"></div><div class="field"><label>DECORATION / NOTES</label><textarea id="detailDecoration" rows="3" placeholder="Decoration, sizing, personalization or other requirements"></textarea></div><div class="detailmeta">Showroom price: ${esc(p.price||"Quoted")}</div><button class="addquote" id="addCustomQuote">ADD TO QUOTE REQUEST</button></div></div>`;
- $("#addCustomQuote").onclick=()=>{quote.push({id:p.id||p.showroomProductId,showroomProductId:p.showroomProductId||null,name:p.name||"Approved Product",qty:$("#detailQty").value,color:$("#detailColor").value,decoration:$("#detailDecoration").value,code:p.itemNumber||p.code||"",image:p.image||""});renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open")};
-}
 async function loadApprovedShowroom(){
  try{
   const r=await fetch(`${SHOWROOM_API}?organization_id=${encodeURIComponent(orgId)}`), d=await r.json();
   if(!r.ok||!d.ok||!d.showroom)return;
   $("#approvedShowroom").style.display="block";
   $("#approvedTitle").textContent=d.showroom.label||`${ORG.name} Approved Products`;
-  const items=d.products||[];
-  if(!items.length){$("#approvedGrid").innerHTML='<div class="loading">Your approved collection is being synchronized.</div>';return}
-  const products=await Promise.all(items.map(async item=>{
-   if(item.showroomProductId){
-    return {id:item.id||item.showroomProductId,showroomProductId:item.showroomProductId,name:item.name||"Approved Product",itemNumber:item.itemNumber||"",price:item.price||"Request current pricing",image:item.image||"",productUrl:item.productUrl||""};
-   }
-   try{const rr=await fetch(`${API}?productId=${encodeURIComponent(item.id)}`),dd=await rr.json();const p=dd.product?.product||dd.product||{};return {id:p.prodEid||p.prodEId||item.id,name:p.prName||"Product",code:p.spc||"",price:Array.isArray(p.prc)?p.prc.find(Boolean):p.prc,image:(p.pics||[]).find(x=>x.url)?.url||""};}catch{return null}
-  }));
-  $("#approvedGrid").innerHTML=products.filter(Boolean).map(renderApprovedCard).join("");
-  document.querySelectorAll("[data-approved-id]").forEach(card=>{
-   const id=card.dataset.approvedId;
-   const p=products.find(x=>String(x.id)===String(id));
-   card.onclick=()=>p&&p.showroomProductId?openCustomApprovedDetail(p):openDetail(id);
-  });
- }catch(e){console.error("Approved showroom",e);$("#approvedGrid").innerHTML='<div class="errorbox">The organization collection could not be loaded right now.</div>'}
+  const ids=(d.products||[]).map(x=>x.id).filter(Boolean);
+  if(!ids.length){$("#approvedGrid").innerHTML='<div class="loading">Your approved collection is being synchronized from SAGE.</div>';return}
+  const products=await Promise.all(ids.map(async id=>{try{const rr=await fetch(`${API}?productId=${encodeURIComponent(id)}`),dd=await rr.json();const p=dd.product?.product||dd.product||{};return {id:p.prodEid||p.prodEId||id,name:p.prName||"Product",code:p.spc||"",price:Array.isArray(p.prc)?p.prc.find(Boolean):p.prc,image:(p.pics||[]).find(x=>x.url)?.url||""}}catch{return null}}));
+  $("#approvedGrid").innerHTML=products.filter(Boolean).map(p=>`<article class="product" data-approved-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Approved Promotional Product")}</p><div class="productbottom"><span class="price">${p.price?`From $${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("");
+  document.querySelectorAll("[data-approved-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.approvedId));
+ }catch(e){console.error("Approved showroom",e)}
 }
 async function searchProducts(q){
  q=(q||"").trim(); if(!q)return;
@@ -334,13 +314,27 @@ async function submitQuoteRequest(){
  finally{$("#prepareRequest").disabled=false;$("#prepareRequest").textContent="SUBMIT QUOTE REQUEST"}
 }
 const statusLabel=s=>({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"}[s]||s);
+const money=v=>"$"+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+function renderCustomerQuote(q){
+ const items=q.ai_apparel_quote_request_items||[],ready=["quote_ready","approved","invoiced","completed"].includes(q.status);
+ if(!ready)return `<div class="quoteview"><div class="quoteview-head"><strong>${esc(q.request_number)}</strong><span class="statuspill">${esc(statusLabel(q.status))}</span></div><p>${esc(q.project_name||"Promotional Quote")} · ${items.length} item(s) · ${new Date(q.submitted_at).toLocaleDateString()}</p><div class="quote-note-box">AI Apparel is preparing current pricing for this request.</div></div>`;
+ const charges=[["Setup",q.setup_charge],["Decoration",q.decoration_charge],["Freight",q.freight_charge],["Other Charge",q.additional_charge]].filter(x=>Number(x[1])!==0);
+ return `<div class="quoteview ready"><div class="quoteview-head"><div><strong>${esc(q.request_number)}</strong><div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(q.project_name||"Promotional Quote")}</div></div><span class="statuspill">${esc(statusLabel(q.status))}</span></div><div class="quoteview-items">${items.map(i=>`<div class="quoteview-item"><div><strong>${esc(i.product_name)}</strong><div style="color:var(--muted)">${esc(i.product_code||"")}${i.color?" · "+esc(i.color):""}${i.decoration?" · "+esc(i.decoration):""}</div></div><div>Qty ${esc(i.quoted_quantity??i.quantity??"—")}</div><div>${money(i.unit_selling_price)}/ea.</div><strong>${money(i.line_total)}</strong></div>`).join("")}</div><div class="quote-summary"><div><span>Product Subtotal</span><strong>${money(q.quoted_subtotal)}</strong></div>${charges.map(x=>`<div><span>${x[0]}</span><strong>${money(x[1])}</strong></div>`).join("")}${Number(q.discount_amount)?`<div><span>Discount</span><strong>-${money(q.discount_amount)}</strong></div>`:""}<div class="grand"><span>Quote Total</span><span>${money(q.quoted_total)}</span></div></div>${q.customer_quote_notes?`<div class="quote-note-box"><strong>AI Apparel Notes</strong><br>${esc(q.customer_quote_notes)}</div>`:""}${q.status==="quote_ready"?`<button class="approvebtn" data-approve-quote="${q.id}">APPROVE QUOTE · ${money(q.quoted_total)}</button>`:`<div class="quote-note-box"><strong>${esc(statusLabel(q.status))}</strong>${q.status==="approved"?" — Thank you. AI Apparel will prepare the invoice for this approved quote.":""}</div>`}</div>`;
+}
+async function approveCustomerQuote(id){
+ const btn=document.querySelector(`[data-approve-quote="${id}"]`); if(!btn)return;
+ if(!confirm("Approve this quote and authorize AI Apparel to proceed with invoicing?"))return;
+ btn.disabled=true;btn.textContent="APPROVING…";
+ try{const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve_quote",organization_id:orgId,quote_id:id})}),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Quote could not be approved");await loadCurrentQuotes();}catch(e){btn.disabled=false;btn.textContent="APPROVE QUOTE";alert(e.message);}
+}
 async function loadCurrentQuotes(){
  $("#quotesModal").classList.add("open");
  $("#currentQuotes").innerHTML='<div class="loading">Loading quotes…</div>';
  try{
   const r=await fetch(`${QUOTE_API}?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||"Could not load quotes");
-  $("#currentQuotes").innerHTML=(d.quotes||[]).map(q=>`<div class="currentquote"><div class="currentquote-head"><strong>${esc(q.request_number)}</strong><span class="statuspill">${esc(statusLabel(q.status))}</span></div><p>${esc(q.project_name||"Promotional Quote")} · ${(q.ai_apparel_quote_request_items||[]).length} item(s) · ${new Date(q.submitted_at).toLocaleDateString()}</p></div>`).join("")||'<div class="loading">No current quote requests yet.</div>';
+  $("#currentQuotes").innerHTML=(d.quotes||[]).map(q=>renderCustomerQuote(q)).join("")||'<div class="loading">No current quote requests yet.</div>';
+  document.querySelectorAll("[data-approve-quote]").forEach(b=>b.onclick=()=>approveCustomerQuote(b.dataset.approveQuote));
  }catch(e){$("#currentQuotes").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
 }
 $("#prepareRequest").onclick=submitQuoteRequest;
