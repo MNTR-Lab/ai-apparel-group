@@ -333,8 +333,6 @@ async function approveCustomerQuote(id){
  btn.disabled=true;btn.textContent="APPROVING…";
  try{const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve_quote",organization_id:orgId,quote_id:id})}),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Quote could not be approved");await loadCurrentQuotes();}catch(e){btn.disabled=false;btn.textContent="APPROVE QUOTE";alert(e.message);}
 }
-?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();if(r.ok&&d.ok)updateApprovalCallout(d.quotes||[]);}catch(e){}
-}
 async function loadCurrentQuotes(){
  $("#quotesModal").classList.add("open");
  $("#currentQuotes").innerHTML='<div class="loading">Loading quotes…</div>';
@@ -344,6 +342,14 @@ async function loadCurrentQuotes(){
   const quotes=d.quotes||[];
   $("#currentQuotes").innerHTML=quotes.map(q=>renderCustomerQuote(q)).join("")||'<div class="loading">No current quote requests yet.</div>';
   document.querySelectorAll("[data-approve-quote]").forEach(b=>b.onclick=()=>approveCustomerQuote(b.dataset.approveQuote));
+  const requestedQuoteId=new URLSearchParams(location.search).get("quote_id");
+  if(requestedQuoteId){
+    const target=document.querySelector(`[data-quote-id="${CSS.escape(requestedQuoteId)}"]`);
+    if(target){
+      target.scrollIntoView({behavior:"smooth",block:"center"});
+      target.style.boxShadow="0 0 0 3px var(--org1)";
+    }
+  }
 
  }catch(e){$("#currentQuotes").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
 }
