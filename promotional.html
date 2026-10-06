@@ -284,7 +284,6 @@ function renderQuote(){
  $("#quoteItems").innerHTML=quote.length?quote.map((x,i)=>`<div class="quoteitem"><strong>${esc(x.name)}</strong><span>${esc(x.code)} · Qty ${esc(x.qty||"TBD")}</span><span>${esc(x.color||"Color TBD")} · ${esc(x.decoration||"Decoration TBD")}</span><button class="again" data-remove="${i}">REMOVE</button></div>`).join(""):'<div class="loading">Your quote request is empty.</div>';
  document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{quote.splice(Number(b.dataset.remove),1);renderQuote()});
 }
-$("#heroSearch").onsubmit=e=>{e.preventDefault();searchProducts($("#heroSearchInput").value)};
 $("#navSearch").onsubmit=e=>{e.preventDefault();searchProducts($("#navSearchInput").value)};
 document.querySelectorAll("[data-query]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.query));
 document.querySelectorAll("[data-scroll]").forEach(b=>b.onclick=()=>document.querySelector("#"+b.dataset.scroll)?.scrollIntoView({behavior:"smooth"}));
@@ -359,8 +358,6 @@ loadOrg().then(async()=>{await loadApprovedShowroom();
     await loadCurrentQuotes();
   }
 });
-searchProducts("tumbler");
-
 loadVariedProducts();
 </script>
 
