@@ -15,7 +15,7 @@ input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d1d5db;bord
 label{font-size:11px;font-weight:800;display:block;margin-bottom:6px;color:#4b5563}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#fff;font-weight:800;cursor:pointer}.teal{background:#0f766e}
-.hidden{display:none!important}.bar{display:flex;align-items:end;gap:15px}.bar>div{flex:1}.status{padding:10px 0;font-size:13px;font-weight:700}
+.hidden{display:none!important}.admin-primary-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.create-quote-btn{background:#006FBA;font-size:13px;padding:13px 18px}.create-quote-card{border:2px solid #006FBA}.quote-create-items{display:grid;gap:12px;margin-top:14px}.quote-create-item{padding:14px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc}.quote-create-item-grid{display:grid;grid-template-columns:1.4fr .7fr .55fr .7fr .9fr auto;gap:10px;align-items:end}.remove-item{background:#b91c1c;padding:11px 12px}@media(max-width:900px){.quote-create-item-grid{grid-template-columns:1fr 1fr}.remove-item{width:100%}}.bar{display:flex;align-items:end;gap:15px}.bar>div{flex:1}.status{padding:10px 0;font-size:13px;font-weight:700}
 .org-banner{background:#111827;color:white;border-radius:14px;padding:20px;margin-top:16px}.org-banner b{font-size:24px}.org-actions{display:flex;gap:10px;margin-top:14px}.view-customer{display:inline-block;border-radius:8px;padding:11px 16px;background:#fff;color:#111827;font-size:12px;font-weight:900;text-decoration:none}
 .quote-tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.quote-tools select,.quote-tools input{max-width:280px}.quote-list{display:grid;gap:12px}.quote-row{border:1px solid #e5e7eb;border-radius:12px;padding:16px;display:grid;grid-template-columns:1.1fr 1.4fr .9fr .8fr auto;gap:14px;align-items:center;background:#fff}.quote-num{font-weight:900;font-size:16px}.quote-org{font-weight:800}.pill{display:inline-block;padding:6px 9px;border-radius:999px;background:#eef2ff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}.quote-date{font-size:12px;color:#6b7280}.quote-open{background:#0f766e}.quote-detail{border:1px solid #d1d5db;border-radius:12px;margin-top:14px;padding:18px;background:#f8fafc}.quote-detail h3{margin:0 0 4px}.quote-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.quote-meta div{background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:10px;font-size:12px}.quote-items{display:grid;gap:10px}.quote-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px}.quote-item img{width:64px;height:64px;object-fit:contain;border-radius:8px;background:#fff}.pricing-box{margin-top:18px;padding:18px;border:1px solid #cbd5e1;border-radius:12px;background:#fff}.pricing-line{display:grid;grid-template-columns:1.8fr .55fr .7fr .75fr;gap:10px;align-items:end;padding:12px 0;border-bottom:1px solid #e5e7eb}.pricing-line:last-child{border-bottom:0}.pricing-name{font-weight:800}.charges{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}.quote-total{display:flex;justify-content:flex-end;margin-top:16px;font-size:22px;font-weight:900}.pricing-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.pricing-status{font-size:13px;font-weight:800;margin-top:10px}.empty{padding:24px;text-align:center;color:#6b7280;border:1px dashed #d1d5db;border-radius:12px}
 .quote-inbox{display:grid;gap:12px}.quote-message{border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:18px;display:grid;grid-template-columns:1.25fr 1.5fr .7fr auto;gap:16px;align-items:center}.quote-message.attention{border-left:5px solid #0f766e}.quote-message.waiting{border-left:5px solid #d97706}.quote-message.done{border-left:5px solid #16a34a}.quote-message .headline{font-size:12px;font-weight:900;letter-spacing:.6px;text-transform:uppercase}.quote-message .msg{font-size:13px;color:#4b5563;margin-top:4px}.quote-message .amount{font-size:18px;font-weight:900;text-align:right}.quote-message button,.quote-message a{display:inline-block;text-align:center;text-decoration:none;border:0;border-radius:8px;padding:11px 14px;background:#111827;color:#fff;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}.quote-message .primary{background:#0f766e}.quote-detail-wrap{grid-column:1/-1}@media(max-width:700px){.quote-message{grid-template-columns:1fr}.quote-message .amount{text-align:left}.quote-message button,.quote-message a{width:100%}}
@@ -46,6 +46,30 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 <label>VIEW / MANAGE ORGANIZATION</label>
 <select id="organizationSelect"></select>
 <div id="orgBanner" class="org-banner"></div>
+</div>
+
+<div class="card">
+<h2>Admin Actions</h2>
+<p class="muted">Start work for the organization selected above.</p>
+<div class="admin-primary-actions"><button class="create-quote-btn" id="showCreateQuoteBtn">+ CREATE PROMOTIONAL QUOTE</button></div>
+</div>
+
+<div class="card create-quote-card hidden" id="createQuoteCard">
+<div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start"><div><h2>Create Promotional Quote</h2><p class="muted">Create a quote on behalf of a customer. It will enter the same Promotional Quote Activity workflow as customer-submitted requests.</p></div><button type="button" id="closeCreateQuoteBtn">CLOSE</button></div>
+<div class="grid3">
+<div style="grid-column:1/-1"><label>ORGANIZATION</label><select id="quoteOrg"></select></div>
+<div><label>CONTACT NAME</label><input id="quoteContactName" placeholder="Customer contact"></div>
+<div><label>CONTACT EMAIL</label><input id="quoteContactEmail" type="email" placeholder="name@company.com"></div>
+<div><label>CONTACT PHONE</label><input id="quoteContactPhone" placeholder="Phone"></div>
+<div><label>PROJECT / EVENT NAME</label><input id="quoteProjectName" placeholder="Example: Employee Service Awards"></div>
+<div><label>NEEDED BY</label><input id="quoteNeededBy" type="date"></div>
+<div><label>EVENT DATE</label><input id="quoteEventDate" type="date"></div>
+</div>
+<div style="margin-top:16px"><label>CUSTOMER / PROJECT NOTES</label><textarea id="quoteNotes" rows="3" placeholder="What the customer needs, special instructions, delivery details, etc."></textarea></div>
+<div style="margin-top:16px"><label>INTERNAL NOTES — NOT SHOWN TO CUSTOMER</label><textarea id="quoteInternalNotes" rows="2" placeholder="Internal AI Apparel notes"></textarea></div>
+<div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:12px"><div><h3 style="margin:0">Quote Items</h3><div class="muted">Add one or more products. Pricing can be entered in the normal quote workflow after creation.</div></div><button type="button" id="addQuoteItemBtn">+ ADD ITEM</button></div>
+<div id="createQuoteItems" class="quote-create-items"></div>
+<div style="margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="teal" type="button" id="createQuoteBtn">CREATE QUOTE</button><div id="createQuoteStatus" class="status"></div></div>
 </div>
 
 <div class="card">
@@ -107,6 +131,8 @@ async function loadAdmin(){
  const sel=document.getElementById("organizationSelect");sel.innerHTML=organizations.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
  const txSel=document.getElementById("txOrg");
  if(txSel) txSel.innerHTML='<option value="">SELECT ORGANIZATION…</option>'+organizations.filter(o=>String(o.status||"").toLowerCase()==="active").map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
+ const quoteOrg=document.getElementById("quoteOrg");
+ if(quoteOrg) quoteOrg.innerHTML='<option value="">SELECT ORGANIZATION…</option>'+organizations.filter(o=>String(o.status||"").toLowerCase()==="active").map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
  renderOrg(); renderQuotes();
 }
 function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div><div class="org-actions"><a class="view-customer" href="./organization.html?organization_id=${encodeURIComponent(o.id)}&admin_preview=1" target="_blank">VIEW AS CUSTOMER ↗</a></div>`:"No organizations available";}
@@ -250,6 +276,75 @@ async function runPromotionalStoreSync(){
  }catch(e){st.textContent="Promotional store sync failed: "+e.message;}
  finally{btn.disabled=false;btn.textContent=old;}
 }
+
+
+let createQuoteItemCounter=0;
+function addCreateQuoteItem(values={}){
+ const host=document.getElementById("createQuoteItems"); if(!host)return;
+ const id=++createQuoteItemCounter;
+ const row=document.createElement("div"); row.className="quote-create-item"; row.dataset.createItem=String(id);
+ row.innerHTML=`<div class="quote-create-item-grid">
+   <div><label>PRODUCT / DESCRIPTION</label><input class="cq-name" placeholder="Product name or description" value="${esc(values.product_name||"")}"></div>
+   <div><label>ITEM #</label><input class="cq-code" placeholder="Item #" value="${esc(values.product_code||"")}"></div>
+   <div><label>QTY</label><input class="cq-qty" type="number" min="1" step="1" value="${esc(values.quantity||1)}"></div>
+   <div><label>COLOR</label><input class="cq-color" placeholder="Optional" value="${esc(values.color||"")}"></div>
+   <div><label>DECORATION</label><input class="cq-decoration" placeholder="Optional" value="${esc(values.decoration||"")}"></div>
+   <button type="button" class="remove-item">REMOVE</button>
+ </div>
+ <div style="margin-top:10px"><label>ITEM NOTES</label><input class="cq-notes" placeholder="Sizes, imprint details, special request, etc." value="${esc(values.customer_notes||"")}"></div>`;
+ row.querySelector(".remove-item").onclick=()=>{row.remove();if(!host.children.length)addCreateQuoteItem();};
+ host.appendChild(row);
+}
+function openCreateQuote(){
+ const card=document.getElementById("createQuoteCard");
+ const selected=document.getElementById("organizationSelect").value;
+ const quoteOrg=document.getElementById("quoteOrg");
+ if(quoteOrg&&selected)quoteOrg.value=selected;
+ if(!document.getElementById("createQuoteItems").children.length)addCreateQuoteItem();
+ card.classList.remove("hidden"); card.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeCreateQuote(){document.getElementById("createQuoteCard").classList.add("hidden");}
+function resetCreateQuote(){
+ ["quoteContactName","quoteContactEmail","quoteContactPhone","quoteProjectName","quoteNeededBy","quoteEventDate","quoteNotes","quoteInternalNotes"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+ const host=document.getElementById("createQuoteItems");host.innerHTML="";addCreateQuoteItem();
+}
+document.getElementById("showCreateQuoteBtn").onclick=openCreateQuote;
+document.getElementById("closeCreateQuoteBtn").onclick=closeCreateQuote;
+document.getElementById("addQuoteItemBtn").onclick=()=>addCreateQuoteItem();
+document.getElementById("createQuoteBtn").onclick=async()=>{
+ const st=document.getElementById("createQuoteStatus"),btn=document.getElementById("createQuoteBtn");
+ const organizationId=document.getElementById("quoteOrg").value;
+ const items=[...document.querySelectorAll("#createQuoteItems .quote-create-item")].map(row=>({
+   product_name:row.querySelector(".cq-name").value.trim(),
+   product_code:row.querySelector(".cq-code").value.trim(),
+   quantity:Number(row.querySelector(".cq-qty").value||0),
+   color:row.querySelector(".cq-color").value.trim(),
+   decoration:row.querySelector(".cq-decoration").value.trim(),
+   customer_notes:row.querySelector(".cq-notes").value.trim()
+ })).filter(i=>i.product_name);
+ if(!organizationId){st.textContent="Select an organization.";return;}
+ if(!items.length){st.textContent="Add at least one product or description.";return;}
+ if(items.some(i=>i.quantity<=0)){st.textContent="Every quote item needs a quantity greater than zero.";return;}
+ btn.disabled=true;const old=btn.textContent;btn.textContent="CREATING…";st.textContent="Creating Promotional quote…";
+ try{
+   const data=await api("POST",{action:"create_promotional_quote",organization_id:organizationId,
+     contact_name:document.getElementById("quoteContactName").value.trim(),
+     contact_email:document.getElementById("quoteContactEmail").value.trim(),
+     contact_phone:document.getElementById("quoteContactPhone").value.trim(),
+     project_name:document.getElementById("quoteProjectName").value.trim(),
+     needed_by:document.getElementById("quoteNeededBy").value||null,
+     event_date:document.getElementById("quoteEventDate").value||null,
+     notes:document.getElementById("quoteNotes").value.trim(),
+     internal_notes:document.getElementById("quoteInternalNotes").value.trim(),items});
+   const number=data.quote?.request_number||"Quote";
+   st.textContent=number+" created. Opening it in Promotional Quote Activity…";
+   resetCreateQuote();
+   await loadAdmin();renderQuotes();closeCreateQuote();
+   const q=promotionalQuotes.find(x=>x.request_number===number);
+   if(q){toggleQuote(q.id);document.getElementById("qd-"+q.id)?.scrollIntoView({behavior:"smooth",block:"center"});}
+ }catch(e){st.textContent=e.message;}
+ finally{btn.disabled=false;btn.textContent=old;}
+};
 
 document.getElementById("syncCompanyStoreBtn").onclick=()=>runDataSync("sync_company_store","syncCompanyStoreBtn","Company Store");
 document.getElementById("syncPromotionalBtn").onclick=()=>runDataSync("sync_promotional_history","syncPromotionalBtn","Promotional history");
