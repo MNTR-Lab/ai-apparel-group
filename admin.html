@@ -56,6 +56,16 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 </div>
 
 <div class="card">
+<h2>Data Management</h2>
+<p class="muted">Force a fresh pull when Company Store or Promotional history needs to be updated.</p>
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px">
+<button class="teal" id="syncCompanyStoreBtn">SYNC COMPANY STORE</button>
+<button id="syncPromotionalBtn">SYNC PROMOTIONAL HISTORY</button>
+</div>
+<div id="syncStatus" class="status muted">No manual sync run in this session.</div>
+</div>
+
+<div class="card">
 <h2>Add Missing Transaction</h2>
 <p class="muted">The transaction will be added to the selected organization, its rewards ledger, and the admin audit log.</p>
 <div class="grid3">
@@ -144,7 +154,9 @@ function toggleQuote(id){
  ${["request_received","pricing","quote_ready"].includes(x.status)?`<button onclick="savePricing('${id}',false)">SAVE PRICING</button><button class="teal" onclick="savePricing('${id}',true)">MARK QUOTE READY</button>`:""}
  ${x.status==="approved"?`<button class="teal" onclick="createCompanyStoreInvoice('${id}')">CREATE COMPANY STORE INVOICE</button>`:""}
  ${x.status==="invoiced"&&x.company_store_invoice_url?`<a class="view-customer" href="${esc(x.company_store_invoice_url)}" target="_blank" rel="noopener">OPEN CUSTOMER PAYMENT LINK ↗</a>`:""}
- </div>
+ 
+ ${!["completed","cancelled"].includes(x.status)?`<button style="background:#6b7280" onclick="cancelQuote('${id}')">CANCEL QUOTE</button>`:""}
+ ${!x.shopify_draft_order_id&&!x.shopify_order_id&&!x.rewards_order_id&&x.status!=="completed"?`<button style="background:#b91c1c" onclick="deleteTestQuote('${id}')">DELETE TEST QUOTE</button>`:""}</div>
  ${x.status==="approved"?`<div class="pricing-status">Customer approved this quote. It is ready to become a Company Store invoice.</div>`:""}
  ${x.status==="invoiced"?`<div class="pricing-status">Company Store invoice created${x.invoiced_at?" • "+fmtDate(x.invoiced_at):""}.</div>`:""}
  <div id="pricingStatus-${id}" class="pricing-status"></div></div>`;
@@ -194,6 +206,34 @@ async function createCompanyStoreInvoice(id){
    alert("Invoice could not be created: "+e.message);
  }
 }
+
+
+async function cancelQuote(id){
+ const q=promotionalQuotes.find(x=>x.id===id); if(!q)return;
+ if(!confirm("Cancel "+q.request_number+"? It will remain in history but will no longer be active."))return;
+ try{await api("POST",{action:"cancel_quote",quote_id:id});await loadAdmin();renderQuotes();}
+ catch(e){alert("Quote could not be cancelled: "+e.message);}
+}
+async function deleteTestQuote(id){
+ const q=promotionalQuotes.find(x=>x.id===id); if(!q)return;
+ if(!confirm("PERMANENTLY DELETE test quote "+q.request_number+"? This removes the quote and its items. This cannot be undone."))return;
+ try{await api("POST",{action:"delete_test_quote",quote_id:id});await loadAdmin();renderQuotes();}
+ catch(e){alert("Test quote could not be deleted: "+e.message);}
+}
+async function runDataSync(action,buttonId,label){
+ const btn=document.getElementById(buttonId),st=document.getElementById("syncStatus");
+ btn.disabled=true; const old=btn.textContent; btn.textContent="SYNCING…"; st.textContent="Running "+label+" sync…";
+ try{
+   const d=await api("POST",{action});
+   const summary=d.result?.summary;
+   const detail=summary?` • ${summary.historicalOrdersImported||0} orders / ${summary.historicalItemsImported||0} items refreshed`:(d.result?.imported!=null?` • ${d.result.imported} orders refreshed`:"");
+   st.textContent=label+" synced "+new Date(d.synced_at).toLocaleString()+detail;
+   await loadAdmin();
+ }catch(e){st.textContent=label+" sync failed: "+e.message;}
+ finally{btn.disabled=false;btn.textContent=old;}
+}
+document.getElementById("syncCompanyStoreBtn").onclick=()=>runDataSync("sync_company_store","syncCompanyStoreBtn","Company Store");
+document.getElementById("syncPromotionalBtn").onclick=()=>runDataSync("sync_promotional_history","syncPromotionalBtn","Promotional history");
 
 document.getElementById("quoteStatusFilter").onchange=renderQuotes;
 document.getElementById("quoteSearch").oninput=renderQuotes;
