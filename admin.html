@@ -18,6 +18,7 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 .hidden{display:none!important}.bar{display:flex;align-items:end;gap:15px}.bar>div{flex:1}.status{padding:10px 0;font-size:13px;font-weight:700}
 .org-banner{background:#111827;color:white;border-radius:14px;padding:20px;margin-top:16px}.org-banner b{font-size:24px}.org-actions{display:flex;gap:10px;margin-top:14px}.view-customer{display:inline-block;border-radius:8px;padding:11px 16px;background:#fff;color:#111827;font-size:12px;font-weight:900;text-decoration:none}
 .quote-tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.quote-tools select,.quote-tools input{max-width:280px}.quote-list{display:grid;gap:12px}.quote-row{border:1px solid #e5e7eb;border-radius:12px;padding:16px;display:grid;grid-template-columns:1.1fr 1.4fr .9fr .8fr auto;gap:14px;align-items:center;background:#fff}.quote-num{font-weight:900;font-size:16px}.quote-org{font-weight:800}.pill{display:inline-block;padding:6px 9px;border-radius:999px;background:#eef2ff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}.quote-date{font-size:12px;color:#6b7280}.quote-open{background:#0f766e}.quote-detail{border:1px solid #d1d5db;border-radius:12px;margin-top:14px;padding:18px;background:#f8fafc}.quote-detail h3{margin:0 0 4px}.quote-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.quote-meta div{background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:10px;font-size:12px}.quote-items{display:grid;gap:10px}.quote-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px}.quote-item img{width:64px;height:64px;object-fit:contain;border-radius:8px;background:#fff}.pricing-box{margin-top:18px;padding:18px;border:1px solid #cbd5e1;border-radius:12px;background:#fff}.pricing-line{display:grid;grid-template-columns:1.8fr .55fr .7fr .75fr;gap:10px;align-items:end;padding:12px 0;border-bottom:1px solid #e5e7eb}.pricing-line:last-child{border-bottom:0}.pricing-name{font-weight:800}.charges{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}.quote-total{display:flex;justify-content:flex-end;margin-top:16px;font-size:22px;font-weight:900}.pricing-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.pricing-status{font-size:13px;font-weight:800;margin-top:10px}.empty{padding:24px;text-align:center;color:#6b7280;border:1px dashed #d1d5db;border-radius:12px}
+.quote-inbox{display:grid;gap:12px}.quote-message{border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:18px;display:grid;grid-template-columns:1.25fr 1.5fr .7fr auto;gap:16px;align-items:center}.quote-message.attention{border-left:5px solid #0f766e}.quote-message.waiting{border-left:5px solid #d97706}.quote-message.done{border-left:5px solid #16a34a}.quote-message .headline{font-size:12px;font-weight:900;letter-spacing:.6px;text-transform:uppercase}.quote-message .msg{font-size:13px;color:#4b5563;margin-top:4px}.quote-message .amount{font-size:18px;font-weight:900;text-align:right}.quote-message button,.quote-message a{display:inline-block;text-align:center;text-decoration:none;border:0;border-radius:8px;padding:11px 14px;background:#111827;color:#fff;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}.quote-message .primary{background:#0f766e}.quote-detail-wrap{grid-column:1/-1}@media(max-width:700px){.quote-message{grid-template-columns:1fr}.quote-message .amount{text-align:left}.quote-message button,.quote-message a{width:100%}}
 @media(max-width:700px){.grid,.grid3,.quote-meta{grid-template-columns:1fr}.bar{display:block}.bar button{margin-top:12px;width:100%}.quote-row{grid-template-columns:1fr}.quote-tools select,.quote-tools input{max-width:none;width:100%}.pricing-line,.charges{grid-template-columns:1fr}}
 </style>
 </head><body>
@@ -48,8 +49,8 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 </div>
 
 <div class="card">
-<h2>Promotional Quotes</h2>
-<p class="muted">Incoming Promotional quote requests from every organization. Open a request to review the customer and requested products.</p>
+<h2>Promotional Quote Activity</h2>
+<p class="muted">One working inbox for every Promotional quote. Each box shows the latest update and the one action that should happen next.</p>
 <div class="quote-tools"><select id="quoteStatusFilter"><option value="">All Statuses</option><option value="request_received">Request Received</option><option value="pricing">Pricing</option><option value="quote_ready">Quote Ready</option><option value="approved">Approved</option><option value="invoiced">Invoiced</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select><input id="quoteSearch" placeholder="Search quote, organization, customer or project"></div>
 <div id="quoteList" class="quote-list"></div>
 </div>
@@ -99,13 +100,30 @@ document.getElementById("organizationSelect").onchange=renderOrg;
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 function statusLabel(s){return ({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"})[s]||s;}
 function fmtDate(v){if(!v)return "—";return new Date(v).toLocaleString([], {year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}
+function quoteWorkflow(x){
+ const s=x.status;
+ if(s==="request_received")return {cls:"attention",head:"NEW QUOTE REQUEST",msg:"A new Promotional request is waiting for pricing.",button:"BUILD QUOTE",action:"open"};
+ if(s==="pricing")return {cls:"attention",head:"PRICING IN PROGRESS",msg:"Pricing has been started but the quote has not been sent yet.",button:"CONTINUE QUOTE",action:"open"};
+ if(s==="quote_ready")return {cls:"waiting",head:"QUOTE SENT",msg:"The quote is with the customer. Waiting for approval or a reply.",button:"VIEW QUOTE",action:"open"};
+ if(s==="approved")return {cls:"attention",head:"CUSTOMER APPROVED",msg:"The customer approved this quote. It is ready to become a Company Store invoice.",button:"CREATE INVOICE",action:"invoice"};
+ if(s==="invoiced")return {cls:"waiting",head:"INVOICE SENT",msg:"The Company Store invoice is ready. Waiting for customer payment.",button:x.company_store_invoice_url?"VIEW INVOICE":"VIEW DETAILS",action:x.company_store_invoice_url?"invoiceLink":"open"};
+ if(s==="completed")return {cls:"done",head:"PAID / COMPLETED",msg:"Payment is complete and this quote has moved into the completed order workflow.",button:"VIEW DETAILS",action:"open"};
+ if(s==="cancelled")return {cls:"",head:"CANCELLED",msg:"This Promotional quote is no longer active.",button:"VIEW DETAILS",action:"open"};
+ return {cls:"",head:statusLabel(s),msg:"View the latest quote activity.",button:"VIEW DETAILS",action:"open"};
+}
+function quoteActionHtml(x,w){
+ if(w.action==="invoiceLink")return `<a href="${esc(x.company_store_invoice_url)}" target="_blank" rel="noopener">${w.button} ↗</a>`;
+ if(w.action==="invoice")return `<button class="primary" onclick="event.stopPropagation();createCompanyStoreInvoice('${x.id}')">${w.button}</button>`;
+ return `<button class="${["request_received","pricing"].includes(x.status)?"primary":""}" onclick="event.stopPropagation();toggleQuote('${x.id}')">${w.button}</button>`;
+}
 function renderQuotes(){
  const list=document.getElementById("quoteList"); if(!list)return;
  const status=document.getElementById("quoteStatusFilter").value;
  const q=document.getElementById("quoteSearch").value.trim().toLowerCase();
  const rows=promotionalQuotes.filter(x=>(!status||x.status===status)&&(!q||[x.request_number,x.organization_name,x.contact_name,x.contact_email,x.project_name].some(v=>String(v||"").toLowerCase().includes(q))));
- if(!rows.length){list.innerHTML='<div class="empty">No Promotional quote requests match this view.</div>';return;}
- list.innerHTML=rows.map(x=>`<div><div class="quote-row"><div><div class="quote-num">${esc(x.request_number)}</div><div class="quote-date">${fmtDate(x.submitted_at)}</div></div><div><div class="quote-org">${esc(x.organization_name)}</div><div class="muted">${esc(x.project_name||"No project name")}</div></div><div><b>${esc(x.contact_name||"—")}</b><div class="muted">${esc(x.contact_email||"")}</div></div><div><span class="pill">${esc(statusLabel(x.status))}</span></div><button class="quote-open" onclick="toggleQuote('${x.id}')">OPEN</button></div><div id="qd-${x.id}" class="quote-detail hidden"></div></div>`).join("");
+ if(!rows.length){list.innerHTML='<div class="empty">No Promotional quote activity matches this view.</div>';return;}
+ list.className="quote-inbox";
+ list.innerHTML=rows.map(x=>{const w=quoteWorkflow(x);return `<div class="quote-message ${w.cls}"><div><div class="quote-num">${esc(x.request_number)}</div><div class="quote-org">${esc(x.organization_name)}</div><div class="muted">${esc(x.project_name||"Promotional Request")} • ${fmtDate(x.updated_at||x.submitted_at)}</div></div><div><div class="headline">${esc(w.head)}</div><div class="msg">${esc(w.msg)}</div></div><div class="amount">${Number(x.quoted_total||0)>0?money(x.quoted_total):"—"}</div><div>${quoteActionHtml(x,w)}</div><div id="qd-${x.id}" class="quote-detail quote-detail-wrap hidden"></div></div>`}).join("");
 }
 function money(v){return "$"+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
 function toggleQuote(id){
@@ -122,7 +140,14 @@ function toggleQuote(id){
  <div class="charges"><div><label>SETUP</label><input id="setup-${id}" type="number" min="0" step=".01" value="${esc(x.setup_charge||0)}"></div><div><label>DECORATION</label><input id="decoration-${id}" type="number" min="0" step=".01" value="${esc(x.decoration_charge||0)}"></div><div><label>FREIGHT</label><input id="freight-${id}" type="number" min="0" step=".01" value="${esc(x.freight_charge||0)}"></div><div><label>OTHER CHARGE</label><input id="additional-${id}" type="number" min="0" step=".01" value="${esc(x.additional_charge||0)}"></div><div><label>DISCOUNT</label><input id="discount-${id}" type="number" min="0" step=".01" value="${esc(x.discount_amount||0)}"></div></div>
  <div class="grid" style="margin-top:14px"><div><label>CUSTOMER-FACING QUOTE NOTES</label><textarea id="customerNotes-${id}" rows="3">${esc(x.customer_quote_notes||"")}</textarea></div><div><label>INTERNAL NOTES — NOT SHOWN TO CUSTOMER</label><textarea id="internalNotes-${id}" rows="3">${esc(x.internal_notes||"")}</textarea></div></div>
  <div class="quote-total">QUOTE TOTAL:&nbsp;<span id="total-${id}">${money(x.quoted_total||0)}</span></div>
- <div class="pricing-actions"><button onclick="savePricing('${id}',false)">SAVE PRICING</button><button class="teal" onclick="savePricing('${id}',true)">MARK QUOTE READY</button></div><div id="pricingStatus-${id}" class="pricing-status"></div></div>`;
+ <div class="pricing-actions">
+ ${["request_received","pricing","quote_ready"].includes(x.status)?`<button onclick="savePricing('${id}',false)">SAVE PRICING</button><button class="teal" onclick="savePricing('${id}',true)">MARK QUOTE READY</button>`:""}
+ ${x.status==="approved"?`<button class="teal" onclick="createCompanyStoreInvoice('${id}')">CREATE COMPANY STORE INVOICE</button>`:""}
+ ${x.status==="invoiced"&&x.company_store_invoice_url?`<a class="view-customer" href="${esc(x.company_store_invoice_url)}" target="_blank" rel="noopener">OPEN CUSTOMER PAYMENT LINK ↗</a>`:""}
+ </div>
+ ${x.status==="approved"?`<div class="pricing-status">Customer approved this quote. It is ready to become a Company Store invoice.</div>`:""}
+ ${x.status==="invoiced"?`<div class="pricing-status">Company Store invoice created${x.invoiced_at?" • "+fmtDate(x.invoiced_at):""}.</div>`:""}
+ <div id="pricingStatus-${id}" class="pricing-status"></div></div>`;
  el.classList.remove("hidden");
  el.querySelectorAll(".pricing-box input").forEach(inp=>inp.addEventListener("input",()=>calcPricing(id)));
  calcPricing(id);
@@ -140,14 +165,31 @@ async function savePricing(id,ready){
  const items=[...el.querySelectorAll(".pricing-line")].map(row=>({id:row.dataset.item,quoted_quantity:Number(row.querySelector(".pq").value||0),unit_selling_price:Number(row.querySelector(".pp").value||0)}));
  const val=k=>Number(document.getElementById(k+"-"+id).value||0);
  if(ready && items.some(i=>i.quoted_quantity<=0 || i.unit_selling_price<=0)){st.textContent="Enter a quantity and selling price for every product before marking Quote Ready.";return;}
- st.textContent=ready?"Saving and marking Quote Ready…":"Saving pricing…";
+ st.textContent=ready?"Saving and sending quote…":"Saving pricing…";
  try{
    const data=await api("POST",{action:ready?"mark_quote_ready":"save_quote_pricing",quote_id:id,items,setup_charge:val("setup"),decoration_charge:val("decoration"),freight_charge:val("freight"),additional_charge:val("additional"),discount_amount:val("discount"),customer_quote_notes:document.getElementById("customerNotes-"+id).value.trim(),internal_notes:document.getElementById("internalNotes-"+id).value.trim()});
-   st.textContent=(ready?"Quote is READY. ":"Pricing saved. ")+"Total: "+money(data.total);
+   st.textContent=(ready?"Quote sent. ":"Pricing saved. ")+"Total: "+money(data.total);
    await loadAdmin();
    const refreshed=promotionalQuotes.find(q=>q.id===id); if(refreshed){renderQuotes();toggleQuote(id);}
  }catch(e){st.textContent=e.message;}
 }
+async function createCompanyStoreInvoice(id){
+ const st=document.getElementById("pricingStatus-"+id);
+ const q=promotionalQuotes.find(x=>x.id===id);
+ if(!q||!st)return;
+ if(!confirm("Create the Company Store invoice for "+q.request_number+"? This will create a live customer payment link. Rewards will NOT be issued until the order is paid."))return;
+ st.textContent="Creating Company Store invoice…";
+ try{
+   const data=await api("POST",{action:"create_company_store_invoice",quote_id:id});
+   st.textContent="Invoice created: "+(data.draftOrder?.name||"Company Store invoice");
+   await loadAdmin();
+   const refreshed=promotionalQuotes.find(x=>x.id===id);
+   if(refreshed){renderQuotes();toggleQuote(id);}
+ }catch(e){
+   st.textContent=e.message;
+ }
+}
+
 document.getElementById("quoteStatusFilter").onchange=renderQuotes;
 document.getElementById("quoteSearch").oninput=renderQuotes;
 function showRecovery(){document.getElementById("loginCard").classList.add("hidden");document.getElementById("adminArea").classList.add("hidden");document.getElementById("recoveryCard").classList.remove("hidden");}
