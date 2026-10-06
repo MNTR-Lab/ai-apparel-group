@@ -39,7 +39,7 @@ header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0
 .orgbar{border:1px solid var(--line);border-radius:15px;padding:14px 18px;display:flex;align-items:center;gap:14px;background:#fff}
 .orgmark{width:38px;height:38px;border-radius:10px;background:var(--org);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:900}
 .orgbar strong{font-size:13px}.orgbar span{font-size:12px;color:var(--muted)}
-.quick{margin-left:auto;display:flex;gap:8px}.quick button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 13px;font-size:11px;font-weight:800}.quick button:first-child{background:var(--ink);color:#fff;border-color:var(--ink)}.quick .quote-attention{background:var(--org2);color:#fff;border-color:var(--org2);box-shadow:0 0 0 3px color-mix(in srgb,var(--org2) 15%,transparent)}.quote-count-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#fff;color:var(--org2);font-size:9px;margin-left:5px}.approval-alert{max-width:1340px;margin:18px auto 0;padding:0 30px;display:none}.approval-alert.show{display:block}.approval-alert-inner{border:2px solid var(--org2);border-radius:15px;padding:16px 18px;background:#fff;display:flex;align-items:center;gap:14px;box-shadow:0 10px 28px #0000000d}.approval-alert-icon{width:40px;height:40px;border-radius:50%;background:var(--org2);color:#fff;display:grid;place-items:center;font-weight:900}.approval-alert-copy{flex:1}.approval-alert-copy strong{display:block;font-size:14px}.approval-alert-copy span{font-size:12px;color:var(--muted)}.approval-alert button{border:0;border-radius:999px;background:var(--org2);color:#fff;padding:11px 15px;font-size:10px;font-weight:900}
+.quick{margin-left:auto;display:flex;gap:8px}.quick button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 13px;font-size:11px;font-weight:800}.quick button:first-child{background:var(--ink);color:#fff;border-color:var(--ink)}
 .section{max-width:1400px;margin:58px auto 0;padding:0 30px}
 .head{display:flex;align-items:end;justify-content:space-between;margin-bottom:20px}
 .head h2{font-size:30px;letter-spacing:-1.2px;margin:0 0 5px}.head p{margin:0;color:var(--muted);font-size:13px}.view{font-size:12px;font-weight:850;border-bottom:1px solid #111;padding-bottom:2px}
@@ -128,8 +128,6 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 <div class="orgmark" id="orgMark">ORG</div><div><strong>Your Promotional Workspace</strong><br><span>Search, request quotes, and reorder previous products.</span></div>
 <div class="quick"><button data-scroll="catalog">Discover</button><button id="quotesBtn">Current Quotes</button><button data-scroll="previous">Previous Orders</button></div>
 </div></div>
-<div class="approval-alert" id="approvalAlert"><div class="approval-alert-inner"><div class="approval-alert-icon">!</div><div class="approval-alert-copy"><strong id="approvalAlertTitle">A quote is ready for your approval.</strong><span>Review your pricing and approve it when you're ready to move forward.</span></div><button id="approvalAlertBtn">REVIEW QUOTE</button></div></div>
-
 <section class="section">
 <div class="head"><div><h2>What are you shopping for?</h2><p>Start with a category or search the full promotional catalog.</p></div><div class="view">VIEW ALL CATEGORIES</div></div>
 <div class="catgrid">
@@ -335,19 +333,7 @@ async function approveCustomerQuote(id){
  btn.disabled=true;btn.textContent="APPROVING…";
  try{const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve_quote",organization_id:orgId,quote_id:id})}),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Quote could not be approved");await loadCurrentQuotes();}catch(e){btn.disabled=false;btn.textContent="APPROVE QUOTE";alert(e.message);}
 }
-function updateApprovalCallout(quotes){
- const ready=(quotes||[]).filter(q=>q.status==="quote_ready"), alert=$("#approvalAlert"), btn=$("#quotesBtn");
- if(ready.length){
-   alert.classList.add("show");
-   $("#approvalAlertTitle").textContent=ready.length===1?`${ready[0].request_number} is ready for your approval.`:`${ready.length} quotes are ready for your approval.`;
-   btn.classList.add("quote-attention");
-   btn.innerHTML=`Quotes Ready <span class="quote-count-badge">${ready.length}</span>`;
- }else{
-   alert.classList.remove("show");btn.classList.remove("quote-attention");btn.textContent="Current Quotes";
- }
-}
-async function checkQuoteAttention(){
- try{const r=await fetch(`${QUOTE_API}?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();if(r.ok&&d.ok)updateApprovalCallout(d.quotes||[]);}catch(e){}
+?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();if(r.ok&&d.ok)updateApprovalCallout(d.quotes||[]);}catch(e){}
 }
 async function loadCurrentQuotes(){
  $("#quotesModal").classList.add("open");
@@ -358,16 +344,18 @@ async function loadCurrentQuotes(){
   const quotes=d.quotes||[];
   $("#currentQuotes").innerHTML=quotes.map(q=>renderCustomerQuote(q)).join("")||'<div class="loading">No current quote requests yet.</div>';
   document.querySelectorAll("[data-approve-quote]").forEach(b=>b.onclick=()=>approveCustomerQuote(b.dataset.approveQuote));
-  updateApprovalCallout(quotes);
+
  }catch(e){$("#currentQuotes").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
 }
 $("#prepareRequest").onclick=submitQuoteRequest;
 $("#quotesBtn").onclick=loadCurrentQuotes;
-$("#approvalAlertBtn").onclick=loadCurrentQuotes;
 $("#quotesClose").onclick=()=>$("#quotesModal").classList.remove("open");
 $("#quotesModal").onclick=e=>{if(e.target.id==="quotesModal")e.currentTarget.classList.remove("open")};
-loadOrg().then(loadApprovedShowroom);
-checkQuoteAttention();
+loadOrg().then(async()=>{await loadApprovedShowroom();
+  if(new URLSearchParams(location.search).get("open_quotes")==="1"){
+    await loadCurrentQuotes();
+  }
+});
 searchProducts("tumbler");
 </script>
 
