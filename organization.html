@@ -1486,6 +1486,7 @@
               tax: Number(order.linkedInvoice.tax || 0),
               total: Number(order.linkedInvoice.total || 0),
               paymentStatus: order.linkedInvoice.paymentStatus || "UNPAID",
+              paymentUrl: order.linkedInvoice.paymentUrl || null,
               source: "Promotional"
             }));
       const meta = (companyStore && companyStore.metadata) || {};
@@ -2400,7 +2401,8 @@
         const invoiceDate=row.date||row.orderDate||null;
         const status=inv.paymentStatus||"UNPAID";
         card.className="current-quote-card";
-        card.innerHTML=`<div class="current-quote-main"><div class="current-quote-number">INVOICE ${escapeHtml(invoiceNumber)}</div><div class="current-quote-project">${jobNumber?"Promotional Job "+escapeHtml(jobNumber):"Organization Invoice"}${invoiceDate?" • "+formatDate(invoiceDate):""}${inv.draftNumber&&inv.draftNumber!==invoiceNumber?`<br><span class="muted">Original draft ${escapeHtml(inv.draftNumber)}</span>`:""}</div></div><div class="current-quote-status ready">${escapeHtml(status)}</div><div class="current-quote-total">${formatMoney(inv.total||0)}</div>`;
+        const payUrl=String(inv.paymentUrl||"").trim();
+        card.innerHTML=`<div class="current-quote-main"><div class="current-quote-number">INVOICE ${escapeHtml(invoiceNumber)}</div><div class="current-quote-project">${jobNumber?"Promotional Job "+escapeHtml(jobNumber):"Organization Invoice"}${invoiceDate?" • "+formatDate(invoiceDate):""}${inv.draftNumber&&inv.draftNumber!==invoiceNumber?`<br><span class="muted">Original draft ${escapeHtml(inv.draftNumber)}</span>`:""}</div></div><div class="current-quote-status ready">${escapeHtml(status)}</div><div class="current-quote-total">${formatMoney(inv.total||0)}</div>${payUrl?`<a class="partner-action-button" href="${escapeHtml(payUrl)}" target="_blank" rel="noopener noreferrer">PAY INVOICE →</a>`:""}`;
         list.appendChild(card);
       });
     }
