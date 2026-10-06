@@ -17,7 +17,8 @@ label{font-size:11px;font-weight:800;display:block;margin-bottom:6px;color:#4b55
 button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#fff;font-weight:800;cursor:pointer}.teal{background:#0f766e}
 .hidden{display:none!important}.bar{display:flex;align-items:end;gap:15px}.bar>div{flex:1}.status{padding:10px 0;font-size:13px;font-weight:700}
 .org-banner{background:#111827;color:white;border-radius:14px;padding:20px;margin-top:16px}.org-banner b{font-size:24px}.org-actions{display:flex;gap:10px;margin-top:14px}.view-customer{display:inline-block;border-radius:8px;padding:11px 16px;background:#fff;color:#111827;font-size:12px;font-weight:900;text-decoration:none}
-@media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.bar{display:block}.bar button{margin-top:12px;width:100%}}
+.quote-tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.quote-tools select,.quote-tools input{max-width:280px}.quote-list{display:grid;gap:12px}.quote-row{border:1px solid #e5e7eb;border-radius:12px;padding:16px;display:grid;grid-template-columns:1.1fr 1.4fr .9fr .8fr auto;gap:14px;align-items:center;background:#fff}.quote-num{font-weight:900;font-size:16px}.quote-org{font-weight:800}.pill{display:inline-block;padding:6px 9px;border-radius:999px;background:#eef2ff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}.quote-date{font-size:12px;color:#6b7280}.quote-open{background:#0f766e}.quote-detail{border:1px solid #d1d5db;border-radius:12px;margin-top:14px;padding:18px;background:#f8fafc}.quote-detail h3{margin:0 0 4px}.quote-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.quote-meta div{background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:10px;font-size:12px}.quote-items{display:grid;gap:10px}.quote-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px}.quote-item img{width:64px;height:64px;object-fit:contain;border-radius:8px;background:#fff}.empty{padding:24px;text-align:center;color:#6b7280;border:1px dashed #d1d5db;border-radius:12px}
+@media(max-width:700px){.grid,.grid3,.quote-meta{grid-template-columns:1fr}.bar{display:block}.bar button{margin-top:12px;width:100%}.quote-row{grid-template-columns:1fr}.quote-tools select,.quote-tools input{max-width:none;width:100%}}
 </style>
 </head><body>
 <div class="top">AI APPAREL GROUP • SUPER ADMIN</div>
@@ -47,6 +48,13 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 </div>
 
 <div class="card">
+<h2>Promotional Quotes</h2>
+<p class="muted">Incoming Promotional quote requests from every organization. Open a request to review the customer and requested products.</p>
+<div class="quote-tools"><select id="quoteStatusFilter"><option value="">All Statuses</option><option value="request_received">Request Received</option><option value="pricing">Pricing</option><option value="quote_ready">Quote Ready</option><option value="approved">Approved</option><option value="invoiced">Invoiced</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select><input id="quoteSearch" placeholder="Search quote, organization, customer or project"></div>
+<div id="quoteList" class="quote-list"></div>
+</div>
+
+<div class="card">
 <h2>Add Missing Transaction</h2>
 <p class="muted">The transaction will be added to the selected organization, its rewards ledger, and the admin audit log.</p>
 <div class="grid3">
@@ -71,7 +79,7 @@ const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co";
 const PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
 const ADMIN_API=SUPABASE_URL+"/functions/v1/ai-apparel-admin";
 const sb=supabase.createClient(SUPABASE_URL,PUBLISHABLE_KEY);
-let organizations=[];
+let organizations=[];let promotionalQuotes=[];
 
 async function api(method,body){
  const {data:{session}}=await sb.auth.getSession();
@@ -80,14 +88,35 @@ async function api(method,body){
  const j=await r.json(); if(!r.ok) throw new Error(j.error||"Request failed"); return j;
 }
 async function loadAdmin(){
- const data=await api("GET"); organizations=data.organizations||[];
+ const data=await api("GET"); organizations=data.organizations||[]; promotionalQuotes=data.promotionalQuotes||[];
  document.getElementById("loginCard").classList.add("hidden");document.getElementById("adminArea").classList.remove("hidden");
  document.getElementById("adminEmail").textContent=data.admin.email+" • SUPER ADMIN";
  const sel=document.getElementById("organizationSelect");sel.innerHTML=organizations.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
- renderOrg();
+ renderOrg(); renderQuotes();
 }
 function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div><div class="org-actions"><a class="view-customer" href="./organization.html?organization_id=${encodeURIComponent(o.id)}&admin_preview=1" target="_blank">VIEW AS CUSTOMER ↗</a></div>`:"No organizations available";}
 document.getElementById("organizationSelect").onchange=renderOrg;
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function statusLabel(s){return ({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"})[s]||s;}
+function fmtDate(v){if(!v)return "—";return new Date(v).toLocaleString([], {year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}
+function renderQuotes(){
+ const list=document.getElementById("quoteList"); if(!list)return;
+ const status=document.getElementById("quoteStatusFilter").value;
+ const q=document.getElementById("quoteSearch").value.trim().toLowerCase();
+ const rows=promotionalQuotes.filter(x=>(!status||x.status===status)&&(!q||[x.request_number,x.organization_name,x.contact_name,x.contact_email,x.project_name].some(v=>String(v||"").toLowerCase().includes(q))));
+ if(!rows.length){list.innerHTML='<div class="empty">No Promotional quote requests match this view.</div>';return;}
+ list.innerHTML=rows.map(x=>`<div><div class="quote-row"><div><div class="quote-num">${esc(x.request_number)}</div><div class="quote-date">${fmtDate(x.submitted_at)}</div></div><div><div class="quote-org">${esc(x.organization_name)}</div><div class="muted">${esc(x.project_name||"No project name")}</div></div><div><b>${esc(x.contact_name||"—")}</b><div class="muted">${esc(x.contact_email||"")}</div></div><div><span class="pill">${esc(statusLabel(x.status))}</span></div><button class="quote-open" onclick="toggleQuote('${x.id}')">OPEN</button></div><div id="qd-${x.id}" class="quote-detail hidden"></div></div>`).join("");
+}
+function toggleQuote(id){
+ const el=document.getElementById("qd-"+id); const x=promotionalQuotes.find(q=>q.id===id); if(!el||!x)return;
+ if(!el.classList.contains("hidden")){el.classList.add("hidden");return;}
+ document.querySelectorAll(".quote-detail").forEach(d=>d.classList.add("hidden"));
+ const items=x.items||[];
+ el.innerHTML=`<h3>${esc(x.request_number)} • ${esc(x.organization_name)}</h3><div class="muted">Submitted ${fmtDate(x.submitted_at)}</div><div class="quote-meta"><div><b>CONTACT</b><br>${esc(x.contact_name||"—")}<br>${esc(x.contact_email||"—")}<br>${esc(x.contact_phone||"—")}</div><div><b>PROJECT</b><br>${esc(x.project_name||"—")}<br>Needed by: ${esc(x.needed_by||"—")}<br>Event: ${esc(x.event_date||"—")}</div><div><b>STATUS</b><br>${esc(statusLabel(x.status))}<br><br><b>NOTES</b><br>${esc(x.notes||"—")}</div></div><h3 style="margin:18px 0 10px">Requested Products</h3><div class="quote-items">${items.length?items.map(i=>`<div class="quote-item">${i.image_url?`<img src="${esc(i.image_url)}" alt="">`:""}<div><b>${esc(i.product_name)}</b><div class="muted">${esc(i.product_code||"")} • Qty: ${esc(i.quantity??"—")}${i.color?" • "+esc(i.color):""}${i.decoration?" • "+esc(i.decoration):""}</div>${i.customer_notes?`<div class="muted">Note: ${esc(i.customer_notes)}</div>`:""}</div></div>`).join(""):'<div class="empty">No items attached.</div>'}</div>`;
+ el.classList.remove("hidden");
+}
+document.getElementById("quoteStatusFilter").onchange=renderQuotes;
+document.getElementById("quoteSearch").oninput=renderQuotes;
 function showRecovery(){document.getElementById("loginCard").classList.add("hidden");document.getElementById("adminArea").classList.add("hidden");document.getElementById("recoveryCard").classList.remove("hidden");}
 document.getElementById("savePasswordBtn").onclick=async()=>{const p=document.getElementById("newPassword").value;const c=document.getElementById("confirmPassword").value;const st=document.getElementById("recoveryStatus");if(p.length<8){st.textContent="Use a password with at least 8 characters.";return}if(p!==c){st.textContent="Passwords do not match.";return}st.textContent="Saving password…";const {error}=await sb.auth.updateUser({password:p});if(error){st.textContent=error.message;return}st.textContent="Password saved. Opening Super Admin…";history.replaceState({},document.title,location.pathname);document.getElementById("recoveryCard").classList.add("hidden");try{await loadAdmin()}catch(e){st.textContent=e.message;document.getElementById("recoveryCard").classList.remove("hidden")}};
 document.getElementById("confirmPassword").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("savePasswordBtn").click()});
