@@ -860,6 +860,7 @@
     .invoice-badge.show{display:inline-flex}
 
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -1410,6 +1411,8 @@
 
   </main>
 
+  <div id="loginGate" style="position:fixed;inset:0;z-index:99999;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:24px;"><div style="width:min(460px,100%);background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:32px;box-shadow:0 24px 70px rgba(15,23,42,.14);"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group" style="max-width:210px;max-height:72px;display:block;margin:0 auto 22px;object-fit:contain;"><h1 style="font-size:28px;text-align:center;margin-bottom:8px;">Organization Portal</h1><p id="loginMessage" style="color:#6b7280;text-align:center;margin-bottom:22px;">Sign in with the email address assigned to your organization.</p><form id="loginForm"><label style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">EMAIL ADDRESS</label><input id="loginEmail" type="email" autocomplete="email" required placeholder="you@company.com" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;margin-bottom:12px;"><button id="loginButton" type="submit" style="width:100%;border:0;border-radius:10px;padding:14px;background:#1d3c7a;color:#fff;font-weight:900;cursor:pointer;">EMAIL ME A SECURE SIGN-IN LINK</button></form></div></div>
+
   <footer>
     © <span id="year"></span>
     AI Apparel Group • Organization Portal
@@ -1435,8 +1438,16 @@
     ============================================================
     */
 
+    const SUPABASE_URL = "https://qpavspvpdebtbbffdcmo.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    let PORTAL_ACCESS_TOKEN = null;
+    const loginGate=document.getElementById("loginGate"),loginForm=document.getElementById("loginForm"),loginEmail=document.getElementById("loginEmail"),loginMessage=document.getElementById("loginMessage"),loginButton=document.getElementById("loginButton");
+    async function requirePortalSession(){const {data:{session}}=await supabaseClient.auth.getSession();if(!session){loginGate.style.display="flex";return false;}PORTAL_ACCESS_TOKEN=session.access_token;loginGate.style.display="none";return true;}
+    loginForm.addEventListener("submit",async(e)=>{e.preventDefault();const email=loginEmail.value.trim().toLowerCase();if(!email)return;loginButton.disabled=true;loginButton.textContent="SENDING SECURE LINK...";loginMessage.textContent="Checking your account...";const redirectTo=window.location.origin+window.location.pathname;const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo,shouldCreateUser:true}});if(error){loginMessage.textContent=error.message;loginButton.disabled=false;loginButton.textContent="EMAIL ME A SECURE SIGN-IN LINK";return;}loginMessage.textContent="Check your email. We sent you a secure sign-in link.";loginButton.textContent="LINK SENT";});
+
     const params = new URLSearchParams(window.location.search);
-    const requestedOrganizationId = params.get("organization_id") || "org_carolina_ent";
+    const requestedOrganizationId = params.get("organization_id") || "";
     const organizationPromoLink = document.getElementById("organizationPromoLink");
     if (organizationPromoLink) {
       organizationPromoLink.href =
@@ -1462,8 +1473,8 @@
     let ORGANIZATION_UNPAID_INVOICES = [];
 
     async function loadOrganizationProfile() {
-      const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" + encodeURIComponent(ORGANIZATION.id);
-      const response = await fetch(url);
+      const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed" + (ORGANIZATION.id ? "?organization_id="+encodeURIComponent(ORGANIZATION.id) : "");
+      const response = await fetch(url,{headers:{Authorization:"Bearer "+PORTAL_ACCESS_TOKEN}});
       if (!response.ok) throw new Error("Unable to load organization profile.");
       const payload = await response.json();
       const org = payload.organization || {};
@@ -1491,6 +1502,7 @@
             }));
       const meta = (companyStore && companyStore.metadata) || {};
 
+      ORGANIZATION.id = org.id || ORGANIZATION.id;
       ORGANIZATION.tag = org.tag || "";
       ORGANIZATION.name = org.name || "Organization";
       ORGANIZATION.shortName = org.short_name || "--";
@@ -1626,7 +1638,7 @@
         "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" +
         encodeURIComponent(organizationId);
 
-      const response = await fetch(url);
+      const response = await fetch(url,{headers:{Authorization:"Bearer "+PORTAL_ACCESS_TOKEN}});
 
       if (!response.ok) {
         throw new Error("Unable to load organization orders.");
@@ -2715,14 +2727,16 @@
     }
 
 
-    initializeDashboard().catch(error => {
-      console.error("Dashboard load error:", error);
-      const empty = document.getElementById("emptyOrders");
-      if (empty) {
-        empty.style.display = "block";
-        empty.textContent = "Unable to load live organization data. Please refresh or contact AI Apparel Group.";
-      }
-    });
+    (async()=>{
+      const signedIn=await requirePortalSession();
+      if(!signedIn) return;
+      initializeDashboard().catch(async error => {
+        console.error("Dashboard load error:", error);
+        if(String(error?.message||"").includes("organization")) await supabaseClient.auth.signOut();
+        loginGate.style.display="flex";
+        loginMessage.textContent="This account does not currently have access to an organization portal.";
+      });
+    })();
 
   </script>
 
