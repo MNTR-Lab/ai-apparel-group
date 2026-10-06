@@ -849,6 +849,15 @@
       box-shadow:0 10px 26px rgba(0,111,186,.28);
       background:#005f9f;
     }
+    .organization-invoice-link{
+      display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 18px;
+      border-radius:999px;background:#fff;color:var(--navy);border:1px solid rgba(255,255,255,.72);
+      font-size:12px;font-weight:900;letter-spacing:.06em;text-decoration:none;
+      box-shadow:0 8px 22px rgba(0,0,0,.14);transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+    }
+    .organization-invoice-link:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.2);background:#f8fafc}
+    .invoice-badge{display:none;min-width:20px;height:20px;margin-left:8px;padding:0 6px;align-items:center;justify-content:center;border-radius:999px;background:#dc2626;color:#fff;font-size:10px;line-height:20px;font-weight:900}
+    .invoice-badge.show{display:inline-flex}
 
 </style>
 </head>
@@ -915,6 +924,9 @@
           </div>
           <a class="organization-promo-link" id="organizationPromoLink" href="./promotional.html">
             PROMOTIONAL PRODUCTS →
+          </a>
+          <a class="organization-invoice-link" id="organizationInvoiceLink" href="#unpaidInvoices">
+            UNPAID INVOICES <span class="invoice-badge" id="invoiceBadge">0</span> →
           </a>
         </div>
       </div>
@@ -1315,6 +1327,15 @@
       </div>
     </section>
 
+    <!-- UNPAID INVOICES -->
+    <section class="section" id="unpaidInvoices">
+      <div class="section-heading"><div><h2>Unpaid Invoices</h2><p>Outstanding invoices associated with this organization.</p></div></div>
+      <div class="promotional-panel"><div class="promotional-content">
+        <div class="current-quote-list" id="unpaidInvoiceList"></div>
+        <div class="promo-empty" id="emptyUnpaidInvoices">No unpaid invoices. You're all caught up.</div>
+      </div></div>
+    </section>
+
     <!-- CONNECTED SERVICES -->
     <section class="section">
 
@@ -1438,6 +1459,7 @@
     };
 
     let PROMOTIONAL_PREVIOUS_ORDERS = [];
+    let ORGANIZATION_UNPAID_INVOICES = [];
 
     async function loadOrganizationProfile() {
       const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" + encodeURIComponent(ORGANIZATION.id);
@@ -1449,6 +1471,9 @@
       const companyStore = integrations.find(x => x.provider === "shopify" && x.enabled);
       const promotional = integrations.find(x => ["promoplace", "sage", "promo"].includes(String(x.provider || "").toLowerCase()) && x.enabled);
       PROMOTIONAL_PREVIOUS_ORDERS = Array.isArray(payload.promotionalPreviousOrders) ? payload.promotionalPreviousOrders : [];
+      ORGANIZATION_UNPAID_INVOICES = PROMOTIONAL_PREVIOUS_ORDERS
+        .filter(order => order.linkedInvoice && !["PAID","COMPLETED","VOID","CANCELLED"].includes(String(order.linkedInvoice.paymentStatus || "").toUpperCase()))
+        .map(order => ({orderNumber: order.jobNumber || order.poNumber || order.id || "Promotional Order", orderDate: order.date || null, invoice: order.linkedInvoice}));
       const meta = (companyStore && companyStore.metadata) || {};
 
       ORGANIZATION.tag = org.tag || "";
@@ -2346,6 +2371,22 @@
       });
     }
 
+    function renderUnpaidInvoices(invoices) {
+      const list=document.getElementById("unpaidInvoiceList"), empty=document.getElementById("emptyUnpaidInvoices"), badge=document.getElementById("invoiceBadge");
+      if(!list||!empty)return;
+      list.innerHTML="";
+      const rows=Array.isArray(invoices)?invoices:[];
+      if(badge){badge.textContent=String(rows.length);badge.classList.toggle("show",rows.length>0);}
+      if(!rows.length){empty.style.display="block";return;}
+      empty.style.display="none";
+      rows.forEach(row=>{
+        const inv=row.invoice||{}, card=document.createElement("article");
+        card.className="current-quote-card";
+        card.innerHTML=`<div class="current-quote-main"><div class="current-quote-number">INVOICE ${escapeHtml(inv.draftNumber||"")}</div><div class="current-quote-project">${escapeHtml(row.orderNumber||"Organization Invoice")}${row.orderDate?" • "+formatDate(row.orderDate):""}</div></div><div class="current-quote-status ready">${escapeHtml(inv.paymentStatus||"UNPAID")}</div><div class="current-quote-total">${formatMoney(inv.total||0)}</div>`;
+        list.appendChild(card);
+      });
+    }
+
     function configurePromotionalTabs(){
       const tabs=document.querySelectorAll("[data-promo-view]"); const views=document.querySelectorAll(".promo-view");
       tabs.forEach(tab=>tab.addEventListener("click",()=>{tabs.forEach(x=>x.classList.remove("active"));views.forEach(x=>x.classList.remove("active"));tab.classList.add("active");const target=document.getElementById(tab.dataset.promoView);if(target)target.classList.add("active");}));
@@ -2590,6 +2631,7 @@
 
       configurePromotionalTabs();
       renderPromotionalPreviousOrders(PROMOTIONAL_PREVIOUS_ORDERS);
+      renderUnpaidInvoices(ORGANIZATION_UNPAID_INVOICES);
 
 
       /*
