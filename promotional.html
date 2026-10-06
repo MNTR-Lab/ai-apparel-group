@@ -53,7 +53,7 @@ header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0
 .cat:nth-child(6){background:linear-gradient(145deg,#e2e6ea,#bac2ca)}
 .cat:before{content:"PRODUCT IMAGE";position:absolute;inset:0;display:grid;place-items:center;color:#ffffffa8;font-size:10px;font-weight:900;letter-spacing:1px}
 .catname{position:absolute;left:14px;bottom:14px;background:#fff;padding:9px 12px;border-radius:999px;font-size:11px;font-weight:900}
-.products{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}#catalog .products{grid-template-columns:repeat(6,1fr);gap:14px}#catalog .photo{height:205px}#catalog .product h3{font-size:12px}
 .product{position:relative}
 .photo{height:330px;border-radius:18px;background:linear-gradient(145deg,#f1f2f2,#e2e5e7);display:grid;place-items:center;color:#9aa0a7;font-size:11px;font-weight:850;overflow:hidden;position:relative}
 .badge{position:absolute;left:12px;top:12px;background:#fff;border-radius:999px;padding:7px 9px;font-size:9px;font-weight:900}
@@ -73,8 +73,8 @@ header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0
 .banner h2{font-size:32px;margin:0 0 7px;letter-spacing:-1px}.banner p{margin:0;color:#e2edf5;font-size:13px}.banner button{border:0;background:#fff;color:var(--ink);border-radius:999px;padding:13px 19px;font-size:11px;font-weight:900}
 footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
 .quoteview{border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;background:#fff}.quoteview.ready{border-color:var(--org2)}.quoteview-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.quoteview-items{margin-top:14px;border-top:1px solid var(--line)}.quoteview-item{display:grid;grid-template-columns:1fr auto auto auto;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;align-items:center}.quote-summary{margin:14px 0 0 auto;max-width:390px}.quote-summary div{display:flex;justify-content:space-between;padding:5px 0;font-size:12px}.quote-summary .grand{font-size:18px;font-weight:900;border-top:2px solid var(--ink);margin-top:6px;padding-top:10px}.approvebtn{border:0;background:var(--org2);color:#fff;border-radius:10px;padding:13px 18px;font-size:11px;font-weight:900;margin-top:15px}.approvebtn:disabled{opacity:.55}.quote-note-box{background:var(--soft);border-radius:10px;padding:12px;margin-top:12px;font-size:12px;line-height:1.5}.quote-float{position:fixed;right:22px;bottom:20px;background:var(--ink);color:#fff;border-radius:999px;padding:14px 18px;font-size:11px;font-weight:900;box-shadow:0 12px 30px #0003;z-index:12}
-@media(max-width:1000px){.catgrid{grid-template-columns:repeat(3,1fr)}.products{grid-template-columns:repeat(2,1fr)}.hero-copy{width:70%}.hero-art{opacity:.45}.personalbox{grid-template-columns:1fr}.navlinks{display:none}}
-@media(max-width:620px){.nav{padding:0 16px}.navsearch{display:none}.hero,.section,.personal,.banner,.orgstrip{padding-left:16px;padding-right:16px}.hero-copy{width:100%;padding:38px 25px}.hero h1{font-size:42px}.hero-art{display:none}.big-search{flex-direction:column}.big-search button{padding:13px}.quick{display:none}.catgrid{grid-template-columns:repeat(2,1fr)}.cat{height:160px}.products{grid-template-columns:1fr}.photo{height:360px}.history{grid-template-columns:1fr}.personalbox{padding:28px}.bannerin{padding:30px;display:block}.banner button{margin-top:20px}footer{display:block;line-height:2}}
+@media(max-width:1000px){.catgrid{grid-template-columns:repeat(3,1fr)}.products{grid-template-columns:repeat(2,1fr)}#catalog .products{grid-template-columns:repeat(3,1fr)}.hero-copy{width:70%}.hero-art{opacity:.45}.personalbox{grid-template-columns:1fr}.navlinks{display:none}}
+@media(max-width:620px){#catalog .products{grid-template-columns:repeat(2,1fr)}#catalog .photo{height:180px}.nav{padding:0 16px}.navsearch{display:none}.hero,.section,.personal,.banner,.orgstrip{padding-left:16px;padding-right:16px}.hero-copy{width:100%;padding:38px 25px}.hero h1{font-size:42px}.hero-art{display:none}.big-search{flex-direction:column}.big-search button{padding:13px}.quick{display:none}.catgrid{grid-template-columns:repeat(2,1fr)}.cat{height:160px}.products{grid-template-columns:1fr}.photo{height:360px}.history{grid-template-columns:1fr}.personalbox{padding:28px}.bannerin{padding:30px;display:block}.banner button{margin-top:20px}footer{display:block;line-height:2}}
 
 .loading{grid-column:1/-1;padding:38px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted);font-size:13px}
 .cat{border:0;text-align:left;cursor:pointer}.photo{display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f7f7f7}.photo img{width:auto;height:auto;max-width:min(72%,300px);max-height:min(72%,300px);object-fit:contain;background:transparent;image-rendering:auto}.product{cursor:pointer}
@@ -113,16 +113,6 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 <form class="navsearch" id="navSearch">⌕ <input id="navSearchInput" placeholder="Search promotional products"></form>
 <div class="account" id="accountBadge"><img id="accountLogo" alt="Organization logo"></div>
 </div></header>
-
-<section class="hero"><div class="hero-inner">
-<div class="hero-copy">
-<div class="eyebrow">Promotional · <span id="heroOrgName">Your Organization</span></div>
-<h1>Put your brand on something better.</h1>
-<p>Discover branded products for your team, customers and events. Find the idea—you tell us what you need, and AI Apparel handles the details.</p>
-<form class="big-search" id="heroSearch"><input id="heroSearchInput" placeholder="Search drinkware, tech, bags, giveaways and more"><button type="submit">Search products</button></form>
-</div>
-<div class="hero-art"><div class="blob b1"></div><div class="blob b2"></div><div class="mock tumbler"><img class="heroOrgLogo" alt="Organization logo"></div><div class="mock box"><img class="heroOrgLogo" alt="Organization logo"></div></div>
-</div></section>
 
 <div class="orgstrip"><div class="orgbar">
 <div class="orgmark" id="orgMark">ORG</div><div><strong>Your Promotional Workspace</strong><br><span>Search, request quotes, and reorder previous products.</span></div>
@@ -241,6 +231,23 @@ function openApprovedProduct(p){
    renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open");
  };
 }
+async function loadVariedProducts(){
+ const queries=["Drinkware","Bags","Tech","Office","Outdoor","Events"];
+ $("#catalogTitle").textContent="Explore Promotional Products";
+ $("#productGrid").innerHTML='<div class="loading">Loading a variety of Promotional products…</div>';
+ try{
+  const groups=await Promise.all(queries.map(async q=>{
+   const r=await fetch(`${API}?q=${encodeURIComponent(q)}`);
+   const d=await r.json();
+   if(!r.ok||!d.ok)return [];
+   return (d.products||[]).slice(0,2);
+  }));
+  const seen=new Set(),products=[];
+  groups.flat().forEach(p=>{if(p?.id&&!seen.has(String(p.id))){seen.add(String(p.id));products.push(p)}});
+  $("#productGrid").innerHTML=products.slice(0,12).map(p=>`<article class="product" data-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Promotional")} · Live catalog</p><div class="productbottom"><span class="price">${p.price?`$${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("") || '<div class="loading">Search the live Promotional catalog above.</div>';
+  document.querySelectorAll("#productGrid .product[data-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.id));
+ }catch(e){$("#productGrid").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
+}
 async function searchProducts(q){
  q=(q||"").trim(); if(!q)return;
  $("#catalogTitle").textContent=`Search results for “${q}”`;
@@ -251,7 +258,7 @@ async function searchProducts(q){
   const d=await r.json();
   if(!d.ok)throw new Error(d.error||d.errMsg||"Search failed");
   const products=d.products||[];
-  $("#productGrid").innerHTML=products.slice(0,24).map(p=>`<article class="product" data-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Promotional")} · Live catalog</p><div class="productbottom"><span class="price">${p.price?`$${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("") || '<div class="loading">No products found. Try another search.</div>';
+  $("#productGrid").innerHTML=products.slice(0,12).map(p=>`<article class="product" data-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Promotional")} · Live catalog</p><div class="productbottom"><span class="price">${p.price?`$${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("") || '<div class="loading">No products found. Try another search.</div>';
   document.querySelectorAll(".product[data-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.id));
  }catch(e){$("#productGrid").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
 }
@@ -353,6 +360,8 @@ loadOrg().then(async()=>{await loadApprovedShowroom();
   }
 });
 searchProducts("tumbler");
+
+loadVariedProducts();
 </script>
 
 </body>
