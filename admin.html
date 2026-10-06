@@ -156,7 +156,7 @@ function toggleQuote(id){
  ${x.status==="invoiced"&&x.company_store_invoice_url?`<a class="view-customer" href="${esc(x.company_store_invoice_url)}" target="_blank" rel="noopener">OPEN CUSTOMER PAYMENT LINK ↗</a>`:""}
  
  ${!["completed","cancelled"].includes(x.status)?`<button style="background:#6b7280" onclick="cancelQuote('${id}')">CANCEL QUOTE</button>`:""}
- ${!x.shopify_draft_order_id&&!x.shopify_order_id&&!x.rewards_order_id&&x.status!=="completed"?`<button style="background:#b91c1c" onclick="deleteTestQuote('${id}')">DELETE TEST QUOTE</button>`:""}</div>
+ ${!x.shopify_order_id&&!x.rewards_order_id&&x.status!=="completed"?`<button style="background:#b91c1c" onclick="deleteTestQuote('${id}')">${x.status==="invoiced"?"DELETE UNPAID QUOTE":"DELETE TEST QUOTE"}</button>`:""}</div>
  ${x.status==="approved"?`<div class="pricing-status">Customer approved this quote. It is ready to become a Company Store invoice.</div>`:""}
  ${x.status==="invoiced"?`<div class="pricing-status">Company Store invoice created${x.invoiced_at?" • "+fmtDate(x.invoiced_at):""}.</div>`:""}
  <div id="pricingStatus-${id}" class="pricing-status"></div></div>`;
