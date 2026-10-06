@@ -24,8 +24,8 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 <header><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110"><a href="./organization.html">Organization Dashboard</a></header>
 <main class="wrap">
 <section id="loginCard" class="card">
-<h1>Super Admin Sign In</h1><p class="muted">Authorized AI Apparel administrators only. A secure magic link will be emailed to you.</p>
-<div class="bar"><div><label>ADMIN EMAIL</label><input id="email" type="email" value="bikard@aiapparelgroup.com"></div><button id="loginBtn">EMAIL SIGN-IN LINK</button></div>
+<h1>Super Admin Sign In</h1><p class="muted">Authorized AI Apparel administrators only. Sign in with your admin email and password.</p>
+<div class="bar"><div><label>ADMIN EMAIL</label><input id="email" type="email" value="bikard@aiapparelgroup.com"></div><div><label>PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="Password"></div><button id="loginBtn">SIGN IN</button></div>
 <div id="loginStatus" class="status"></div>
 </section>
 
@@ -43,7 +43,7 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 <p class="muted">The transaction will be added to the selected organization, its rewards ledger, and the admin audit log.</p>
 <div class="grid3">
 <div><label>ORDER / REFERENCE #</label><input id="orderNumber" placeholder="Example: Q-2217"></div>
-<div><label>TYPE</label><select id="orderType"><option>ONLINE</option><option>QUOTE</option><option value="PROMO">Promotional</option><option>ADJUSTMENT</option><option>REFUND</option></select></div>
+<div><label>TYPE</label><select id="orderType"><option>ONLINE</option><option>QUOTE</option><option>PROMO</option><option>ADJUSTMENT</option><option>REFUND</option></select></div>
 <div><label>DATE</label><input id="orderedAt" type="date"></div>
 <div><label>PURCHASED BY</label><input id="customerName"></div>
 <div><label>CUSTOMER EMAIL</label><input id="customerEmail" type="email"></div>
@@ -80,7 +80,7 @@ async function loadAdmin(){
 }
 function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div><div class="org-actions"><a class="view-customer" href="./organization.html?organization_id=${encodeURIComponent(o.id)}&admin_preview=1" target="_blank">VIEW AS CUSTOMER ↗</a></div>`:"No organizations available";}
 document.getElementById("organizationSelect").onchange=renderOrg;
-document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}st.textContent="Sending secure sign-in link…";const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});st.textContent=error?error.message:"Check your email for the secure sign-in link.";};
+document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const password=document.getElementById("password").value;const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}if(!password){st.textContent="Enter your password.";return}st.textContent="Signing in…";const {error}=await sb.auth.signInWithPassword({email,password});if(error){st.textContent=error.message;return}try{await loadAdmin();st.textContent=""}catch(e){st.textContent=e.message;await sb.auth.signOut()}};document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("loginBtn").click()});
 document.getElementById("logoutBtn").onclick=async()=>{await sb.auth.signOut();location.reload()};
 document.getElementById("addBtn").onclick=async()=>{const st=document.getElementById("saveStatus");try{st.textContent="Saving…";const points=document.getElementById("pointsOverride").value;const data=await api("POST",{action:"add_transaction",organization_id:document.getElementById("organizationSelect").value,order_number:document.getElementById("orderNumber").value.trim(),order_type:document.getElementById("orderType").value,ordered_at:document.getElementById("orderedAt").value,customer_name:document.getElementById("customerName").value.trim(),customer_email:document.getElementById("customerEmail").value.trim(),subtotal:document.getElementById("subtotal").value,discount_code:document.getElementById("discountCode").value.trim(),discount_amount:document.getElementById("discountAmount").value,rewards_points:points===""?null:Number(points),note:document.getElementById("note").value.trim()});st.textContent="Saved. "+data.order.order_number+" added with "+data.points+" points."; }catch(e){st.textContent=e.message}};
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(session){try{await loadAdmin()}catch(e){document.getElementById("loginStatus").textContent=e.message;await sb.auth.signOut()}}})();
