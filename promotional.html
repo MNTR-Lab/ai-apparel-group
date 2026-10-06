@@ -101,6 +101,8 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 
 .product .photo{min-height:245px}
 @media(max-width:760px){.product .photo{min-height:190px}.photo img{max-width:68%;max-height:68%}}
+
+.quote-success{margin-top:14px;padding:14px;border-radius:12px;background:#eef8ee;font-size:12px;line-height:1.5}.quote-error{margin-top:14px;padding:14px;border-radius:12px;background:#fff0f0;color:#8b1e1e;font-size:12px}.currentquote{border:1px solid var(--line);border-radius:16px;padding:16px;margin:10px 0}.currentquote-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.currentquote strong{font-size:13px}.statuspill{font-size:9px;font-weight:900;padding:6px 9px;border-radius:999px;background:#f1f1f1;text-transform:uppercase}.currentquote p{font-size:11px;color:var(--muted);margin:7px 0 0}
 </style>
 </head>
 <body>
@@ -164,12 +166,14 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 <footer><div><strong>AI APPAREL GROUP</strong> · Promotional Showroom Concept</div><div>Company Store · Promotional · Rewards · Account</div></footer>
 <button class="quote-float" id="quoteFloat">QUOTE REQUEST · <span id="quoteCount">0</span> ITEMS</button>
 
+<div class="modal" id="quotesModal"><div class="modalcard"><button class="modalclose" id="quotesClose">×</button><div style="padding:38px"><div class="detailmeta">PROMOTIONAL</div><h2 style="font-size:34px;margin:6px 0 20px">Current Quotes</h2><div id="currentQuotes"><div class="loading">Loading quotes…</div></div></div></div></div>
 <div class="modal" id="productModal"><div class="modalcard"><button class="modalclose" id="modalClose">×</button><div id="detailBody"></div></div></div>
-<aside class="drawer" id="quoteDrawer"><div class="drawerhead"><h2>Quote Request</h2><button class="drawerclose" id="drawerClose">×</button></div><div id="quoteItems"></div><p class="quote-note">Items here are a request, not an order. AI Apparel will verify current pricing, availability, decoration and freight before preparing the quote.</p><button class="requestbtn" id="prepareRequest">PREPARE QUOTE REQUEST</button></aside>
+<aside class="drawer" id="quoteDrawer"><div class="drawerhead"><h2>Quote Request</h2><button class="drawerclose" id="drawerClose">×</button></div><div id="quoteItems"></div><div id="quoteForm"><div class="field"><label>CONTACT NAME</label><input id="quoteContactName" placeholder="Name"></div><div class="field"><label>EMAIL</label><input id="quoteContactEmail" type="email" placeholder="Email"></div><div class="field"><label>PHONE</label><input id="quoteContactPhone" placeholder="Phone"></div><div class="field"><label>PROJECT / EVENT</label><input id="quoteProjectName" placeholder="Project name"></div><div class="field"><label>NEEDED BY</label><input id="quoteNeededBy" type="date"></div><div class="field"><label>NOTES</label><textarea id="quoteNotes" rows="4" placeholder="Anything AI Apparel should know?"></textarea></div></div><p class="quote-note">Submitting this request does not place an order. AI Apparel will verify current pricing, availability, decoration and freight before preparing the quote.</p><button class="requestbtn" id="prepareRequest">SUBMIT QUOTE REQUEST</button><div id="quoteMessage"></div></aside>
 
 <script>
 const API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-sage-products";
 const FEED="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed";
+const QUOTE_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-quote-request";
 const AI_LOGO="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110";
 const qs=new URLSearchParams(location.search);
 const orgId=qs.get("organization_id")||"org_erx";
@@ -250,7 +254,7 @@ async function openDetail(id){
   const rows=qty.map((q,i)=>q&&Number(q)>0&&prc[i]?`<tr><td>${esc(q)}</td><td>$${esc(prc[i])}</td></tr>`:"").join("");
   $("#detailBody").innerHTML=`<div class="detail"><div><div class="detailmain">${pics[0]?`<img id="mainPic" src="${esc(sageImage(pics[0].url,300))}" alt="${esc(p.prName)}">`:"PRODUCT IMAGE"}</div><div class="thumbs">${pics.map(x=>`<button class="thumb" data-pic="${esc(sageImage(x.url,300))}"><img src="${esc(sageImage(x.url,300))}" alt="" loading="lazy"></button>`).join("")}</div></div><div><div class="detailmeta">${esc(p.category||"PROMOTIONAL")} · ${esc(p.spc||"")}</div><h2>${esc(p.prName||"Product")}</h2><p class="detaildesc">${esc(p.description||"")}</p>${rows?`<table class="breaks"><thead><tr><th>Quantity</th><th>Catalog price / ea.</th></tr></thead><tbody>${rows}</tbody></table>`:""}<div class="field"><label>QUANTITY</label><input id="detailQty" type="number" min="1" value="${esc(qty.find(x=>Number(x)>0)||"")}"></div><div class="field"><label>COLOR</label><select id="detailColor"><option value="">Select color</option>${colors.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div><div class="field"><label>DECORATION</label><select id="detailDecoration"><option value="">Select decoration</option>${methods.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div><div class="detailmeta">Production: ${esc(p.prodTime||"Quoted")} · Availability: ${p.onHand!=null?esc(p.onHand)+" reported on hand":"verified with quote"}</div><button class="addquote" id="addQuote">ADD TO QUOTE REQUEST</button></div></div>`;
   document.querySelectorAll("[data-pic]").forEach(b=>b.onclick=()=>$("#mainPic").src=b.dataset.pic);
-  $("#addQuote").onclick=()=>{quote.push({id:p.prodEid||p.prodEId||id,name:p.prName||"Product",qty:$("#detailQty").value,color:$("#detailColor").value,decoration:$("#detailDecoration").value,code:p.spc||""});renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open")};
+  $("#addQuote").onclick=()=>{quote.push({id:p.prodEid||p.prodEId||id,name:p.prName||"Product",qty:$("#detailQty").value,color:$("#detailColor").value,decoration:$("#detailDecoration").value,code:p.spc||"",image:(pics[0]?.url||"")});renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open")};
  }catch(e){$("#detailBody").innerHTML=`<div class="errorbox" style="margin:50px">${esc(e.message)}</div>`}
 }
 function renderQuote(){
@@ -266,8 +270,44 @@ $("#modalClose").onclick=()=>$("#productModal").classList.remove("open");
 $("#productModal").onclick=e=>{if(e.target.id==="productModal")e.currentTarget.classList.remove("open")};
 $("#quoteFloat").onclick=()=>{$("#quoteDrawer").classList.add("open");renderQuote()};
 $("#drawerClose").onclick=()=>$("#quoteDrawer").classList.remove("open");
-$("#prepareRequest").onclick=()=>alert("Quote basket is working. The final submission step will be connected to the AI Apparel quote workflow next.");
-$("#quotesBtn").onclick=()=>alert("Current Quotes will populate from the quote workflow once quote submission is connected.");
+async function submitQuoteRequest(){
+ const msg=$("#quoteMessage");
+ if(!quote.length){msg.innerHTML='<div class="quote-error">Add at least one product before submitting.</div>';return}
+ const email=$("#quoteContactEmail").value.trim();
+ if(!email){msg.innerHTML='<div class="quote-error">Please enter a contact email.</div>';return}
+ $("#prepareRequest").disabled=true; $("#prepareRequest").textContent="SUBMITTING…"; msg.innerHTML="";
+ try{
+  const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+   organization_id:orgId,
+   contact_name:$("#quoteContactName").value,
+   contact_email:email,
+   contact_phone:$("#quoteContactPhone").value,
+   project_name:$("#quoteProjectName").value,
+   needed_by:$("#quoteNeededBy").value||null,
+   notes:$("#quoteNotes").value,
+   items:quote
+  })});
+  const d=await r.json();
+  if(!r.ok||!d.ok) throw new Error(d.error||"Quote request could not be submitted");
+  msg.innerHTML=`<div class="quote-success"><strong>Request received.</strong><br>Your request number is <strong>${esc(d.quoteRequest.requestNumber)}</strong>. AI Apparel can now review this request and prepare current pricing.</div>`;
+  quote=[];renderQuote();
+ }catch(e){msg.innerHTML=`<div class="quote-error">${esc(e.message)}</div>`}
+ finally{$("#prepareRequest").disabled=false;$("#prepareRequest").textContent="SUBMIT QUOTE REQUEST"}
+}
+const statusLabel=s=>({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"}[s]||s);
+async function loadCurrentQuotes(){
+ $("#quotesModal").classList.add("open");
+ $("#currentQuotes").innerHTML='<div class="loading">Loading quotes…</div>';
+ try{
+  const r=await fetch(`${QUOTE_API}?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Could not load quotes");
+  $("#currentQuotes").innerHTML=(d.quotes||[]).map(q=>`<div class="currentquote"><div class="currentquote-head"><strong>${esc(q.request_number)}</strong><span class="statuspill">${esc(statusLabel(q.status))}</span></div><p>${esc(q.project_name||"Promotional Quote")} · ${(q.ai_apparel_quote_request_items||[]).length} item(s) · ${new Date(q.submitted_at).toLocaleDateString()}</p></div>`).join("")||'<div class="loading">No current quote requests yet.</div>';
+ }catch(e){$("#currentQuotes").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
+}
+$("#prepareRequest").onclick=submitQuoteRequest;
+$("#quotesBtn").onclick=loadCurrentQuotes;
+$("#quotesClose").onclick=()=>$("#quotesModal").classList.remove("open");
+$("#quotesModal").onclick=e=>{if(e.target.id==="quotesModal")e.currentTarget.classList.remove("open")};
 loadOrg();
 searchProducts("tumbler");
 </script>
