@@ -1,349 +1,164 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Apparel Group — Promotional Storefront Concept</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Apparel Super Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
-  --ai-blue:#006FBA;--ai-pink:#FF06EB;--ink:#101114;--muted:#6d7178;
-  --line:#e8e8ea;--soft:#f7f7f5;--org:#F07723;--org2:#1175BC;--white:#fff;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);background:#fff}
-button,input{font:inherit}
-a{text-decoration:none;color:inherit}
-.topline{background:var(--ink);color:#fff;text-align:center;padding:9px 16px;font-size:11px;font-weight:750;letter-spacing:.25px}
-header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
-.nav{max-width:1400px;margin:auto;height:72px;padding:0 30px;display:flex;align-items:center;gap:34px}
-.logo{display:flex;align-items:center;height:44px}.logo img{display:block;max-height:38px;max-width:190px;object-fit:contain}
-.navlinks{display:flex;gap:24px;font-size:12px;font-weight:850;letter-spacing:.3px}
-.navsearch{margin-left:auto;display:flex;align-items:center;background:#f4f4f4;border-radius:999px;padding:0 15px;width:285px}
-.navsearch input{border:0;outline:0;background:transparent;padding:11px 8px;width:100%;font-size:12px}
-.account{width:38px;height:38px;border-radius:50%;background:var(--org);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:900}
-.hero{max-width:1400px;margin:22px auto 0;padding:0 30px}
-.hero-inner{min-height:460px;border-radius:26px;overflow:hidden;position:relative;background:linear-gradient(105deg,#f3eee7 0%,#f6f4f1 48%,#e7eef4 100%);display:flex;align-items:center}
-.hero-copy{width:57%;padding:55px 62px;position:relative;z-index:2}
-.eyebrow{font-size:11px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;color:var(--org2)}
-.hero h1{font-size:58px;line-height:.98;letter-spacing:-3px;margin:12px 0 18px;max-width:700px}
-.hero p{font-size:17px;line-height:1.55;color:#555b64;max-width:560px}
-.big-search{margin-top:27px;background:#fff;border-radius:14px;padding:7px;display:flex;max-width:620px;box-shadow:0 12px 32px #10111413}
-.big-search input{flex:1;border:0;outline:0;padding:15px;font-size:14px}
-.big-search button{border:0;border-radius:10px;background:var(--ink);color:#fff;font-weight:850;padding:0 23px}
-.hero-art{position:absolute;right:0;top:0;width:46%;height:100%;overflow:hidden}
-.blob{position:absolute;border-radius:50%}.b1{width:390px;height:390px;background:var(--org);right:-45px;top:-60px}.b2{width:270px;height:270px;background:var(--org2);right:210px;bottom:-90px}.mock{position:absolute;background:#fff;border-radius:24px;box-shadow:0 22px 55px #0002;display:grid;place-items:center;font-weight:900;color:#92979f}
-.tumbler{width:150px;height:280px;right:105px;top:95px;border-radius:38px;transform:rotate(7deg)}
-.box{width:185px;height:145px;right:290px;top:190px;transform:rotate(-7deg)}
-.orgstrip{max-width:1340px;margin:18px auto 0;padding:0 30px}
-.orgbar{border:1px solid var(--line);border-radius:15px;padding:14px 18px;display:flex;align-items:center;gap:14px;background:#fff}
-.orgmark{width:38px;height:38px;border-radius:10px;background:var(--org);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:900}
-.orgbar strong{font-size:13px}.orgbar span{font-size:12px;color:var(--muted)}
-.quick{margin-left:auto;display:flex;gap:8px}.quick button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 13px;font-size:11px;font-weight:800}.quick button:first-child{background:var(--ink);color:#fff;border-color:var(--ink)}
-.section{max-width:1400px;margin:58px auto 0;padding:0 30px}
-.head{display:flex;align-items:end;justify-content:space-between;margin-bottom:20px}
-.head h2{font-size:30px;letter-spacing:-1.2px;margin:0 0 5px}.head p{margin:0;color:var(--muted);font-size:13px}.view{font-size:12px;font-weight:850;border-bottom:1px solid #111;padding-bottom:2px}
-.catgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
-.cat{height:210px;border-radius:18px;overflow:hidden;position:relative;background:#eee;cursor:pointer}
-.cat:nth-child(1){background:linear-gradient(145deg,#dce9ef,#aac6d5)}
-.cat:nth-child(2){background:linear-gradient(145deg,#eadfd7,#cdb7a7)}
-.cat:nth-child(3){background:linear-gradient(145deg,#e6e3f0,#beb8d5)}
-.cat:nth-child(4){background:linear-gradient(145deg,#e8ece2,#bdc8ae)}
-.cat:nth-child(5){background:linear-gradient(145deg,#f1e2d7,#d8b59b)}
-.cat:nth-child(6){background:linear-gradient(145deg,#e2e6ea,#bac2ca)}
-.cat:before{content:"PRODUCT IMAGE";position:absolute;inset:0;display:grid;place-items:center;color:#ffffffa8;font-size:10px;font-weight:900;letter-spacing:1px}
-.catname{position:absolute;left:14px;bottom:14px;background:#fff;padding:9px 12px;border-radius:999px;font-size:11px;font-weight:900}
-.products{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-.product{position:relative}
-.photo{height:330px;border-radius:18px;background:linear-gradient(145deg,#f1f2f2,#e2e5e7);display:grid;place-items:center;color:#9aa0a7;font-size:11px;font-weight:850;overflow:hidden;position:relative}
-.badge{position:absolute;left:12px;top:12px;background:#fff;border-radius:999px;padding:7px 9px;font-size:9px;font-weight:900}
-.save{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:50%;border:0;background:#fff;font-size:17px}
-.product h3{font-size:14px;margin:13px 0 5px}.product p{font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.5}
-.productbottom{display:flex;align-items:center;justify-content:space-between}
-.quoteprice{font-size:12px;font-weight:850}.arrow{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;font-weight:900}
-.personal{max-width:1340px;margin:65px auto 0;padding:0 30px}
-.personalbox{background:var(--ink);color:#fff;border-radius:26px;padding:42px;display:grid;grid-template-columns:.85fr 1.7fr;gap:40px;align-items:center;overflow:hidden;position:relative}
-.personalbox:after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:var(--org);opacity:.2;left:-100px;bottom:-130px}
-.personal h2{font-size:36px;letter-spacing:-1.5px;margin:7px 0 12px}.personal p{font-size:13px;color:#c8cbd0;line-height:1.6}.history{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.historycard{background:#fff;color:var(--ink);border-radius:17px;padding:14px;display:grid;grid-template-columns:86px 1fr;gap:13px;align-items:center}
-.histimg{height:86px;border-radius:12px;background:#edf0f2;display:grid;place-items:center;color:#9aa0a7;font-size:8px;font-weight:900}
-.historycard strong{font-size:12px;display:block;line-height:1.35}.historycard span{font-size:10px;color:var(--muted)}.again{margin-top:8px;border:0;background:transparent;padding:0;font-size:10px;font-weight:900;color:var(--org2)}
-.banner{max-width:1340px;margin:65px auto 0;padding:0 30px}
-.bannerin{border-radius:24px;background:var(--org2);color:#fff;padding:44px 50px;display:flex;align-items:center;justify-content:space-between}
-.banner h2{font-size:32px;margin:0 0 7px;letter-spacing:-1px}.banner p{margin:0;color:#e2edf5;font-size:13px}.banner button{border:0;background:#fff;color:var(--ink);border-radius:999px;padding:13px 19px;font-size:11px;font-weight:900}
-footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
-.quoteview{border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;background:#fff}.quoteview.ready{border-color:var(--org2)}.quoteview-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.quoteview-items{margin-top:14px;border-top:1px solid var(--line)}.quoteview-item{display:grid;grid-template-columns:1fr auto auto auto;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;align-items:center}.quote-summary{margin:14px 0 0 auto;max-width:390px}.quote-summary div{display:flex;justify-content:space-between;padding:5px 0;font-size:12px}.quote-summary .grand{font-size:18px;font-weight:900;border-top:2px solid var(--ink);margin-top:6px;padding-top:10px}.approvebtn{border:0;background:var(--org2);color:#fff;border-radius:10px;padding:13px 18px;font-size:11px;font-weight:900;margin-top:15px}.approvebtn:disabled{opacity:.55}.quote-note-box{background:var(--soft);border-radius:10px;padding:12px;margin-top:12px;font-size:12px;line-height:1.5}.quote-float{position:fixed;right:22px;bottom:20px;background:var(--ink);color:#fff;border-radius:999px;padding:14px 18px;font-size:11px;font-weight:900;box-shadow:0 12px 30px #0003;z-index:12}
-@media(max-width:1000px){.catgrid{grid-template-columns:repeat(3,1fr)}.products{grid-template-columns:repeat(2,1fr)}.hero-copy{width:70%}.hero-art{opacity:.45}.personalbox{grid-template-columns:1fr}.navlinks{display:none}}
-@media(max-width:620px){.nav{padding:0 16px}.navsearch{display:none}.hero,.section,.personal,.banner,.orgstrip{padding-left:16px;padding-right:16px}.hero-copy{width:100%;padding:38px 25px}.hero h1{font-size:42px}.hero-art{display:none}.big-search{flex-direction:column}.big-search button{padding:13px}.quick{display:none}.catgrid{grid-template-columns:repeat(2,1fr)}.cat{height:160px}.products{grid-template-columns:1fr}.photo{height:360px}.history{grid-template-columns:1fr}.personalbox{padding:28px}.bannerin{padding:30px;display:block}.banner button{margin-top:20px}footer{display:block;line-height:2}}
-
-.loading{grid-column:1/-1;padding:38px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted);font-size:13px}
-.cat{border:0;text-align:left;cursor:pointer}.photo{display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f7f7f7}.photo img{width:auto;height:auto;max-width:min(72%,300px);max-height:min(72%,300px);object-fit:contain;background:transparent;image-rendering:auto}.product{cursor:pointer}
-.product .price{font-size:12px;font-weight:900}.errorbox{grid-column:1/-1;padding:20px;border-radius:14px;background:#fff0f0;color:#8b1e1e}
-.modal{position:fixed;inset:0;background:#0009;z-index:50;display:none;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}
-.modalcard{background:#fff;width:min(1080px,100%);max-height:92vh;overflow:auto;border-radius:24px;position:relative}.modalclose{position:absolute;right:16px;top:16px;z-index:3;width:40px;height:40px;border:0;border-radius:50%;background:#111;color:#fff;font-size:20px}
-.detail{display:grid;grid-template-columns:1fr 1fr;gap:34px;padding:38px}.detailmain{height:430px;border-radius:18px;background:#f5f5f5;display:grid;place-items:center;overflow:hidden}.detailmain img{width:auto;height:auto;max-width:300px;max-height:300px;object-fit:contain;image-rendering:auto}
-.thumbs{display:flex;gap:8px;overflow:auto;margin-top:10px}.thumb{width:70px;height:70px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:2px}.thumb img{width:100%;height:100%;object-fit:contain;image-rendering:auto}
-.detail h2{font-size:34px;line-height:1.05;margin:8px 0 12px}.detailmeta{font-size:11px;color:var(--muted);font-weight:800}.detaildesc{font-size:13px;line-height:1.65;color:#4f5660}
-.breaks{width:100%;border-collapse:collapse;margin:16px 0}.breaks th,.breaks td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:11px}
-.field{margin:12px 0}.field label{display:block;font-size:10px;font-weight:900;margin-bottom:6px}.field select,.field input,.field textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
-.addquote{width:100%;border:0;background:var(--ink);color:#fff;padding:15px;border-radius:12px;font-weight:900;margin-top:12px}
-.drawer{position:fixed;right:-430px;top:0;width:min(410px,92vw);height:100vh;background:#fff;z-index:60;box-shadow:-20px 0 50px #0002;transition:.25s;padding:24px;box-sizing:border-box;overflow:auto}.drawer.open{right:0}
-.drawerhead{display:flex;justify-content:space-between;align-items:center}.drawerclose{border:0;background:#eee;border-radius:50%;width:36px;height:36px}.quoteitem{border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}.quoteitem strong{font-size:12px}.quoteitem span{font-size:10px;color:var(--muted);display:block;margin-top:4px}
-.quote-note{font-size:11px;color:var(--muted);line-height:1.5}.requestbtn{width:100%;border:0;background:var(--org2);color:#fff;padding:14px;border-radius:12px;font-weight:900}
-@media(max-width:760px){.detail{grid-template-columns:1fr;padding:22px}.detailmain{height:320px}.detail h2{font-size:27px}}
-
-
-.heroOrgLogo{display:block;max-width:72%;max-height:58%;object-fit:contain;filter:none}
-.mock{display:flex;align-items:center;justify-content:center}
-
-#accountBadge{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:5px;background:#fff;border:1px solid var(--line)}
-#accountBadge img{display:block;max-width:100%;max-height:100%;object-fit:contain}
-
-.product .photo{min-height:245px}
-@media(max-width:760px){.product .photo{min-height:190px}.photo img{max-width:68%;max-height:68%}}
-
-.quote-success{margin-top:14px;padding:14px;border-radius:12px;background:#eef8ee;font-size:12px;line-height:1.5}.quote-error{margin-top:14px;padding:14px;border-radius:12px;background:#fff0f0;color:#8b1e1e;font-size:12px}.currentquote{border:1px solid var(--line);border-radius:16px;padding:16px;margin:10px 0}.currentquote-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.currentquote strong{font-size:13px}.statuspill{font-size:9px;font-weight:900;padding:6px 9px;border-radius:999px;background:#f1f1f1;text-transform:uppercase}.currentquote p{font-size:11px;color:var(--muted);margin:7px 0 0}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f6f8fb;color:#111827}
+.top{background:#111827;color:#fff;padding:10px 22px;text-align:center;font-size:12px;font-weight:800;letter-spacing:1.5px}
+header{height:82px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+header img{height:55px}.wrap{max-width:1180px;margin:auto;padding:32px 22px 80px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 8px 25px rgba(15,23,42,.04)}
+h1{margin:0 0 6px;font-size:32px}h2{margin:0 0 18px}.muted{color:#6b7280;font-size:13px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font:inherit}
+label{font-size:11px;font-weight:800;display:block;margin-bottom:6px;color:#4b5563}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#fff;font-weight:800;cursor:pointer}.teal{background:#0f766e}
+.hidden{display:none!important}.bar{display:flex;align-items:end;gap:15px}.bar>div{flex:1}.status{padding:10px 0;font-size:13px;font-weight:700}
+.org-banner{background:#111827;color:white;border-radius:14px;padding:20px;margin-top:16px}.org-banner b{font-size:24px}.org-actions{display:flex;gap:10px;margin-top:14px}.view-customer{display:inline-block;border-radius:8px;padding:11px 16px;background:#fff;color:#111827;font-size:12px;font-weight:900;text-decoration:none}
+.quote-tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.quote-tools select,.quote-tools input{max-width:280px}.quote-list{display:grid;gap:12px}.quote-row{border:1px solid #e5e7eb;border-radius:12px;padding:16px;display:grid;grid-template-columns:1.1fr 1.4fr .9fr .8fr auto;gap:14px;align-items:center;background:#fff}.quote-num{font-weight:900;font-size:16px}.quote-org{font-weight:800}.pill{display:inline-block;padding:6px 9px;border-radius:999px;background:#eef2ff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}.quote-date{font-size:12px;color:#6b7280}.quote-open{background:#0f766e}.quote-detail{border:1px solid #d1d5db;border-radius:12px;margin-top:14px;padding:18px;background:#f8fafc}.quote-detail h3{margin:0 0 4px}.quote-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.quote-meta div{background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:10px;font-size:12px}.quote-items{display:grid;gap:10px}.quote-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px}.quote-item img{width:64px;height:64px;object-fit:contain;border-radius:8px;background:#fff}.pricing-box{margin-top:18px;padding:18px;border:1px solid #cbd5e1;border-radius:12px;background:#fff}.pricing-line{display:grid;grid-template-columns:1.8fr .55fr .7fr .75fr;gap:10px;align-items:end;padding:12px 0;border-bottom:1px solid #e5e7eb}.pricing-line:last-child{border-bottom:0}.pricing-name{font-weight:800}.charges{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}.quote-total{display:flex;justify-content:flex-end;margin-top:16px;font-size:22px;font-weight:900}.pricing-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.pricing-status{font-size:13px;font-weight:800;margin-top:10px}.empty{padding:24px;text-align:center;color:#6b7280;border:1px dashed #d1d5db;border-radius:12px}
+@media(max-width:700px){.grid,.grid3,.quote-meta{grid-template-columns:1fr}.bar{display:block}.bar button{margin-top:12px;width:100%}.quote-row{grid-template-columns:1fr}.quote-tools select,.quote-tools input{max-width:none;width:100%}.pricing-line,.charges{grid-template-columns:1fr}}
 </style>
-</head>
-<body>
-<div class="topline">Your dedicated AI Apparel promotional showroom · Products are quoted with current pricing & availability</div>
-<header><div class="nav">
-<div class="logo"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group"></div>
-<div class="navlinks"><a>APPAREL</a><a>PROMOTIONAL</a><a>REWARDS</a><a>ORDERS</a></div>
-<form class="navsearch" id="navSearch">⌕ <input id="navSearchInput" placeholder="Search promotional products"></form>
-<div class="account" id="accountBadge"><img id="accountLogo" alt="Organization logo"></div>
-</div></header>
+</head><body>
+<div class="top">AI APPAREL GROUP • SUPER ADMIN</div>
+<header><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110"><a href="./organization.html">Organization Dashboard</a></header>
+<main class="wrap">
+<section id="loginCard" class="card">
+<h1>Super Admin Sign In</h1><p class="muted">Authorized AI Apparel administrators only. Sign in with your admin email and password.</p>
+<div class="bar"><div><label>ADMIN EMAIL</label><input id="email" type="email" value="bikard@aiapparelgroup.com"></div><div><label>PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="Password"></div><button id="loginBtn">SIGN IN</button></div>
+<div style="margin-top:12px"><button type="button" class="teal" id="resetBtn">FORGOT / SET PASSWORD</button></div>
+<div id="loginStatus" class="status"></div>
+</section>
 
-<section class="hero"><div class="hero-inner">
-<div class="hero-copy">
-<div class="eyebrow">Promotional · <span id="heroOrgName">Your Organization</span></div>
-<h1>Put your brand on something better.</h1>
-<p>Discover branded products for your team, customers and events. Find the idea—you tell us what you need, and AI Apparel handles the details.</p>
-<form class="big-search" id="heroSearch"><input id="heroSearchInput" placeholder="Search drinkware, tech, bags, giveaways and more"><button type="submit">Search products</button></form>
+<section id="recoveryCard" class="card hidden">
+<h1>Create New Password</h1><p class="muted">Your recovery link is verified. Create the password you will use for AI Apparel Super Admin.</p>
+<div class="grid"><div><label>NEW PASSWORD</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="New password"></div><div><label>CONFIRM PASSWORD</label><input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm password"></div></div>
+<div style="margin-top:16px"><button class="teal" id="savePasswordBtn">SAVE PASSWORD</button></div>
+<div id="recoveryStatus" class="status"></div>
+</section>
+
+<section id="adminArea" class="hidden">
+<div class="card">
+<div style="display:flex;justify-content:space-between;gap:15px;align-items:center"><div><h1>AI Apparel Super Admin</h1><div class="muted" id="adminEmail"></div></div><button id="logoutBtn">SIGN OUT</button></div>
+<hr style="border:0;border-top:1px solid #e5e7eb;margin:22px 0">
+<label>VIEW / MANAGE ORGANIZATION</label>
+<select id="organizationSelect"></select>
+<div id="orgBanner" class="org-banner"></div>
 </div>
-<div class="hero-art"><div class="blob b1"></div><div class="blob b2"></div><div class="mock tumbler"><img class="heroOrgLogo" alt="Organization logo"></div><div class="mock box"><img class="heroOrgLogo" alt="Organization logo"></div></div>
-</div></section>
 
-<div class="orgstrip"><div class="orgbar">
-<div class="orgmark" id="orgMark">ORG</div><div><strong>Your Promotional Workspace</strong><br><span>Search, request quotes, and reorder previous products.</span></div>
-<div class="quick"><button data-scroll="catalog">Discover</button><button id="quotesBtn">Current Quotes</button><button data-scroll="previous">Previous Orders</button></div>
-</div></div>
-
-<section class="section">
-<div class="head"><div><h2>What are you shopping for?</h2><p>Start with a category or search the full promotional catalog.</p></div><div class="view">VIEW ALL CATEGORIES</div></div>
-<div class="catgrid">
-<button class="cat" type="button" data-query="Drinkware"><span class="catname">Drinkware</span></button>
-<button class="cat" type="button" data-query="Bags"><span class="catname">Bags</span></button>
-<button class="cat" type="button" data-query="Tech"><span class="catname">Tech</span></button>
-<button class="cat" type="button" data-query="Office"><span class="catname">Office</span></button>
-<button class="cat" type="button" data-query="Outdoor"><span class="catname">Outdoor</span></button>
-<button class="cat" type="button" data-query="Events"><span class="catname">Events</span></button>
+<div class="card">
+<h2>Promotional Quotes</h2>
+<p class="muted">Incoming Promotional quote requests from every organization. Open a request to review the customer and requested products.</p>
+<div class="quote-tools"><select id="quoteStatusFilter"><option value="">All Statuses</option><option value="request_received">Request Received</option><option value="pricing">Pricing</option><option value="quote_ready">Quote Ready</option><option value="approved">Approved</option><option value="invoiced">Invoiced</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select><input id="quoteSearch" placeholder="Search quote, organization, customer or project"></div>
+<div id="quoteList" class="quote-list"></div>
 </div>
-</section>
 
-<section class="section" id="approvedShowroom" style="display:none">
-<div class="head"><div><div class="eyebrow" style="color:var(--org1)">ORGANIZATION COLLECTION</div><h2 id="approvedTitle">Approved Products</h2><p>Products selected specifically for your organization. All quote requests are handled through AI Apparel.</p></div><div class="view">APPROVED COLLECTION</div></div>
-<div class="products" id="approvedGrid"><div class="loading">Loading approved products…</div></div>
-</section>
-
-<section class="section" id="catalog">
-<div class="head"><div><h2 id="catalogTitle">Products worth putting your logo on.</h2><p>A curated starting point. Search opens the much larger live catalog.</p></div><div class="view">SHOP ALL PRODUCTS</div></div>
-<div class="products" id="productGrid"><div class="loading">Search the live Promotional catalog above.</div></div>
-</section>
-
-<section class="personal" id="previous"><div class="personalbox">
-<div><div class="eyebrow" style="color:#8fc8ef">PERSONALIZED FOR <span id="personalOrg">YOUR ORGANIZATION</span></div><h2>You've ordered it before. Get it again.</h2><p>Your previous promotional purchases live here, so reordering starts with one click. We'll verify today's pricing, inventory and decoration before finalizing the quote.</p></div>
-<div class="history" id="previousOrders"><div class="loading">Loading previous orders…</div></div>
-</div></section>
-
-<section class="section">
-<div class="head"><div><h2>Trending for teams & events</h2><p>Easy ideas when you know the occasion but not the product.</p></div><div class="view">SEE MORE IDEAS</div></div>
-<div class="products">
-<article class="product"><div class="photo">LIVE PRODUCT IMAGE</div><h3>Welcome Kit Essentials</h3><p>Build a coordinated employee or client kit.</p><div class="productbottom"><span class="quoteprice">Explore ideas</span><button class="arrow">→</button></div></article>
-<article class="product"><div class="photo">LIVE PRODUCT IMAGE</div><h3>Event Day Giveaways</h3><p>High-impact products for meetings and events.</p><div class="productbottom"><span class="quoteprice">Explore ideas</span><button class="arrow">→</button></div></article>
-<article class="product"><div class="photo">LIVE PRODUCT IMAGE</div><h3>Customer Appreciation</h3><p>Useful gifts designed to keep your brand visible.</p><div class="productbottom"><span class="quoteprice">Explore ideas</span><button class="arrow">→</button></div></article>
-<article class="product"><div class="photo">LIVE PRODUCT IMAGE</div><h3>On-the-Go Favorites</h3><p>Bags, bottles and tech made for everyday use.</p><div class="productbottom"><span class="quoteprice">Explore ideas</span><button class="arrow">→</button></div></article>
+<div class="card">
+<h2>Add Missing Transaction</h2>
+<p class="muted">The transaction will be added to the selected organization, its rewards ledger, and the admin audit log.</p>
+<div class="grid3">
+<div><label>ORDER / REFERENCE #</label><input id="orderNumber" placeholder="Example: Q-2217"></div>
+<div><label>TYPE</label><select id="orderType"><option>ONLINE</option><option>QUOTE</option><option>PROMO</option><option>ADJUSTMENT</option><option>REFUND</option></select></div>
+<div><label>DATE</label><input id="orderedAt" type="date"></div>
+<div><label>PURCHASED BY</label><input id="customerName"></div>
+<div><label>CUSTOMER EMAIL</label><input id="customerEmail" type="email"></div>
+<div><label>QUALIFYING TOTAL</label><input id="subtotal" type="number" step=".01" min="0" value="0"></div>
+<div><label>COUPON / DISCOUNT CODE</label><input id="discountCode"></div>
+<div><label>DISCOUNT AMOUNT</label><input id="discountAmount" type="number" step=".01" min="0" value="0"></div>
+<div><label>POINTS OVERRIDE (OPTIONAL)</label><input id="pointsOverride" type="number" step=".01" placeholder="Auto calculate"></div>
+</div>
+<div style="margin-top:16px"><label>ADMIN NOTE</label><textarea id="note" rows="3" placeholder="Why this transaction is being added"></textarea></div>
+<div style="margin-top:18px"><button class="teal" id="addBtn">ADD TRANSACTION</button></div>
+<div id="saveStatus" class="status"></div>
 </div>
 </section>
-
-<div class="banner"><div class="bannerin"><div><h2>Can't find exactly what you need?</h2><p>Tell AI Apparel what you're planning and we'll help source the right promotional product.</p></div><button>START A PRODUCT REQUEST</button></div></div>
-
-<footer><div><strong>AI APPAREL GROUP</strong> · Promotional Showroom Concept</div><div>Company Store · Promotional · Rewards · Account</div></footer>
-<button class="quote-float" id="quoteFloat">QUOTE REQUEST · <span id="quoteCount">0</span> ITEMS</button>
-
-<div class="modal" id="quotesModal"><div class="modalcard"><button class="modalclose" id="quotesClose">×</button><div style="padding:38px"><div class="detailmeta">PROMOTIONAL</div><h2 style="font-size:34px;margin:6px 0 20px">Current Quotes</h2><div id="currentQuotes"><div class="loading">Loading quotes…</div></div></div></div></div>
-<div class="modal" id="productModal"><div class="modalcard"><button class="modalclose" id="modalClose">×</button><div id="detailBody"></div></div></div>
-<aside class="drawer" id="quoteDrawer"><div class="drawerhead"><h2>Quote Request</h2><button class="drawerclose" id="drawerClose">×</button></div><div id="quoteItems"></div><div id="quoteForm"><div class="field"><label>CONTACT NAME</label><input id="quoteContactName" placeholder="Name"></div><div class="field"><label>EMAIL</label><input id="quoteContactEmail" type="email" placeholder="Email"></div><div class="field"><label>PHONE</label><input id="quoteContactPhone" placeholder="Phone"></div><div class="field"><label>PROJECT / EVENT</label><input id="quoteProjectName" placeholder="Project name"></div><div class="field"><label>NEEDED BY</label><input id="quoteNeededBy" type="date"></div><div class="field"><label>NOTES</label><textarea id="quoteNotes" rows="4" placeholder="Anything AI Apparel should know?"></textarea></div></div><p class="quote-note">Submitting this request does not place an order. AI Apparel will verify current pricing, availability, decoration and freight before preparing the quote.</p><button class="requestbtn" id="prepareRequest">SUBMIT QUOTE REQUEST</button><div id="quoteMessage"></div></aside>
-
+</main>
 <script>
-const API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-sage-products";
-const FEED="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed";
-const QUOTE_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-quote-request";
-const SHOWROOM_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-showroom";
-const AI_LOGO="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110";
-const qs=new URLSearchParams(location.search);
-const orgId=qs.get("organization_id")||"org_erx";
-let ORG={id:orgId,name:"Emergency Restoration Xperts",shortName:"ERX",logo:"https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ERX.png?v=1791225892",primaryColor:"#F07723",secondaryColor:"#1175BC"};
-let quote=[];
+const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co";
+const PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+const ADMIN_API=SUPABASE_URL+"/functions/v1/ai-apparel-admin";
+const sb=supabase.createClient(SUPABASE_URL,PUBLISHABLE_KEY);
+let organizations=[];let promotionalQuotes=[];
 
-const $=s=>document.querySelector(s);
-const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const sageImage=(url,size=300)=>{
+async function api(method,body){
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session) throw new Error("Please sign in.");
+ const r=await fetch(ADMIN_API,{method,headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json","apikey":PUBLISHABLE_KEY},body:body?JSON.stringify(body):undefined});
+ const j=await r.json(); if(!r.ok) throw new Error(j.error||"Request failed"); return j;
+}
+async function loadAdmin(){
+ const data=await api("GET"); organizations=data.organizations||[]; promotionalQuotes=data.promotionalQuotes||[];
+ document.getElementById("loginCard").classList.add("hidden");document.getElementById("adminArea").classList.remove("hidden");
+ document.getElementById("adminEmail").textContent=data.admin.email+" • SUPER ADMIN";
+ const sel=document.getElementById("organizationSelect");sel.innerHTML=organizations.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
+ renderOrg(); renderQuotes();
+}
+function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div><div class="org-actions"><a class="view-customer" href="./organization.html?organization_id=${encodeURIComponent(o.id)}&admin_preview=1" target="_blank">VIEW AS CUSTOMER ↗</a></div>`:"No organizations available";}
+document.getElementById("organizationSelect").onchange=renderOrg;
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function statusLabel(s){return ({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"})[s]||s;}
+function fmtDate(v){if(!v)return "—";return new Date(v).toLocaleString([], {year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}
+function renderQuotes(){
+ const list=document.getElementById("quoteList"); if(!list)return;
+ const status=document.getElementById("quoteStatusFilter").value;
+ const q=document.getElementById("quoteSearch").value.trim().toLowerCase();
+ const rows=promotionalQuotes.filter(x=>(!status||x.status===status)&&(!q||[x.request_number,x.organization_name,x.contact_name,x.contact_email,x.project_name].some(v=>String(v||"").toLowerCase().includes(q))));
+ if(!rows.length){list.innerHTML='<div class="empty">No Promotional quote requests match this view.</div>';return;}
+ list.innerHTML=rows.map(x=>`<div><div class="quote-row"><div><div class="quote-num">${esc(x.request_number)}</div><div class="quote-date">${fmtDate(x.submitted_at)}</div></div><div><div class="quote-org">${esc(x.organization_name)}</div><div class="muted">${esc(x.project_name||"No project name")}</div></div><div><b>${esc(x.contact_name||"—")}</b><div class="muted">${esc(x.contact_email||"")}</div></div><div><span class="pill">${esc(statusLabel(x.status))}</span></div><button class="quote-open" onclick="toggleQuote('${x.id}')">OPEN</button></div><div id="qd-${x.id}" class="quote-detail hidden"></div></div>`).join("");
+}
+function money(v){return "$"+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+function toggleQuote(id){
+ const el=document.getElementById("qd-"+id); const x=promotionalQuotes.find(q=>q.id===id); if(!el||!x)return;
+ if(!el.classList.contains("hidden")){el.classList.add("hidden");return;}
+ document.querySelectorAll(".quote-detail").forEach(d=>d.classList.add("hidden"));
+ const items=x.items||[];
+ el.innerHTML=`<h3>${esc(x.request_number)} • ${esc(x.organization_name)}</h3><div class="muted">Submitted ${fmtDate(x.submitted_at)}</div>
+ <div class="quote-meta"><div><b>CONTACT</b><br>${esc(x.contact_name||"—")}<br>${esc(x.contact_email||"—")}<br>${esc(x.contact_phone||"—")}</div><div><b>PROJECT</b><br>${esc(x.project_name||"—")}<br>Needed by: ${esc(x.needed_by||"—")}<br>Event: ${esc(x.event_date||"—")}</div><div><b>STATUS</b><br>${esc(statusLabel(x.status))}<br><br><b>REQUEST NOTES</b><br>${esc(x.notes||"—")}</div></div>
+ <h3 style="margin:18px 0 10px">Requested Products</h3>
+ <div class="quote-items">${items.length?items.map(i=>`<div class="quote-item">${i.image_url?`<img src="${esc(i.image_url)}" alt="">`:""}<div><b>${esc(i.product_name)}</b><div class="muted">${esc(i.product_code||"")} • Requested Qty: ${esc(i.quantity??"—")}${i.color?" • "+esc(i.color):""}${i.decoration?" • "+esc(i.decoration):""}</div>${i.customer_notes?`<div class="muted">Note: ${esc(i.customer_notes)}</div>`:""}</div></div>`).join(""):'<div class="empty">No items attached.</div>'}</div>
+ <div class="pricing-box"><h3>AI Apparel Pricing</h3><div class="muted">Customer-facing selling prices only. Supplier cost is not shown here.</div>
+ <div>${items.map(i=>`<div class="pricing-line" data-item="${i.id}"><div><div class="pricing-name">${esc(i.product_name)}</div><div class="muted">${esc(i.product_code||"")}</div></div><div><label>QUANTITY</label><input class="pq" type="number" min="0" step="1" value="${esc(i.quoted_quantity??i.quantity??0)}"></div><div><label>UNIT SELLING PRICE</label><input class="pp" type="number" min="0" step=".01" value="${esc(i.unit_selling_price??0)}"></div><div><label>LINE TOTAL</label><input class="pl" value="${money(i.line_total||0)}" readonly></div></div>`).join("")}</div>
+ <div class="charges"><div><label>SETUP</label><input id="setup-${id}" type="number" min="0" step=".01" value="${esc(x.setup_charge||0)}"></div><div><label>DECORATION</label><input id="decoration-${id}" type="number" min="0" step=".01" value="${esc(x.decoration_charge||0)}"></div><div><label>FREIGHT</label><input id="freight-${id}" type="number" min="0" step=".01" value="${esc(x.freight_charge||0)}"></div><div><label>OTHER CHARGE</label><input id="additional-${id}" type="number" min="0" step=".01" value="${esc(x.additional_charge||0)}"></div><div><label>DISCOUNT</label><input id="discount-${id}" type="number" min="0" step=".01" value="${esc(x.discount_amount||0)}"></div></div>
+ <div class="grid" style="margin-top:14px"><div><label>CUSTOMER-FACING QUOTE NOTES</label><textarea id="customerNotes-${id}" rows="3">${esc(x.customer_quote_notes||"")}</textarea></div><div><label>INTERNAL NOTES — NOT SHOWN TO CUSTOMER</label><textarea id="internalNotes-${id}" rows="3">${esc(x.internal_notes||"")}</textarea></div></div>
+ <div class="quote-total">QUOTE TOTAL:&nbsp;<span id="total-${id}">${money(x.quoted_total||0)}</span></div>
+ <div class="pricing-actions"><button onclick="savePricing('${id}',false)">SAVE PRICING</button><button class="teal" onclick="savePricing('${id}',true)">MARK QUOTE READY</button></div><div id="pricingStatus-${id}" class="pricing-status"></div></div>`;
+ el.classList.remove("hidden");
+ el.querySelectorAll(".pricing-box input").forEach(inp=>inp.addEventListener("input",()=>calcPricing(id)));
+ calcPricing(id);
+}
+function calcPricing(id){
+ const el=document.getElementById("qd-"+id); if(!el)return;
+ let subtotal=0;
+ el.querySelectorAll(".pricing-line").forEach(row=>{const q=Number(row.querySelector(".pq").value||0),p=Number(row.querySelector(".pp").value||0),line=Math.round(q*p*100)/100;row.querySelector(".pl").value=money(line);subtotal+=line;});
+ const n=k=>Number(document.getElementById(k+"-"+id)?.value||0);
+ const total=Math.max(0,subtotal+n("setup")+n("decoration")+n("freight")+n("additional")-n("discount"));
+ document.getElementById("total-"+id).textContent=money(total);
+}
+async function savePricing(id,ready){
+ const el=document.getElementById("qd-"+id),st=document.getElementById("pricingStatus-"+id); if(!el)return;
+ const items=[...el.querySelectorAll(".pricing-line")].map(row=>({id:row.dataset.item,quoted_quantity:Number(row.querySelector(".pq").value||0),unit_selling_price:Number(row.querySelector(".pp").value||0)}));
+ const val=k=>Number(document.getElementById(k+"-"+id).value||0);
+ if(ready && items.some(i=>i.quoted_quantity<=0 || i.unit_selling_price<=0)){st.textContent="Enter a quantity and selling price for every product before marking Quote Ready.";return;}
+ st.textContent=ready?"Saving and marking Quote Ready…":"Saving pricing…";
  try{
-  const u=new URL(url);
-  if(u.hostname.includes("promoplace.com") && u.pathname.includes("QPic")) u.searchParams.set("RS","300");
-  return u.toString();
- }catch{return url||""}
-};
-
-function applyOrg(){
- document.documentElement.style.setProperty("--org",ORG.primaryColor||"#006FBA");
- document.documentElement.style.setProperty("--org2",ORG.secondaryColor||ORG.primaryColor||"#006FBA");
- $("#heroOrgName").textContent=ORG.name;
- const accountBadge=$("#accountBadge");
- if(ORG.logo){
-   accountBadge.innerHTML=`<img id="accountLogo" src="${esc(ORG.logo)}" alt="${esc(ORG.name)} logo">`;
- }else{
-   accountBadge.textContent=ORG.shortName||ORG.name;
- }
- $("#personalOrg").textContent=(ORG.shortName||ORG.name).toUpperCase();
- const mark=$("#orgMark");
- if(ORG.logo){mark.innerHTML=`<img src="${esc(ORG.logo)}" alt="${esc(ORG.name)}" style="max-width:100%;max-height:42px;object-fit:contain">`; mark.style.background="#fff";}
- else mark.textContent=ORG.shortName||"ORG";
- document.querySelectorAll(".heroOrgLogo").forEach(img=>{
-   if(ORG.logo){img.src=ORG.logo;img.alt=ORG.name+" logo";img.style.display="block";}
-   else{img.style.display="none";}
- });
+   const data=await api("POST",{action:ready?"mark_quote_ready":"save_quote_pricing",quote_id:id,items,setup_charge:val("setup"),decoration_charge:val("decoration"),freight_charge:val("freight"),additional_charge:val("additional"),discount_amount:val("discount"),customer_quote_notes:document.getElementById("customerNotes-"+id).value.trim(),internal_notes:document.getElementById("internalNotes-"+id).value.trim()});
+   st.textContent=(ready?"Quote is READY. ":"Pricing saved. ")+"Total: "+money(data.total);
+   await loadAdmin();
+   const refreshed=promotionalQuotes.find(q=>q.id===id); if(refreshed){renderQuotes();toggleQuote(id);}
+ }catch(e){st.textContent=e.message;}
 }
-async function loadOrg(){
- try{
-  const r=await fetch(`${FEED}?organization_id=${encodeURIComponent(orgId)}`);
-  const d=await r.json();
-  const o=d.organization||{};
-  ORG={...ORG,id:o.id||ORG.id,name:o.name||ORG.name,shortName:o.shortName||o.short_name||ORG.shortName,logo:o.logo||o.logo_url||ORG.logo,primaryColor:o.primaryColor||ORG.primaryColor,secondaryColor:o.secondaryColor||ORG.secondaryColor};
-  applyOrg();
-  renderPrevious(d.promotionalPreviousOrders||[]);
- }catch(e){applyOrg();$("#previousOrders").innerHTML='<div class="loading">Previous orders are unavailable right now.</div>'}
-}
-function renderPrevious(orders){
- const items=[];
- orders.forEach(o=>(o.items||[]).forEach(i=>items.push({o,i})));
- if(!items.length){$("#previousOrders").innerHTML='<div class="loading">No previous Promotional orders yet.</div>';return}
- $("#previousOrders").innerHTML=items.slice(0,4).map(({o,i})=>`<div class="historycard"><div class="histimg">PREVIOUS<br>ORDER</div><div><strong>${esc(i.description||i.itemNumber||"Promotional Product")}</strong><span>Previously ordered · ${esc(i.quantity||"")} units</span><br><button class="again" data-reorder="${esc(i.description||i.itemNumber||"")}">REQUEST AGAIN →</button></div></div>`).join("");
- document.querySelectorAll("[data-reorder]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.reorder));
-}
-async function loadApprovedShowroom(){
- try{
-  const r=await fetch(`${SHOWROOM_API}?organization_id=${encodeURIComponent(orgId)}`), d=await r.json();
-  if(!r.ok||!d.ok||!d.showroom)return;
-  $("#approvedShowroom").style.display="block";
-  $("#approvedTitle").textContent=d.showroom.label||`${ORG.name} Approved Products`;
-  const ids=(d.products||[]).map(x=>x.id).filter(Boolean);
-  if(!ids.length){$("#approvedGrid").innerHTML='<div class="loading">Your approved collection is being synchronized from SAGE.</div>';return}
-  const products=await Promise.all(ids.map(async id=>{try{const rr=await fetch(`${API}?productId=${encodeURIComponent(id)}`),dd=await rr.json();const p=dd.product?.product||dd.product||{};return {id:p.prodEid||p.prodEId||id,name:p.prName||"Product",code:p.spc||"",price:Array.isArray(p.prc)?p.prc.find(Boolean):p.prc,image:(p.pics||[]).find(x=>x.url)?.url||""}}catch{return null}}));
-  $("#approvedGrid").innerHTML=products.filter(Boolean).map(p=>`<article class="product" data-approved-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Approved Promotional Product")}</p><div class="productbottom"><span class="price">${p.price?`From $${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("");
-  document.querySelectorAll("[data-approved-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.approvedId));
- }catch(e){console.error("Approved showroom",e)}
-}
-async function searchProducts(q){
- q=(q||"").trim(); if(!q)return;
- $("#catalogTitle").textContent=`Search results for “${q}”`;
- $("#productGrid").innerHTML='<div class="loading">Searching the live Promotional catalog…</div>';
- document.querySelector("#catalog").scrollIntoView({behavior:"smooth"});
- try{
-  const r=await fetch(`${API}?q=${encodeURIComponent(q)}`);
-  const d=await r.json();
-  if(!d.ok)throw new Error(d.error||d.errMsg||"Search failed");
-  const products=d.products||[];
-  $("#productGrid").innerHTML=products.slice(0,24).map(p=>`<article class="product" data-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Promotional")} · Live catalog</p><div class="productbottom"><span class="price">${p.price?`$${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("") || '<div class="loading">No products found. Try another search.</div>';
-  document.querySelectorAll(".product[data-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.id));
- }catch(e){$("#productGrid").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
-}
-async function openDetail(id){
- $("#detailBody").innerHTML='<div class="loading" style="margin:50px">Loading live product details…</div>';
- $("#productModal").classList.add("open");
- try{
-  const r=await fetch(`${API}?productId=${encodeURIComponent(id)}`), d=await r.json();
-  if(!d.ok)throw new Error(d.error||d.errMsg||"Could not load product");
-  const p=d.product?.product||d.product||{};
-  const pics=(p.pics||[]).filter(x=>x.url);
-  const qty=p.qty||[], prc=p.prc||[];
-  const colors=String(p.colors||"").split(",").map(x=>x.trim()).filter(Boolean);
-  const methods=String(p.decorationMethod||"").split(",").map(x=>x.trim()).filter(Boolean);
-  const rows=qty.map((q,i)=>q&&Number(q)>0&&prc[i]?`<tr><td>${esc(q)}</td><td>$${esc(prc[i])}</td></tr>`:"").join("");
-  $("#detailBody").innerHTML=`<div class="detail"><div><div class="detailmain">${pics[0]?`<img id="mainPic" src="${esc(sageImage(pics[0].url,300))}" alt="${esc(p.prName)}">`:"PRODUCT IMAGE"}</div><div class="thumbs">${pics.map(x=>`<button class="thumb" data-pic="${esc(sageImage(x.url,300))}"><img src="${esc(sageImage(x.url,300))}" alt="" loading="lazy"></button>`).join("")}</div></div><div><div class="detailmeta">${esc(p.category||"PROMOTIONAL")} · ${esc(p.spc||"")}</div><h2>${esc(p.prName||"Product")}</h2><p class="detaildesc">${esc(p.description||"")}</p>${rows?`<table class="breaks"><thead><tr><th>Quantity</th><th>Catalog price / ea.</th></tr></thead><tbody>${rows}</tbody></table>`:""}<div class="field"><label>QUANTITY</label><input id="detailQty" type="number" min="1" value="${esc(qty.find(x=>Number(x)>0)||"")}"></div><div class="field"><label>COLOR</label><select id="detailColor"><option value="">Select color</option>${colors.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div><div class="field"><label>DECORATION</label><select id="detailDecoration"><option value="">Select decoration</option>${methods.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div><div class="detailmeta">Production: ${esc(p.prodTime||"Quoted")} · Availability: ${p.onHand!=null?esc(p.onHand)+" reported on hand":"verified with quote"}</div><button class="addquote" id="addQuote">ADD TO QUOTE REQUEST</button></div></div>`;
-  document.querySelectorAll("[data-pic]").forEach(b=>b.onclick=()=>$("#mainPic").src=b.dataset.pic);
-  $("#addQuote").onclick=()=>{quote.push({id:p.prodEid||p.prodEId||id,name:p.prName||"Product",qty:$("#detailQty").value,color:$("#detailColor").value,decoration:$("#detailDecoration").value,code:p.spc||"",image:(pics[0]?.url||"")});renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open")};
- }catch(e){$("#detailBody").innerHTML=`<div class="errorbox" style="margin:50px">${esc(e.message)}</div>`}
-}
-function renderQuote(){
- $("#quoteCount").textContent=quote.length;
- $("#quoteItems").innerHTML=quote.length?quote.map((x,i)=>`<div class="quoteitem"><strong>${esc(x.name)}</strong><span>${esc(x.code)} · Qty ${esc(x.qty||"TBD")}</span><span>${esc(x.color||"Color TBD")} · ${esc(x.decoration||"Decoration TBD")}</span><button class="again" data-remove="${i}">REMOVE</button></div>`).join(""):'<div class="loading">Your quote request is empty.</div>';
- document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{quote.splice(Number(b.dataset.remove),1);renderQuote()});
-}
-$("#heroSearch").onsubmit=e=>{e.preventDefault();searchProducts($("#heroSearchInput").value)};
-$("#navSearch").onsubmit=e=>{e.preventDefault();searchProducts($("#navSearchInput").value)};
-document.querySelectorAll("[data-query]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.query));
-document.querySelectorAll("[data-scroll]").forEach(b=>b.onclick=()=>document.querySelector("#"+b.dataset.scroll)?.scrollIntoView({behavior:"smooth"}));
-$("#modalClose").onclick=()=>$("#productModal").classList.remove("open");
-$("#productModal").onclick=e=>{if(e.target.id==="productModal")e.currentTarget.classList.remove("open")};
-$("#quoteFloat").onclick=()=>{$("#quoteDrawer").classList.add("open");renderQuote()};
-$("#drawerClose").onclick=()=>$("#quoteDrawer").classList.remove("open");
-async function submitQuoteRequest(){
- const msg=$("#quoteMessage");
- if(!quote.length){msg.innerHTML='<div class="quote-error">Add at least one product before submitting.</div>';return}
- const email=$("#quoteContactEmail").value.trim();
- if(!email){msg.innerHTML='<div class="quote-error">Please enter a contact email.</div>';return}
- $("#prepareRequest").disabled=true; $("#prepareRequest").textContent="SUBMITTING…"; msg.innerHTML="";
- try{
-  const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-   organization_id:orgId,
-   contact_name:$("#quoteContactName").value,
-   contact_email:email,
-   contact_phone:$("#quoteContactPhone").value,
-   project_name:$("#quoteProjectName").value,
-   needed_by:$("#quoteNeededBy").value||null,
-   notes:$("#quoteNotes").value,
-   items:quote
-  })});
-  const d=await r.json();
-  if(!r.ok||!d.ok) throw new Error(d.error||"Quote request could not be submitted");
-  msg.innerHTML=`<div class="quote-success"><strong>Request received.</strong><br>Your request number is <strong>${esc(d.quoteRequest.requestNumber)}</strong>. AI Apparel can now review this request and prepare current pricing.</div>`;
-  quote=[];renderQuote();
- }catch(e){msg.innerHTML=`<div class="quote-error">${esc(e.message)}</div>`}
- finally{$("#prepareRequest").disabled=false;$("#prepareRequest").textContent="SUBMIT QUOTE REQUEST"}
-}
-const statusLabel=s=>({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"}[s]||s);
-const money=v=>"$"+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-function renderCustomerQuote(q){
- const items=q.ai_apparel_quote_request_items||[],ready=["quote_ready","approved","invoiced","completed"].includes(q.status);
- if(!ready)return `<div class="quoteview"><div class="quoteview-head"><strong>${esc(q.request_number)}</strong><span class="statuspill">${esc(statusLabel(q.status))}</span></div><p>${esc(q.project_name||"Promotional Quote")} · ${items.length} item(s) · ${new Date(q.submitted_at).toLocaleDateString()}</p><div class="quote-note-box">AI Apparel is preparing current pricing for this request.</div></div>`;
- const charges=[["Setup",q.setup_charge],["Decoration",q.decoration_charge],["Freight",q.freight_charge],["Other Charge",q.additional_charge]].filter(x=>Number(x[1])!==0);
- return `<div class="quoteview ready"><div class="quoteview-head"><div><strong>${esc(q.request_number)}</strong><div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(q.project_name||"Promotional Quote")}</div></div><span class="statuspill">${esc(statusLabel(q.status))}</span></div><div class="quoteview-items">${items.map(i=>`<div class="quoteview-item"><div><strong>${esc(i.product_name)}</strong><div style="color:var(--muted)">${esc(i.product_code||"")}${i.color?" · "+esc(i.color):""}${i.decoration?" · "+esc(i.decoration):""}</div></div><div>Qty ${esc(i.quoted_quantity??i.quantity??"—")}</div><div>${money(i.unit_selling_price)}/ea.</div><strong>${money(i.line_total)}</strong></div>`).join("")}</div><div class="quote-summary"><div><span>Product Subtotal</span><strong>${money(q.quoted_subtotal)}</strong></div>${charges.map(x=>`<div><span>${x[0]}</span><strong>${money(x[1])}</strong></div>`).join("")}${Number(q.discount_amount)?`<div><span>Discount</span><strong>-${money(q.discount_amount)}</strong></div>`:""}<div class="grand"><span>Quote Total</span><span>${money(q.quoted_total)}</span></div></div>${q.customer_quote_notes?`<div class="quote-note-box"><strong>AI Apparel Notes</strong><br>${esc(q.customer_quote_notes)}</div>`:""}${q.status==="quote_ready"?`<button class="approvebtn" data-approve-quote="${q.id}">APPROVE QUOTE · ${money(q.quoted_total)}</button>`:`<div class="quote-note-box"><strong>${esc(statusLabel(q.status))}</strong>${q.status==="approved"?" — Thank you. AI Apparel will prepare the invoice for this approved quote.":""}</div>`}</div>`;
-}
-async function approveCustomerQuote(id){
- const btn=document.querySelector(`[data-approve-quote="${id}"]`); if(!btn)return;
- if(!confirm("Approve this quote and authorize AI Apparel to proceed with invoicing?"))return;
- btn.disabled=true;btn.textContent="APPROVING…";
- try{const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve_quote",organization_id:orgId,quote_id:id})}),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Quote could not be approved");await loadCurrentQuotes();}catch(e){btn.disabled=false;btn.textContent="APPROVE QUOTE";alert(e.message);}
-}
-async function loadCurrentQuotes(){
- $("#quotesModal").classList.add("open");
- $("#currentQuotes").innerHTML='<div class="loading">Loading quotes…</div>';
- try{
-  const r=await fetch(`${QUOTE_API}?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();
-  if(!r.ok||!d.ok)throw new Error(d.error||"Could not load quotes");
-  $("#currentQuotes").innerHTML=(d.quotes||[]).map(q=>renderCustomerQuote(q)).join("")||'<div class="loading">No current quote requests yet.</div>';
-  document.querySelectorAll("[data-approve-quote]").forEach(b=>b.onclick=()=>approveCustomerQuote(b.dataset.approveQuote));
- }catch(e){$("#currentQuotes").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
-}
-$("#prepareRequest").onclick=submitQuoteRequest;
-$("#quotesBtn").onclick=loadCurrentQuotes;
-$("#quotesClose").onclick=()=>$("#quotesModal").classList.remove("open");
-$("#quotesModal").onclick=e=>{if(e.target.id==="quotesModal")e.currentTarget.classList.remove("open")};
-loadOrg().then(loadApprovedShowroom);
-searchProducts("tumbler");
-</script>
-
-</body>
-</html>
+document.getElementById("quoteStatusFilter").onchange=renderQuotes;
+document.getElementById("quoteSearch").oninput=renderQuotes;
+function showRecovery(){document.getElementById("loginCard").classList.add("hidden");document.getElementById("adminArea").classList.add("hidden");document.getElementById("recoveryCard").classList.remove("hidden");}
+document.getElementById("savePasswordBtn").onclick=async()=>{const p=document.getElementById("newPassword").value;const c=document.getElementById("confirmPassword").value;const st=document.getElementById("recoveryStatus");if(p.length<8){st.textContent="Use a password with at least 8 characters.";return}if(p!==c){st.textContent="Passwords do not match.";return}st.textContent="Saving password…";const {error}=await sb.auth.updateUser({password:p});if(error){st.textContent=error.message;return}st.textContent="Password saved. Opening Super Admin…";history.replaceState({},document.title,location.pathname);document.getElementById("recoveryCard").classList.add("hidden");try{await loadAdmin()}catch(e){st.textContent=e.message;document.getElementById("recoveryCard").classList.remove("hidden")}};
+document.getElementById("confirmPassword").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("savePasswordBtn").click()});
+document.getElementById("resetBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}st.textContent="Sending password reset email…";const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:"https://ai-apparel-group.pages.dev/admin.html"});st.textContent=error?error.message:"Password reset email sent. Open the newest email and click the reset link.";};
+document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const password=document.getElementById("password").value;const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}if(!password){st.textContent="Enter your password.";return}st.textContent="Signing in…";const {error}=await sb.auth.signInWithPassword({email,password});if(error){st.textContent=error.message;return}try{await loadAdmin();st.textContent=""}catch(e){st.textContent=e.message;await sb.auth.signOut()}};document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("loginBtn").click()});
+document.getElementById("logoutBtn").onclick=async()=>{await sb.auth.signOut();location.reload()};
+document.getElementById("addBtn").onclick=async()=>{const st=document.getElementById("saveStatus");try{st.textContent="Saving…";const points=document.getElementById("pointsOverride").value;const data=await api("POST",{action:"add_transaction",organization_id:document.getElementById("organizationSelect").value,order_number:document.getElementById("orderNumber").value.trim(),order_type:document.getElementById("orderType").value,ordered_at:document.getElementById("orderedAt").value,customer_name:document.getElementById("customerName").value.trim(),customer_email:document.getElementById("customerEmail").value.trim(),subtotal:document.getElementById("subtotal").value,discount_code:document.getElementById("discountCode").value.trim(),discount_amount:document.getElementById("discountAmount").value,rewards_points:points===""?null:Number(points),note:document.getElementById("note").value.trim()});st.textContent="Saved. "+data.order.order_number+" added with "+data.points+" points."; }catch(e){st.textContent=e.message}};
+let recoveryMode=false;
+sb.auth.onAuthStateChange(async(event,session)=>{if(event==="PASSWORD_RECOVERY"){recoveryMode=true;showRecovery();}});
+(async()=>{const hash=new URLSearchParams(location.hash.replace(/^#/,""));const query=new URLSearchParams(location.search);if(hash.get("type")==="recovery"||query.get("type")==="recovery"){recoveryMode=true;showRecovery();}
+await new Promise(r=>setTimeout(r,250));const {data:{session}}=await sb.auth.getSession();if(session&&!recoveryMode){try{await loadAdmin()}catch(e){document.getElementById("loginStatus").textContent=e.message;await sb.auth.signOut()}}})();
+</script></body></html>
