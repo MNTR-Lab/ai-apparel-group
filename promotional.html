@@ -141,6 +141,11 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 </div>
 </section>
 
+<section class="section" id="approvedShowroom" style="display:none">
+<div class="head"><div><div class="eyebrow" style="color:var(--org1)">ORGANIZATION COLLECTION</div><h2 id="approvedTitle">Approved Products</h2><p>Products selected specifically for your organization. All quote requests are handled through AI Apparel.</p></div><div class="view">APPROVED COLLECTION</div></div>
+<div class="products" id="approvedGrid"><div class="loading">Loading approved products…</div></div>
+</section>
+
 <section class="section" id="catalog">
 <div class="head"><div><h2 id="catalogTitle">Products worth putting your logo on.</h2><p>A curated starting point. Search opens the much larger live catalog.</p></div><div class="view">SHOP ALL PRODUCTS</div></div>
 <div class="products" id="productGrid"><div class="loading">Search the live Promotional catalog above.</div></div>
@@ -174,6 +179,7 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 const API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-sage-products";
 const FEED="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed";
 const QUOTE_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-quote-request";
+const SHOWROOM_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-showroom";
 const AI_LOGO="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110";
 const qs=new URLSearchParams(location.search);
 const orgId=qs.get("organization_id")||"org_erx";
@@ -225,6 +231,19 @@ function renderPrevious(orders){
  if(!items.length){$("#previousOrders").innerHTML='<div class="loading">No previous Promotional orders yet.</div>';return}
  $("#previousOrders").innerHTML=items.slice(0,4).map(({o,i})=>`<div class="historycard"><div class="histimg">PREVIOUS<br>ORDER</div><div><strong>${esc(i.description||i.itemNumber||"Promotional Product")}</strong><span>Previously ordered · ${esc(i.quantity||"")} units</span><br><button class="again" data-reorder="${esc(i.description||i.itemNumber||"")}">REQUEST AGAIN →</button></div></div>`).join("");
  document.querySelectorAll("[data-reorder]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.reorder));
+}
+async function loadApprovedShowroom(){
+ try{
+  const r=await fetch(`${SHOWROOM_API}?organization_id=${encodeURIComponent(orgId)}`), d=await r.json();
+  if(!r.ok||!d.ok||!d.showroom)return;
+  $("#approvedShowroom").style.display="block";
+  $("#approvedTitle").textContent=d.showroom.label||`${ORG.name} Approved Products`;
+  const ids=(d.products||[]).map(x=>x.id).filter(Boolean);
+  if(!ids.length){$("#approvedGrid").innerHTML='<div class="loading">Your approved collection is being synchronized from SAGE.</div>';return}
+  const products=await Promise.all(ids.map(async id=>{try{const rr=await fetch(`${API}?productId=${encodeURIComponent(id)}`),dd=await rr.json();const p=dd.product?.product||dd.product||{};return {id:p.prodEid||p.prodEId||id,name:p.prName||"Product",code:p.spc||"",price:Array.isArray(p.prc)?p.prc.find(Boolean):p.prc,image:(p.pics||[]).find(x=>x.url)?.url||""}}catch{return null}}));
+  $("#approvedGrid").innerHTML=products.filter(Boolean).map(p=>`<article class="product" data-approved-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Approved Promotional Product")}</p><div class="productbottom"><span class="price">${p.price?`From $${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("");
+  document.querySelectorAll("[data-approved-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.approvedId));
+ }catch(e){console.error("Approved showroom",e)}
 }
 async function searchProducts(q){
  q=(q||"").trim(); if(!q)return;
@@ -308,7 +327,7 @@ $("#prepareRequest").onclick=submitQuoteRequest;
 $("#quotesBtn").onclick=loadCurrentQuotes;
 $("#quotesClose").onclick=()=>$("#quotesModal").classList.remove("open");
 $("#quotesModal").onclick=e=>{if(e.target.id==="quotesModal")e.currentTarget.classList.remove("open")};
-loadOrg();
+loadOrg().then(loadApprovedShowroom);
 searchProducts("tumbler");
 </script>
 
