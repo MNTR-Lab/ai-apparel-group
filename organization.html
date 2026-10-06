@@ -818,7 +818,38 @@
         width: 100%;
       }
     }
-  </style>
+  
+    .organization-hero-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .organization-hero-actions .organization-status{margin-top:0}
+    .organization-promo-link{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:0 18px;
+      border-radius:999px;
+      background:#006FBA;
+      color:#fff;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.06em;
+      text-decoration:none;
+      box-shadow:0 8px 22px rgba(0,111,186,.22);
+      transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+    }
+    .organization-promo-link:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 26px rgba(0,111,186,.28);
+      background:#005f9f;
+    }
+
+</style>
 </head>
 
 <body>
@@ -876,9 +907,14 @@
           Apparel • Promotional Products • Rewards • Orders
         </p>
 
-        <div class="organization-status">
-          <span class="status-dot"></span>
-          AI Partner Rewards Active
+        <div class="organization-hero-actions">
+          <div class="organization-status">
+            <span class="status-dot"></span>
+            AI Partner Rewards Active
+          </div>
+          <a class="organization-promo-link" id="organizationPromoLink" href="./promotional.html">
+            PROMOTIONAL PRODUCTS →
+          </a>
         </div>
       </div>
 
@@ -1377,6 +1413,11 @@
 
     const params = new URLSearchParams(window.location.search);
     const requestedOrganizationId = params.get("organization_id") || "org_carolina_ent";
+    const organizationPromoLink = document.getElementById("organizationPromoLink");
+    if (organizationPromoLink) {
+      organizationPromoLink.href =
+        "./promotional.html?organization_id=" + encodeURIComponent(requestedOrganizationId);
+    }
 
     const ORGANIZATION = {
       id: requestedOrganizationId,
