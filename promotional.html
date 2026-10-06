@@ -178,17 +178,19 @@ const sageImage=(url,size=300)=>{
 function applyOrg(){
  document.documentElement.style.setProperty("--org",ORG.primaryColor||"#006FBA");
  document.documentElement.style.setProperty("--org2",ORG.secondaryColor||ORG.primaryColor||"#006FBA");
- $("#heroOrgName").textContent=ORG.name;
+ const heroOrgName=$("#heroOrgName");
+ if(heroOrgName) heroOrgName.textContent=ORG.name;
  const accountBadge=$("#accountBadge");
  if(ORG.logo){
    accountBadge.innerHTML=`<img id="accountLogo" src="${esc(ORG.logo)}" alt="${esc(ORG.name)} logo">`;
  }else{
    accountBadge.textContent=ORG.shortName||ORG.name;
  }
- $("#personalOrg").textContent=(ORG.shortName||ORG.name).toUpperCase();
+ const personalOrg=$("#personalOrg");
+ if(personalOrg) personalOrg.textContent=(ORG.shortName||ORG.name).toUpperCase();
  const mark=$("#orgMark");
- if(ORG.logo){mark.innerHTML=`<img src="${esc(ORG.logo)}" alt="${esc(ORG.name)}" style="max-width:100%;max-height:42px;object-fit:contain">`; mark.style.background="#fff";}
- else mark.textContent=ORG.shortName||"ORG";
+ if(mark && ORG.logo){mark.innerHTML=`<img src="${esc(ORG.logo)}" alt="${esc(ORG.name)}" style="max-width:100%;max-height:42px;object-fit:contain">`; mark.style.background="#fff";}
+ else if(mark) mark.textContent=ORG.shortName||"ORG";
  document.querySelectorAll(".heroOrgLogo").forEach(img=>{
    if(ORG.logo){img.src=ORG.logo;img.alt=ORG.name+" logo";img.style.display="block";}
    else{img.style.display="none";}
