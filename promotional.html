@@ -232,18 +232,37 @@ function renderPrevious(orders){
  $("#previousOrders").innerHTML=items.slice(0,4).map(({o,i})=>`<div class="historycard"><div class="histimg">PREVIOUS<br>ORDER</div><div><strong>${esc(i.description||i.itemNumber||"Promotional Product")}</strong><span>Previously ordered · ${esc(i.quantity||"")} units</span><br><button class="again" data-reorder="${esc(i.description||i.itemNumber||"")}">REQUEST AGAIN →</button></div></div>`).join("");
  document.querySelectorAll("[data-reorder]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.reorder));
 }
+function renderApprovedCard(p){
+ const id=p.id||p.showroomProductId;
+ const image=p.image||"";
+ const price=p.price||"Request current pricing";
+ return `<article class="product" data-approved-id="${esc(id)}" data-custom-approved="${p.showroomProductId?"1":"0"}"><div class="photo">${image?`<img src="${esc(sageImage(image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name||"Approved Product")}</h3><p>${esc(p.code||p.itemNumber||"Approved Promotional Product")}</p><div class="productbottom"><span class="price">${esc(price)}</span><button class="arrow" type="button">→</button></div></article>`;
+}
+function openCustomApprovedDetail(p){
+ $("#detailBody").innerHTML=`<div class="detail"><div><div class="detailmain">${p.image?`<img id="mainPic" src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}">`:"PRODUCT IMAGE"}</div></div><div><div class="detailmeta">CAROLINA ENT APPROVED PRODUCT · ${esc(p.itemNumber||"")}</div><h2>${esc(p.name||"Approved Product")}</h2><p class="detaildesc">This product is part of your organization’s approved promotional collection. The displayed showroom pricing is a reference; AI Apparel will verify current pricing, availability, decoration and freight before preparing the quote.</p><div class="field"><label>QUANTITY</label><input id="detailQty" type="number" min="1" value="1"></div><div class="field"><label>COLOR / SIZE / OPTIONS</label><input id="detailColor" placeholder="Enter any preferred options"></div><div class="field"><label>DECORATION / NOTES</label><textarea id="detailDecoration" rows="3" placeholder="Decoration, sizing, personalization or other requirements"></textarea></div><div class="detailmeta">Showroom price: ${esc(p.price||"Quoted")}</div><button class="addquote" id="addCustomQuote">ADD TO QUOTE REQUEST</button></div></div>`;
+ $("#addCustomQuote").onclick=()=>{quote.push({id:p.id||p.showroomProductId,showroomProductId:p.showroomProductId||null,name:p.name||"Approved Product",qty:$("#detailQty").value,color:$("#detailColor").value,decoration:$("#detailDecoration").value,code:p.itemNumber||p.code||"",image:p.image||""});renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open")};
+}
 async function loadApprovedShowroom(){
  try{
   const r=await fetch(`${SHOWROOM_API}?organization_id=${encodeURIComponent(orgId)}`), d=await r.json();
   if(!r.ok||!d.ok||!d.showroom)return;
   $("#approvedShowroom").style.display="block";
   $("#approvedTitle").textContent=d.showroom.label||`${ORG.name} Approved Products`;
-  const ids=(d.products||[]).map(x=>x.id).filter(Boolean);
-  if(!ids.length){$("#approvedGrid").innerHTML='<div class="loading">Your approved collection is being synchronized from SAGE.</div>';return}
-  const products=await Promise.all(ids.map(async id=>{try{const rr=await fetch(`${API}?productId=${encodeURIComponent(id)}`),dd=await rr.json();const p=dd.product?.product||dd.product||{};return {id:p.prodEid||p.prodEId||id,name:p.prName||"Product",code:p.spc||"",price:Array.isArray(p.prc)?p.prc.find(Boolean):p.prc,image:(p.pics||[]).find(x=>x.url)?.url||""}}catch{return null}}));
-  $("#approvedGrid").innerHTML=products.filter(Boolean).map(p=>`<article class="product" data-approved-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Approved Promotional Product")}</p><div class="productbottom"><span class="price">${p.price?`From $${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("");
-  document.querySelectorAll("[data-approved-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.approvedId));
- }catch(e){console.error("Approved showroom",e)}
+  const items=d.products||[];
+  if(!items.length){$("#approvedGrid").innerHTML='<div class="loading">Your approved collection is being synchronized.</div>';return}
+  const products=await Promise.all(items.map(async item=>{
+   if(item.showroomProductId){
+    return {id:item.id||item.showroomProductId,showroomProductId:item.showroomProductId,name:item.name||"Approved Product",itemNumber:item.itemNumber||"",price:item.price||"Request current pricing",image:item.image||"",productUrl:item.productUrl||""};
+   }
+   try{const rr=await fetch(`${API}?productId=${encodeURIComponent(item.id)}`),dd=await rr.json();const p=dd.product?.product||dd.product||{};return {id:p.prodEid||p.prodEId||item.id,name:p.prName||"Product",code:p.spc||"",price:Array.isArray(p.prc)?p.prc.find(Boolean):p.prc,image:(p.pics||[]).find(x=>x.url)?.url||""};}catch{return null}
+  }));
+  $("#approvedGrid").innerHTML=products.filter(Boolean).map(renderApprovedCard).join("");
+  document.querySelectorAll("[data-approved-id]").forEach(card=>{
+   const id=card.dataset.approvedId;
+   const p=products.find(x=>String(x.id)===String(id));
+   card.onclick=()=>p&&p.showroomProductId?openCustomApprovedDetail(p):openDetail(id);
+  });
+ }catch(e){console.error("Approved showroom",e);$("#approvedGrid").innerHTML='<div class="errorbox">The organization collection could not be loaded right now.</div>'}
 }
 async function searchProducts(q){
  q=(q||"").trim(); if(!q)return;
