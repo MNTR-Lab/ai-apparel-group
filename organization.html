@@ -262,6 +262,40 @@
     }
 
     /* =====================================================
+       PARTNER ACTION CENTER
+       ===================================================== */
+    .partner-action {
+      display: none;
+      margin: 0 0 28px;
+      padding: 22px 24px;
+      background: #fff;
+      border: 2px solid var(--org-primary, var(--navy));
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+      align-items: center;
+      gap: 18px;
+    }
+    .partner-action.show { display: flex; }
+    .partner-action-icon {
+      width: 46px; height: 46px; flex: 0 0 46px;
+      border-radius: 50%; display: grid; place-items: center;
+      background: var(--org-primary, var(--navy)); color: #fff;
+      font-weight: 900; font-size: 20px;
+    }
+    .partner-action-copy { flex: 1; }
+    .partner-action-kicker {
+      font-size: 10px; font-weight: 900; letter-spacing: 1.4px;
+      color: var(--org-primary, var(--navy));
+    }
+    .partner-action-title { margin-top: 3px; font-size: 18px; font-weight: 900; }
+    .partner-action-text { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .partner-action-button {
+      border: 0; border-radius: 8px; padding: 12px 17px;
+      background: var(--org-primary, var(--navy)); color: #fff;
+      font-size: 11px; font-weight: 900; cursor: pointer; white-space: nowrap;
+    }
+
+    /* =====================================================
        REWARDS
        ===================================================== */
 
@@ -414,12 +448,12 @@
     }
 
     .store-card.apparel {
-      background: var(--org-primary, var(--navy));
+      background: var(--navy);
       color: white;
     }
 
     .store-card.promo {
-      background: var(--org-secondary, var(--navy));
+      background: linear-gradient(135deg, #0f766e, #115e59);
       color: white;
     }
 
@@ -766,6 +800,15 @@
       .organization-name {
         font-size: 42px;
       }
+
+      .partner-action {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .partner-action-button {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -863,6 +906,23 @@
         id="lastUpdated"
       ></div>
     </div>
+
+    <!-- ACTION REQUIRED -->
+    <section class="partner-action" id="quoteApprovalAction">
+      <div class="partner-action-icon">!</div>
+      <div class="partner-action-copy">
+        <div class="partner-action-kicker">ACTION REQUIRED</div>
+        <div class="partner-action-title" id="quoteApprovalTitle">
+          Promotional quote ready for approval
+        </div>
+        <div class="partner-action-text" id="quoteApprovalText">
+          AI Apparel has completed pricing. Review and approve your quote to move forward.
+        </div>
+      </div>
+      <button class="partner-action-button" id="reviewQuoteButton" type="button">
+        REVIEW &amp; APPROVE
+      </button>
+    </section>
 
     <!-- REWARDS -->
     <section class="rewards-card">
@@ -1614,6 +1674,83 @@
     ============================================================
     */
 
+    const QUOTE_API =
+      "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-quote-request";
+
+    async function loadQuoteApprovalAction() {
+      try {
+        const response = await fetch(
+          QUOTE_API +
+          "?organization_id=" +
+          encodeURIComponent(ORGANIZATION.id)
+        );
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload.ok) {
+          return;
+        }
+
+        const readyQuotes = (payload.quotes || []).filter(
+          quote => quote.status === "quote_ready"
+        );
+
+        const actionBox =
+          document.getElementById("quoteApprovalAction");
+
+        if (!readyQuotes.length) {
+          actionBox.classList.remove("show");
+          return;
+        }
+
+        actionBox.classList.add("show");
+
+        if (readyQuotes.length === 1) {
+          const quote = readyQuotes[0];
+
+          document.getElementById(
+            "quoteApprovalTitle"
+          ).textContent =
+            quote.request_number +
+            " is ready for your approval";
+
+          document.getElementById(
+            "quoteApprovalText"
+          ).textContent =
+            "AI Apparel has completed pricing for " +
+            (quote.project_name || "your Promotional request") +
+            ". Review the quote and approve it to move forward.";
+        } else {
+          document.getElementById(
+            "quoteApprovalTitle"
+          ).textContent =
+            readyQuotes.length +
+            " Promotional quotes are ready for your approval";
+
+          document.getElementById(
+            "quoteApprovalText"
+          ).textContent =
+            "AI Apparel has completed pricing. Review your pending quotes and approve the ones you want to move forward.";
+        }
+
+        document.getElementById(
+          "reviewQuoteButton"
+        ).onclick = function() {
+          window.location.href =
+            "./promotional.html?organization_id=" +
+            encodeURIComponent(ORGANIZATION.id) +
+            "&open_quotes=1";
+        };
+
+      } catch (error) {
+        console.error(
+          "Quote approval check:",
+          error
+        );
+      }
+    }
+
+
     function renderOrganization() {
 
       const params = new URLSearchParams(window.location.search);
@@ -1677,16 +1814,6 @@
 
 
       document.documentElement.style.setProperty("--navy", ORGANIZATION.primaryColor || "#111827");
-
-      document.documentElement.style.setProperty(
-        "--org-primary",
-        ORGANIZATION.primaryColor || "#111827"
-      );
-
-      document.documentElement.style.setProperty(
-        "--org-secondary",
-        ORGANIZATION.accentColor || ORGANIZATION.primaryColor || "#111827"
-      );
 
       if (ORGANIZATION.logo) {
 
@@ -2317,6 +2444,7 @@
 
       const profilePayload = await loadOrganizationProfile();
       renderOrganization();
+      await loadQuoteApprovalAction();
 
 
       /*
