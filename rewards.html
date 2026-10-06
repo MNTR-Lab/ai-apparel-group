@@ -3,90 +3,635 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AI Partner Rewards | AI Apparel Group</title>
-<meta name="description" content="AI Partner Rewards from AI Apparel Group. Earn points on Company Store, apparel, promotional, cut & sew, and service purchases.">
+
+<meta
+  name="description"
+  content="AI Partner Rewards from AI Apparel Group. Earn points on Company Store, apparel, promotional, cut & sew, and service purchases."
+>
+
 <style>
 :root{
-  --navy:#111827;
-  --teal:#14b8a6;
-  --cyan:#06b6d4;
-  --ink:#111827;
+  /* AI APPAREL GROUP OFFICIAL COLORS */
+  --blue:#006FBA;
+  --black:#000000;
+  --white:#FFFFFF;
+  --pink:#FF06EB;
+
+  /* SUPPORTING UI COLORS */
+  --ink:#000000;
   --muted:#667085;
   --line:#e5e7eb;
   --soft:#f7f9fc;
-  --white:#fff;
+  --blue-soft:#eaf5fc;
+  --pink-soft:#fff0fd;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff}
-a{text-decoration:none;color:inherit}
-.wrap{width:min(1180px,calc(100% - 40px));margin:auto}
-header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
-.header-row{height:84px;display:flex;align-items:center;gap:34px}
-.logo{display:flex;align-items:center;margin-right:auto}
-.logo img{height:52px;width:auto;display:block}
-nav{display:flex;align-items:center;gap:26px;font-size:13px;font-weight:800;letter-spacing:.055em}
-nav a{padding:31px 0 27px;border-bottom:3px solid transparent}
-nav a.active{border-color:var(--teal)}
-.account{background:var(--navy);color:#fff!important;padding:13px 18px!important;border-radius:9px;border:0!important}
-.hero{background:linear-gradient(135deg,#111827 0%,#152238 55%,#123a47 100%);color:#fff;padding:84px 0 78px;overflow:hidden}
-.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:64px;align-items:center}
-.eyebrow{font-size:13px;font-weight:900;letter-spacing:.16em;color:#72e5dc;margin-bottom:14px}
-h1{font-size:58px;line-height:1.02;letter-spacing:-.045em;margin:0 0 22px}
-.hero p{font-size:20px;line-height:1.6;color:#d7dee9;max-width:700px;margin:0 0 30px}
-.actions{display:flex;gap:12px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:10px;padding:14px 20px;font-size:14px;font-weight:900;letter-spacing:.025em}
-.btn-primary{background:var(--teal);color:#062e2b}
-.btn-secondary{border:1px solid #526073;color:#fff;background:rgba(255,255,255,.04)}
-.hero-card{background:#fff;color:var(--ink);border-radius:18px;padding:30px;box-shadow:0 24px 60px rgba(0,0,0,.22)}
-.hero-card .mini{font-size:12px;font-weight:900;letter-spacing:.12em;color:#667085}
-.points{font-size:48px;font-weight:950;letter-spacing:-.04em;margin:7px 0}
-.credit{font-size:16px;color:#667085}
-.rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
-.rate{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:17px}
-.rate strong{font-size:24px;display:block}
-.rate span{font-size:12px;color:#667085;font-weight:700}
-section{padding:76px 0}
-.section-head{text-align:center;max-width:760px;margin:0 auto 38px}
-.section-head .eyebrow{color:#0f8f86}
-h2{font-size:38px;letter-spacing:-.035em;margin:0 0 12px}
-.section-head p{font-size:17px;line-height:1.65;color:var(--muted);margin:0}
-.earn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.earn-card{border:1px solid var(--line);border-radius:15px;padding:25px;background:#fff}
-.icon{width:42px;height:42px;border-radius:11px;background:#e8fbf8;display:flex;align-items:center;justify-content:center;font-weight:950;color:#087e76;margin-bottom:18px}
-.earn-card h3{margin:0 0 8px;font-size:18px}
-.earn-card p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
-.earn-card strong{color:var(--ink)}
-.tiers{background:var(--soft)}
-.tier-table{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.tier-row{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;align-items:center;min-height:72px;border-bottom:1px solid var(--line);padding:0 24px}
-.tier-row:last-child{border-bottom:0}
-.tier-row.head{min-height:50px;background:#111827;color:#fff;font-size:12px;font-weight:900;letter-spacing:.07em}
-.tier-name{font-weight:900}
-.legendary{background:linear-gradient(90deg,#fff,#f1fffd)}
-.value{font-weight:800}
-.portal{padding:76px 0}
-.portal-box{background:linear-gradient(135deg,#0e1728,#12343d);color:#fff;border-radius:20px;padding:45px;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center}
-.portal-box h2{margin-bottom:10px}
-.portal-box p{margin:0;color:#d5dde7;line-height:1.6;max-width:720px}
-.login-box{display:flex;gap:10px;align-items:center}
-.login-box input{width:280px;height:48px;border-radius:9px;border:1px solid #657184;padding:0 14px;font-size:14px}
-.note{font-size:12px;color:#8c98a8;margin-top:12px}
-footer{border-top:1px solid var(--line);padding:28px 0;color:#667085;font-size:13px}
-.footer-row{display:flex;justify-content:space-between;gap:20px}
+
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color:var(--ink);
+  background:var(--white);
+}
+
+a{
+  text-decoration:none;
+  color:inherit;
+}
+
+.wrap{
+  width:min(1180px,calc(100% - 40px));
+  margin:auto;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+header{
+  background:var(--white);
+  border-bottom:1px solid var(--line);
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+
+.header-row{
+  height:84px;
+  display:flex;
+  align-items:center;
+  gap:34px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  margin-right:auto;
+}
+
+.logo img{
+  height:52px;
+  width:auto;
+  display:block;
+}
+
+nav{
+  display:flex;
+  align-items:center;
+  gap:26px;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.055em;
+}
+
+nav a{
+  padding:31px 0 27px;
+  border-bottom:3px solid transparent;
+  transition:.2s ease;
+}
+
+nav a:hover{
+  color:var(--blue);
+}
+
+nav a.active{
+  color:var(--blue);
+  border-color:var(--blue);
+}
+
+.account{
+  background:var(--black);
+  color:var(--white)!important;
+  padding:13px 18px!important;
+  border-radius:9px;
+  border:0!important;
+}
+
+.account:hover{
+  background:var(--blue);
+  color:var(--white)!important;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero{
+  background:
+    radial-gradient(
+      circle at 88% 20%,
+      rgba(255,6,235,.14),
+      transparent 23%
+    ),
+    linear-gradient(
+      135deg,
+      #000000 0%,
+      #061a2b 55%,
+      #006FBA 100%
+    );
+
+  color:var(--white);
+  padding:84px 0 78px;
+  overflow:hidden;
+}
+
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:64px;
+  align-items:center;
+}
+
+.eyebrow{
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.16em;
+  color:var(--pink);
+  margin-bottom:14px;
+}
+
+h1{
+  font-size:58px;
+  line-height:1.02;
+  letter-spacing:-.045em;
+  margin:0 0 22px;
+}
+
+.hero p{
+  font-size:20px;
+  line-height:1.6;
+  color:#e7edf4;
+  max-width:700px;
+  margin:0 0 30px;
+}
+
+.actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  padding:14px 20px;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.025em;
+  transition:.2s ease;
+}
+
+.btn-primary{
+  background:var(--blue);
+  color:var(--white);
+}
+
+.btn-primary:hover{
+  background:#005d9d;
+  transform:translateY(-1px);
+}
+
+.btn-secondary{
+  border:1px solid rgba(255,255,255,.38);
+  color:var(--white);
+  background:rgba(255,255,255,.06);
+}
+
+.btn-secondary:hover{
+  border-color:var(--pink);
+  background:rgba(255,6,235,.08);
+}
+
+
+/* =========================================================
+   HERO REWARDS CARD
+   ========================================================= */
+
+.hero-card{
+  background:var(--white);
+  color:var(--ink);
+  border-radius:18px;
+  padding:30px;
+  box-shadow:0 24px 60px rgba(0,0,0,.30);
+  border-top:5px solid var(--pink);
+}
+
+.hero-card .mini{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.12em;
+  color:var(--blue);
+}
+
+.points{
+  font-size:48px;
+  font-weight:950;
+  letter-spacing:-.04em;
+  margin:7px 0;
+  color:var(--black);
+}
+
+.credit{
+  font-size:16px;
+  color:#667085;
+}
+
+.rate-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:22px;
+}
+
+.rate{
+  background:var(--soft);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:17px;
+}
+
+.rate strong{
+  font-size:24px;
+  display:block;
+  color:var(--blue);
+}
+
+.rate span{
+  font-size:12px;
+  color:#667085;
+  font-weight:700;
+}
+
+
+/* =========================================================
+   GENERAL SECTIONS
+   ========================================================= */
+
+section{
+  padding:76px 0;
+}
+
+.section-head{
+  text-align:center;
+  max-width:760px;
+  margin:0 auto 38px;
+}
+
+.section-head .eyebrow{
+  color:var(--blue);
+}
+
+h2{
+  font-size:38px;
+  letter-spacing:-.035em;
+  margin:0 0 12px;
+}
+
+.section-head p{
+  font-size:17px;
+  line-height:1.65;
+  color:var(--muted);
+  margin:0;
+}
+
+
+/* =========================================================
+   EARNING CARDS
+   ========================================================= */
+
+.earn-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+}
+
+.earn-card{
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:25px;
+  background:var(--white);
+  transition:.2s ease;
+}
+
+.earn-card:hover{
+  border-color:var(--blue);
+  box-shadow:0 12px 30px rgba(0,111,186,.09);
+  transform:translateY(-2px);
+}
+
+.icon{
+  width:42px;
+  height:42px;
+  border-radius:11px;
+  background:var(--blue-soft);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:950;
+  color:var(--blue);
+  margin-bottom:18px;
+}
+
+.earn-card:nth-child(4) .icon{
+  background:var(--pink-soft);
+  color:#c000b3;
+}
+
+.earn-card h3{
+  margin:0 0 8px;
+  font-size:18px;
+}
+
+.earn-card p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.55;
+  font-size:14px;
+}
+
+.earn-card strong{
+  color:var(--ink);
+}
+
+
+/* =========================================================
+   PARTNER LEVELS
+   ========================================================= */
+
+.tiers{
+  background:var(--soft);
+}
+
+.tier-table{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 10px 35px rgba(0,0,0,.04);
+}
+
+.tier-row{
+  display:grid;
+  grid-template-columns:1.35fr 1fr 1fr 1fr;
+  align-items:center;
+  min-height:72px;
+  border-bottom:1px solid var(--line);
+  padding:0 24px;
+}
+
+.tier-row:last-child{
+  border-bottom:0;
+}
+
+.tier-row.head{
+  min-height:50px;
+  background:var(--black);
+  color:var(--white);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.07em;
+  border-top:4px solid var(--blue);
+}
+
+.tier-name{
+  font-weight:900;
+}
+
+.value{
+  font-weight:800;
+}
+
+.legendary{
+  background:
+    linear-gradient(
+      90deg,
+      var(--white),
+      var(--pink-soft)
+    );
+}
+
+.legendary .tier-name{
+  color:var(--blue);
+}
+
+
+/* =========================================================
+   PARTNER ACCESS
+   ========================================================= */
+
+.portal{
+  padding:76px 0;
+}
+
+.portal-box{
+  background:
+    radial-gradient(
+      circle at 92% 30%,
+      rgba(255,6,235,.18),
+      transparent 24%
+    ),
+    linear-gradient(
+      135deg,
+      var(--black),
+      #003f6a 65%,
+      var(--blue)
+    );
+
+  color:var(--white);
+  border-radius:20px;
+  padding:45px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:30px;
+  align-items:center;
+  overflow:hidden;
+}
+
+.portal-box h2{
+  margin-bottom:10px;
+}
+
+.portal-box p{
+  margin:0;
+  color:#e2eaf1;
+  line-height:1.6;
+  max-width:720px;
+}
+
+.login-box{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.login-box input{
+  width:280px;
+  height:48px;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,.38);
+  padding:0 14px;
+  font-size:14px;
+  background:var(--white);
+}
+
+.note{
+  font-size:12px;
+  color:#cbd5df;
+  margin-top:12px;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer{
+  border-top:1px solid var(--line);
+  padding:28px 0;
+  color:#667085;
+  font-size:13px;
+}
+
+.footer-row{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
 @media(max-width:900px){
-  .header-row{height:auto;padding:16px 0;flex-wrap:wrap}.logo img{height:44px}nav{width:100%;overflow:auto;gap:18px}nav a{padding:8px 0 12px;white-space:nowrap}.account{padding:10px 14px!important}
-  .hero{padding:60px 0}.hero-grid{grid-template-columns:1fr;gap:30px}h1{font-size:44px}
-  .earn-grid{grid-template-columns:1fr 1fr}.tier-row{grid-template-columns:1.4fr 1fr 1fr 1fr;padding:0 14px;font-size:13px}
-  .portal-box{grid-template-columns:1fr}.login-box{flex-wrap:wrap}.login-box input{width:100%}
+
+  .header-row{
+    height:auto;
+    padding:16px 0;
+    flex-wrap:wrap;
+  }
+
+  .logo img{
+    height:44px;
+  }
+
+  nav{
+    width:100%;
+    overflow:auto;
+    gap:18px;
+  }
+
+  nav a{
+    padding:8px 0 12px;
+    white-space:nowrap;
+  }
+
+  .account{
+    padding:10px 14px!important;
+  }
+
+  .hero{
+    padding:60px 0;
+  }
+
+  .hero-grid{
+    grid-template-columns:1fr;
+    gap:30px;
+  }
+
+  h1{
+    font-size:44px;
+  }
+
+  .earn-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .tier-row{
+    grid-template-columns:1.4fr 1fr 1fr 1fr;
+    padding:0 14px;
+    font-size:13px;
+  }
+
+  .portal-box{
+    grid-template-columns:1fr;
+  }
+
+  .login-box{
+    flex-wrap:wrap;
+  }
+
+  .login-box input{
+    width:100%;
+  }
 }
-@media(max-width:560px){.wrap{width:min(100% - 26px,1180px)}h1{font-size:38px}.earn-grid{grid-template-columns:1fr}.tier-row{font-size:11px;padding:0 8px}.hero-card{padding:22px}.rate-grid{grid-template-columns:1fr}}
+
+@media(max-width:560px){
+
+  .wrap{
+    width:min(100% - 26px,1180px);
+  }
+
+  h1{
+    font-size:38px;
+  }
+
+  .earn-grid{
+    grid-template-columns:1fr;
+  }
+
+  .tier-row{
+    font-size:11px;
+    padding:0 8px;
+  }
+
+  .hero-card{
+    padding:22px;
+  }
+
+  .rate-grid{
+    grid-template-columns:1fr;
+  }
+
+  .footer-row{
+    flex-direction:column;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <header>
   <div class="wrap header-row">
-    <a class="logo" href="./index.html"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group"></a>
+
+    <a class="logo" href="./index.html">
+      <img
+        src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110"
+        alt="AI Apparel Group"
+      >
+    </a>
+
     <nav aria-label="Main navigation">
       <a href="./index.html">HOME</a>
       <a href="./index.html#apparel">APPAREL</a>
@@ -94,90 +639,334 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:#667085;font-size:1
       <a class="active" href="./rewards.html">REWARDS</a>
       <a class="account" href="./organization.html">ACCOUNT</a>
     </nav>
+
   </div>
 </header>
 
+
 <main>
+
+<!-- HERO -->
 <section class="hero">
+
   <div class="wrap hero-grid">
+
     <div>
-      <div class="eyebrow">AI PARTNER REWARDS</div>
-      <h1>Your partnership should reward your business.</h1>
-      <p>Earn rewards across your organization's purchases with AI Apparel Group—from custom apparel and promotional products to your Company Store.</p>
+
+      <div class="eyebrow">
+        AI PARTNER REWARDS
+      </div>
+
+      <h1>
+        Your partnership should reward your business.
+      </h1>
+
+      <p>
+        Earn rewards across your organization's purchases with
+        AI Apparel Group—from custom apparel and promotional products
+        to your Company Store.
+      </p>
+
       <div class="actions">
-        <a class="btn btn-primary" href="#levels">EXPLORE REWARD LEVELS</a>
-        <a class="btn btn-secondary" href="#partner-access">PARTNER ACCESS</a>
+
+        <a
+          class="btn btn-primary"
+          href="#levels"
+        >
+          EXPLORE REWARD LEVELS
+        </a>
+
+        <a
+          class="btn btn-secondary"
+          href="#partner-access"
+        >
+          PARTNER ACCESS
+        </a>
+
       </div>
+
     </div>
+
+
     <div class="hero-card">
-      <div class="mini">HOW REWARDS WORK</div>
-      <div class="points">100 POINTS</div>
-      <div class="credit">= $1 in AI Apparel credit</div>
+
+      <div class="mini">
+        HOW REWARDS WORK
+      </div>
+
+      <div class="points">
+        100 POINTS
+      </div>
+
+      <div class="credit">
+        = $1 in AI Apparel credit
+      </div>
+
       <div class="rate-grid">
-        <div class="rate"><strong>2X</strong><span>COMPANY STORE PURCHASES</span></div>
-        <div class="rate"><strong>1X</strong><span>QUALIFYING DIRECT PURCHASES</span></div>
+
+        <div class="rate">
+          <strong>2X</strong>
+          <span>COMPANY STORE PURCHASES</span>
+        </div>
+
+        <div class="rate">
+          <strong>1X</strong>
+          <span>QUALIFYING DIRECT PURCHASES</span>
+        </div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
 
+
+<!-- EARNING -->
 <section>
+
   <div class="wrap">
+
     <div class="section-head">
-      <div class="eyebrow">EVERY PURCHASE COUNTS</div>
-      <h2>Earn across your AI Apparel partnership.</h2>
-      <p>Qualifying purchases build your organization's reward balance and help move your business toward higher Partner levels.</p>
+
+      <div class="eyebrow">
+        EVERY PURCHASE COUNTS
+      </div>
+
+      <h2>
+        Earn across your AI Apparel partnership.
+      </h2>
+
+      <p>
+        Qualifying purchases build your organization's reward balance
+        and help move your business toward higher Partner levels.
+      </p>
+
     </div>
+
+
     <div class="earn-grid">
-      <div class="earn-card"><div class="icon">2X</div><h3>Company Store</h3><p><strong>2 points per $1</strong> spent through your organization's Company Store.</p></div>
-      <div class="earn-card"><div class="icon">1X</div><h3>Apparel Orders</h3><p><strong>1 point per $1</strong> spent on qualifying apparel orders placed with AI Apparel Group.</p></div>
-      <div class="earn-card"><div class="icon">1X</div><h3>Promotional</h3><p><strong>1 point per $1</strong> spent on qualifying promotional product orders.</p></div>
-      <div class="earn-card"><div class="icon">1X</div><h3>Cut & Sew + Services</h3><p><strong>1 point per $1</strong> spent on qualifying custom cut & sew and service purchases.</p></div>
+
+      <div class="earn-card">
+
+        <div class="icon">2X</div>
+
+        <h3>Company Store</h3>
+
+        <p>
+          <strong>2 points per $1</strong>
+          spent through your organization's Company Store.
+        </p>
+
+      </div>
+
+
+      <div class="earn-card">
+
+        <div class="icon">1X</div>
+
+        <h3>Apparel Orders</h3>
+
+        <p>
+          <strong>1 point per $1</strong>
+          spent on qualifying apparel orders placed with AI Apparel Group.
+        </p>
+
+      </div>
+
+
+      <div class="earn-card">
+
+        <div class="icon">1X</div>
+
+        <h3>Promotional</h3>
+
+        <p>
+          <strong>1 point per $1</strong>
+          spent on qualifying promotional product orders.
+        </p>
+
+      </div>
+
+
+      <div class="earn-card">
+
+        <div class="icon">1X</div>
+
+        <h3>Cut & Sew + Services</h3>
+
+        <p>
+          <strong>1 point per $1</strong>
+          spent on qualifying custom cut & sew and service purchases.
+        </p>
+
+      </div>
+
     </div>
+
   </div>
+
 </section>
 
-<section class="tiers" id="levels">
+
+<!-- PARTNER LEVELS -->
+<section
+  class="tiers"
+  id="levels"
+>
+
   <div class="wrap">
+
     <div class="section-head">
-      <div class="eyebrow">PARTNER LEVELS</div>
-      <h2>The more your organization grows with us, the more you unlock.</h2>
-      <p>Your Partner level is based on reward points and provides additional benefits across qualifying apparel and Promotional purchases.</p>
+
+      <div class="eyebrow">
+        PARTNER LEVELS
+      </div>
+
+      <h2>
+        The more your organization grows with us, the more you unlock.
+      </h2>
+
+      <p>
+        Your Partner level is based on reward points and provides
+        additional benefits across qualifying apparel and Promotional purchases.
+      </p>
+
     </div>
+
+
     <div class="tier-table">
-      <div class="tier-row head"><div>PARTNER LEVEL</div><div>POINTS</div><div>APPAREL</div><div>PROMOTIONAL</div></div>
-      <div class="tier-row"><div class="tier-name">Partner</div><div>0–9,999</div><div class="value">—</div><div class="value">—</div></div>
-      <div class="tier-row"><div class="tier-name">Advanced Partner</div><div>10,000–24,999</div><div class="value">2%</div><div class="value">—</div></div>
-      <div class="tier-row"><div class="tier-name">Elite Partner</div><div>25,000–49,999</div><div class="value">5%</div><div class="value">3%</div></div>
-      <div class="tier-row"><div class="tier-name">Premier Partner</div><div>50,000–99,999</div><div class="value">7%</div><div class="value">5%</div></div>
-      <div class="tier-row legendary"><div class="tier-name">Legendary Partner</div><div>100,000+</div><div class="value">10%</div><div class="value">10%</div></div>
+
+      <div class="tier-row head">
+        <div>PARTNER LEVEL</div>
+        <div>POINTS</div>
+        <div>APPAREL</div>
+        <div>PROMOTIONAL</div>
+      </div>
+
+
+      <div class="tier-row">
+        <div class="tier-name">Partner</div>
+        <div>0–9,999</div>
+        <div class="value">—</div>
+        <div class="value">—</div>
+      </div>
+
+
+      <div class="tier-row">
+        <div class="tier-name">Advanced Partner</div>
+        <div>10,000–24,999</div>
+        <div class="value">2%</div>
+        <div class="value">—</div>
+      </div>
+
+
+      <div class="tier-row">
+        <div class="tier-name">Elite Partner</div>
+        <div>25,000–49,999</div>
+        <div class="value">5%</div>
+        <div class="value">3%</div>
+      </div>
+
+
+      <div class="tier-row">
+        <div class="tier-name">Premier Partner</div>
+        <div>50,000–99,999</div>
+        <div class="value">7%</div>
+        <div class="value">5%</div>
+      </div>
+
+
+      <div class="tier-row legendary">
+        <div class="tier-name">Legendary Partner</div>
+        <div>100,000+</div>
+        <div class="value">10%</div>
+        <div class="value">10%</div>
+      </div>
+
     </div>
+
   </div>
+
 </section>
 
-<section class="portal" id="partner-access">
+
+<!-- PARTNER ACCESS -->
+<section
+  class="portal"
+  id="partner-access"
+>
+
   <div class="wrap">
+
     <div class="portal-box">
+
       <div>
-        <div class="eyebrow">ALREADY AN AI APPAREL PARTNER?</div>
-        <h2>View your organization's rewards.</h2>
-        <p>Access your organization portal to review points, available credit, Partner level and qualifying transaction history.</p>
-        <div class="note">Customer login is being prepared. Existing portal access can continue through your organization link.</div>
+
+        <div class="eyebrow">
+          ALREADY AN AI APPAREL PARTNER?
+        </div>
+
+        <h2>
+          View your organization's rewards.
+        </h2>
+
+        <p>
+          Access your organization portal to review points,
+          available credit, Partner level and qualifying transaction history.
+        </p>
+
+        <div class="note">
+          Customer login is being prepared. Existing portal access
+          can continue through your organization link.
+        </div>
+
       </div>
+
+
       <div class="login-box">
-        <input type="email" aria-label="Email address" placeholder="Your work email" disabled>
-        <a class="btn btn-primary" href="./organization.html">OPEN ORGANIZATION PORTAL</a>
+
+        <input
+          type="email"
+          aria-label="Email address"
+          placeholder="Your work email"
+          disabled
+        >
+
+        <a
+          class="btn btn-primary"
+          href="./organization.html"
+        >
+          OPEN ORGANIZATION PORTAL
+        </a>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
+
 </main>
 
+
 <footer>
+
   <div class="wrap footer-row">
-    <div>© 2026 AI Apparel Group</div>
-    <div>AI Partner Rewards</div>
+
+    <div>
+      © 2026 AI Apparel Group
+    </div>
+
+    <div>
+      AI Partner Rewards
+    </div>
+
   </div>
+
 </footer>
+
 </body>
 </html>
