@@ -1471,9 +1471,23 @@
       const companyStore = integrations.find(x => x.provider === "shopify" && x.enabled);
       const promotional = integrations.find(x => ["promoplace", "sage", "promo"].includes(String(x.provider || "").toLowerCase()) && x.enabled);
       PROMOTIONAL_PREVIOUS_ORDERS = Array.isArray(payload.promotionalPreviousOrders) ? payload.promotionalPreviousOrders : [];
-      ORGANIZATION_UNPAID_INVOICES = PROMOTIONAL_PREVIOUS_ORDERS
-        .filter(order => order.linkedInvoice && !["PAID","COMPLETED","VOID","CANCELLED"].includes(String(order.linkedInvoice.paymentStatus || "").toUpperCase()))
-        .map(order => ({orderNumber: order.jobNumber || order.poNumber || order.id || "Promotional Order", orderDate: order.date || null, invoice: order.linkedInvoice}));
+      ORGANIZATION_UNPAID_INVOICES = Array.isArray(payload.unpaidInvoices)
+        ? payload.unpaidInvoices
+        : PROMOTIONAL_PREVIOUS_ORDERS
+            .filter(order => order.linkedInvoice && !["PAID","COMPLETED","VOID","CANCELLED"].includes(String(order.linkedInvoice.paymentStatus || "").toUpperCase()))
+            .map(order => ({
+              invoiceNumber: order.linkedInvoice.invoiceNumber || order.linkedInvoice.orderNumber || order.linkedInvoice.draftNumber || null,
+              draftNumber: order.linkedInvoice.draftNumber || null,
+              jobNumber: order.jobNumber || null,
+              historicalOrderId: order.historicalOrderId || null,
+              date: order.date || null,
+              subtotal: Number(order.linkedInvoice.subtotal || 0),
+              shipping: Number(order.linkedInvoice.shipping || 0),
+              tax: Number(order.linkedInvoice.tax || 0),
+              total: Number(order.linkedInvoice.total || 0),
+              paymentStatus: order.linkedInvoice.paymentStatus || "UNPAID",
+              source: "Promotional"
+            }));
       const meta = (companyStore && companyStore.metadata) || {};
 
       ORGANIZATION.tag = org.tag || "";
@@ -2365,7 +2379,7 @@
         const displayNumber=order.jobNumber||order.poNumber||order.id||"Previous Order";
         const statusClass=String(order.status||"").toLowerCase()==="open"?"previous-order-status open":"previous-order-status";
         const inv=order.linkedInvoice;
-        const invoiceHtml=inv ? `<div class="linked-invoice"><div class="linked-invoice-top"><div class="linked-invoice-title">COMPANY STORE INVOICE ${escapeHtml(inv.draftNumber||"")}</div><div class="linked-invoice-status">${escapeHtml(inv.paymentStatus||"UNPAID")}</div></div><div class="linked-invoice-details"><span>INVOICE SUBTOTAL <strong>${formatMoney(inv.subtotal||0)}</strong></span><span>SHIPPING <strong>${formatMoney(inv.shipping||0)}</strong></span><span>TAX <strong>${formatMoney(inv.tax||0)}</strong></span><span>TOTAL DUE <strong>${formatMoney(inv.total||0)}</strong></span></div></div>` : "";
+        const invoiceHtml=inv ? `<div class="linked-invoice"><div class="linked-invoice-top"><div class="linked-invoice-title">COMPANY STORE INVOICE ${escapeHtml(inv.invoiceNumber||inv.orderNumber||inv.draftNumber||"")}</div><div class="linked-invoice-status">${escapeHtml(inv.paymentStatus||"UNPAID")}</div></div><div class="linked-invoice-details"><span>INVOICE SUBTOTAL <strong>${formatMoney(inv.subtotal||0)}</strong></span><span>SHIPPING <strong>${formatMoney(inv.shipping||0)}</strong></span><span>TAX <strong>${formatMoney(inv.tax||0)}</strong></span><span>TOTAL DUE <strong>${formatMoney(inv.total||0)}</strong></span></div></div>` : "";
         card.innerHTML=`<div class="previous-order-header"><div><div class="previous-order-number">JOB / ORDER ${escapeHtml(displayNumber)}</div><div class="previous-order-date">${order.date?formatDate(order.date):"Date unavailable"}</div></div><div class="${statusClass}">${escapeHtml(order.status||"Previous Order").toUpperCase()}</div></div><div class="previous-order-body">${itemHtml||'<div class="promo-empty">Product details are not available for this order.</div>'}${invoiceHtml}</div><div class="previous-order-footer"><div><div class="previous-order-total-label">PREVIOUS ORDER TOTAL</div><div class="previous-order-total">${formatMoney(order.total||0)}</div></div><div class="historical-note">Historical Promotional order<br>Not included in AI Partner Rewards</div></div>`;
         list.appendChild(card);
       });
@@ -2380,9 +2394,13 @@
       if(!rows.length){empty.style.display="block";return;}
       empty.style.display="none";
       rows.forEach(row=>{
-        const inv=row.invoice||{}, card=document.createElement("article");
+        const inv=row.invoice||row||{}, card=document.createElement("article");
+        const invoiceNumber=inv.invoiceNumber||inv.orderNumber||inv.draftNumber||"Invoice";
+        const jobNumber=row.jobNumber||row.orderNumber||null;
+        const invoiceDate=row.date||row.orderDate||null;
+        const status=inv.paymentStatus||"UNPAID";
         card.className="current-quote-card";
-        card.innerHTML=`<div class="current-quote-main"><div class="current-quote-number">INVOICE ${escapeHtml(inv.draftNumber||"")}</div><div class="current-quote-project">${escapeHtml(row.orderNumber||"Organization Invoice")}${row.orderDate?" • "+formatDate(row.orderDate):""}</div></div><div class="current-quote-status ready">${escapeHtml(inv.paymentStatus||"UNPAID")}</div><div class="current-quote-total">${formatMoney(inv.total||0)}</div>`;
+        card.innerHTML=`<div class="current-quote-main"><div class="current-quote-number">INVOICE ${escapeHtml(invoiceNumber)}</div><div class="current-quote-project">${jobNumber?"Promotional Job "+escapeHtml(jobNumber):"Organization Invoice"}${invoiceDate?" • "+formatDate(invoiceDate):""}${inv.draftNumber&&inv.draftNumber!==invoiceNumber?`<br><span class="muted">Original draft ${escapeHtml(inv.draftNumber)}</span>`:""}</div></div><div class="current-quote-status ready">${escapeHtml(status)}</div><div class="current-quote-total">${formatMoney(inv.total||0)}</div>`;
         list.appendChild(card);
       });
     }
