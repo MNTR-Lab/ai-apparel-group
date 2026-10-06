@@ -57,9 +57,10 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 
 <div class="card">
 <h2>Data Management</h2>
-<p class="muted">Force a fresh pull when Company Store or Promotional history needs to be updated.</p>
+<p class="muted">Sync connected organization stores and refresh order history. Connected Store sync uses the organization selected at the top of Super Admin.</p>
 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px">
 <button class="teal" id="syncCompanyStoreBtn">SYNC COMPANY STORE</button>
+<button id="syncPromotionalStoreBtn">SYNC CONNECTED PROMOTIONAL STORE</button>
 <button id="syncPromotionalBtn">SYNC PROMOTIONAL HISTORY</button>
 </div>
 <div id="syncStatus" class="status muted">No manual sync run in this session.</div>
@@ -235,8 +236,24 @@ async function runDataSync(action,buttonId,label){
  }catch(e){st.textContent=label+" sync failed: "+e.message;}
  finally{btn.disabled=false;btn.textContent=old;}
 }
+async function runPromotionalStoreSync(){
+ const btn=document.getElementById("syncPromotionalStoreBtn"),st=document.getElementById("syncStatus");
+ const organizationId=document.getElementById("organizationSelect").value;
+ if(!organizationId){st.textContent="Select an organization first.";return;}
+ const org=organizations.find(o=>o.id===organizationId);
+ btn.disabled=true; const old=btn.textContent; btn.textContent="SYNCING…";
+ st.textContent="Syncing "+(org?.name||"selected organization")+" Promotional store…";
+ try{
+   const d=await api("POST",{action:"sync_promotional_store",organization_id:organizationId});
+   const s=d.result?.summary||{};
+   st.textContent=(org?.name||"Promotional store")+" synced "+new Date(d.synced_at).toLocaleString()+" • "+(s.existing||0)+" active • "+(s.added||0)+" added • "+(s.updated||0)+" updated • "+(s.removed||0)+" removed"+(s.live_membership_sync===false?" • Connected products refreshed; new PromoPlace membership still requires product identification.":"");
+ }catch(e){st.textContent="Promotional store sync failed: "+e.message;}
+ finally{btn.disabled=false;btn.textContent=old;}
+}
+
 document.getElementById("syncCompanyStoreBtn").onclick=()=>runDataSync("sync_company_store","syncCompanyStoreBtn","Company Store");
 document.getElementById("syncPromotionalBtn").onclick=()=>runDataSync("sync_promotional_history","syncPromotionalBtn","Promotional history");
+document.getElementById("syncPromotionalStoreBtn").onclick=runPromotionalStoreSync;
 
 document.getElementById("quoteStatusFilter").onchange=renderQuotes;
 document.getElementById("quoteSearch").oninput=renderQuotes;
