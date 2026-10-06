@@ -174,19 +174,24 @@ async function savePricing(id,ready){
  }catch(e){st.textContent=e.message;}
 }
 async function createCompanyStoreInvoice(id){
- const st=document.getElementById("pricingStatus-"+id);
  const q=promotionalQuotes.find(x=>x.id===id);
- if(!q||!st)return;
+ if(!q)return;
  if(!confirm("Create the Company Store invoice for "+q.request_number+"? This will create a live customer payment link. Rewards will NOT be issued until the order is paid."))return;
- st.textContent="Creating Company Store invoice…";
+
+ const st=document.getElementById("pricingStatus-"+id);
+ const box=document.getElementById("qd-"+id)?.closest(".quote-message");
+ const actionButton=box?.querySelector("button.primary");
+ if(st)st.textContent="Creating Company Store invoice…";
+ if(actionButton){actionButton.disabled=true;actionButton.textContent="CREATING INVOICE…";}
+
  try{
    const data=await api("POST",{action:"create_company_store_invoice",quote_id:id});
-   st.textContent="Invoice created: "+(data.draftOrder?.name||"Company Store invoice");
    await loadAdmin();
-   const refreshed=promotionalQuotes.find(x=>x.id===id);
-   if(refreshed){renderQuotes();toggleQuote(id);}
+   renderQuotes();
  }catch(e){
-   st.textContent=e.message;
+   if(st)st.textContent=e.message;
+   if(actionButton){actionButton.disabled=false;actionButton.textContent="CREATE INVOICE";}
+   alert("Invoice could not be created: "+e.message);
  }
 }
 
