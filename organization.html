@@ -616,6 +616,22 @@
       font-size: 13px;
     }
 
+
+    /* PROMOTIONAL HISTORY */
+    .promotional-panel{overflow:hidden;background:white;border:1px solid var(--border);border-radius:16px}
+    .promotional-tabs{padding:16px 18px;display:flex;gap:8px;border-bottom:1px solid var(--border)}
+    .promotional-tab{padding:9px 14px;border:0;border-radius:999px;background:var(--light);color:var(--muted);font-size:10px;font-weight:800;cursor:pointer}
+    .promotional-tab.active{background:var(--navy);color:white}
+    .promotional-content{padding:22px}.promo-view{display:none}.promo-view.active{display:block}
+    .promo-empty{padding:34px 20px;text-align:center;color:var(--muted);font-size:13px}
+    .previous-orders-list{display:grid;gap:14px}.previous-order-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff}
+    .previous-order-header{padding:17px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;background:#f8fafc;border-bottom:1px solid var(--border)}
+    .previous-order-number{font-size:15px;font-weight:900}.previous-order-date{margin-top:2px;color:var(--muted);font-size:11px}
+    .previous-order-status{padding:6px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:9px;font-weight:900;white-space:nowrap}.previous-order-status.open{background:#dbeafe;color:#1d4ed8}
+    .previous-order-body{padding:18px}.previous-order-item{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border)}.previous-order-item:last-child{padding-bottom:0;margin-bottom:0;border-bottom:0}
+    .previous-order-product{font-size:14px;font-weight:800}.previous-order-meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:7px 16px;color:var(--muted);font-size:11px}.previous-order-meta strong{color:var(--text)}
+    .previous-order-footer{padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#f8fafc;border-top:1px solid var(--border)}
+    .previous-order-total-label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.8px}.previous-order-total{margin-top:2px;font-size:20px;font-weight:900}.historical-note{color:var(--muted);font-size:10px;text-align:right}
     /* =====================================================
        CONNECTED SERVICES
        ===================================================== */
@@ -1174,6 +1190,21 @@
       </div>
     </section>
 
+    <!-- PROMOTIONAL -->
+    <section class="section">
+      <div class="section-heading"><div><h2>Promotional</h2><p id="promotionalDescription">Quotes and previous promotional orders for this organization.</p></div></div>
+      <div class="promotional-panel">
+        <div class="promotional-tabs">
+          <button class="promotional-tab active" type="button" data-promo-view="currentQuotes">CURRENT QUOTES</button>
+          <button class="promotional-tab" type="button" data-promo-view="previousOrders">PREVIOUS ORDERS</button>
+        </div>
+        <div class="promotional-content">
+          <div class="promo-view active" id="currentQuotes"><div class="promo-empty">Current Promotional quotes will appear here as they are created.</div></div>
+          <div class="promo-view" id="previousOrders"><div class="previous-orders-list" id="previousOrdersList"></div><div class="promo-empty" id="emptyPreviousOrders" style="display:none;">No previous Promotional orders are available for this organization.</div></div>
+        </div>
+      </div>
+    </section>
+
     <!-- CONNECTED SERVICES -->
     <section class="section">
 
@@ -1291,6 +1322,8 @@
       promoPlace: { connected: false, storeId: "", storeUrl: "" }
     };
 
+    let PROMOTIONAL_PREVIOUS_ORDERS = [];
+
     async function loadOrganizationProfile() {
       const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" + encodeURIComponent(ORGANIZATION.id);
       const response = await fetch(url);
@@ -1299,7 +1332,8 @@
       const org = payload.organization || {};
       const integrations = payload.integrations || [];
       const companyStore = integrations.find(x => x.provider === "shopify" && x.enabled);
-      const promotional = integrations.find(x => x.provider === "promoplace" && x.enabled);
+      const promotional = integrations.find(x => ["promoplace", "sage", "promo"].includes(String(x.provider || "").toLowerCase()) && x.enabled);
+      PROMOTIONAL_PREVIOUS_ORDERS = Array.isArray(payload.promotionalPreviousOrders) ? payload.promotionalPreviousOrders : [];
       const meta = (companyStore && companyStore.metadata) || {};
 
       ORGANIZATION.tag = org.tag || "";
@@ -1313,7 +1347,7 @@
       ORGANIZATION.shopify.connected = Boolean(companyStore);
       ORGANIZATION.shopify.customerTag = companyStore?.customer_tag || "";
       ORGANIZATION.shopify.storeUrl = companyStore?.store_url || "";
-      ORGANIZATION.promoPlace.connected = Boolean(promotional);
+      ORGANIZATION.promoPlace.connected = Boolean(promotional) || PROMOTIONAL_PREVIOUS_ORDERS.length > 0;
       ORGANIZATION.promoPlace.storeUrl = promotional?.store_url || "";
       return payload;
     }
@@ -1633,6 +1667,9 @@
         ORGANIZATION.name +
         ". Q3 2026 is partial and begins Aug 15.";
 
+      document.getElementById("promotionalDescription").textContent =
+        "Current quotes and previous Promotional orders for " + ORGANIZATION.name + ".";
+
       const logoContainer =
         document.getElementById(
           "organizationLogo"
@@ -1910,7 +1947,7 @@
 
         empty.textContent =
           quarter === "2026-Q4"
-            ? "No qualifying Carolina ENT orders in Q4 2026 yet."
+            ? "No qualifying organization orders in Q4 2026 yet."
             : "No orders found for this quarter.";
 
         return;
@@ -2016,10 +2053,50 @@
         orders.filter(
           order =>
             order.type === "PROMO"
-        ).length;
+        ).length + PROMOTIONAL_PREVIOUS_ORDERS.length;
+
+      document.getElementById("totalOrders").textContent =
+        actualOrders.length + PROMOTIONAL_PREVIOUS_ORDERS.length;
 
     }
 
+
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+
+    function renderPromotionalPreviousOrders(previousOrders) {
+      const list=document.getElementById("previousOrdersList");
+      const empty=document.getElementById("emptyPreviousOrders");
+      list.innerHTML="";
+      if(!previousOrders.length){empty.style.display="block";return;}
+      empty.style.display="none";
+      previousOrders.forEach(order=>{
+        const card=document.createElement("article"); card.className="previous-order-card";
+        const items=Array.isArray(order.items)?order.items:[];
+        const itemHtml=items.map(item=>{
+          const details=[];
+          if(item.itemNumber) details.push(`<span>ITEM <strong>${escapeHtml(item.itemNumber)}</strong></span>`);
+          details.push(`<span>QTY <strong>${formatNumber(item.quantity||0)}</strong></span>`);
+          if(item.color) details.push(`<span>COLOR <strong>${escapeHtml(item.color)}</strong></span>`);
+          if(item.size) details.push(`<span>SIZE <strong>${escapeHtml(item.size)}</strong></span>`);
+          if(item.imprint) details.push(`<span>IMPRINT <strong>${escapeHtml(item.imprint)}</strong></span>`);
+          details.push(`<span>PREVIOUS UNIT PRICE <strong>${formatMoney(item.previousUnitPrice||0)}</strong></span>`);
+          details.push(`<span>PREVIOUS EXTENDED PRICE <strong>${formatMoney(item.previousExtendedPrice||0)}</strong></span>`);
+          return `<div class="previous-order-item"><div class="previous-order-product">${escapeHtml(item.description||"Promotional Product")}</div><div class="previous-order-meta">${details.join("")}</div></div>`;
+        }).join("");
+        const displayNumber=order.jobNumber||order.poNumber||order.id||"Previous Order";
+        const statusClass=String(order.status||"").toLowerCase()==="open"?"previous-order-status open":"previous-order-status";
+        card.innerHTML=`<div class="previous-order-header"><div><div class="previous-order-number">JOB / ORDER ${escapeHtml(displayNumber)}</div><div class="previous-order-date">${order.date?formatDate(order.date):"Date unavailable"}</div></div><div class="${statusClass}">${escapeHtml(order.status||"Previous Order").toUpperCase()}</div></div><div class="previous-order-body">${itemHtml||'<div class="promo-empty">Product details are not available for this order.</div>'}</div><div class="previous-order-footer"><div><div class="previous-order-total-label">PREVIOUS ORDER TOTAL</div><div class="previous-order-total">${formatMoney(order.total||0)}</div></div><div class="historical-note">Historical Promotional order<br>Not included in AI Partner Rewards</div></div>`;
+        list.appendChild(card);
+      });
+    }
+
+    function configurePromotionalTabs(){
+      const tabs=document.querySelectorAll("[data-promo-view]"); const views=document.querySelectorAll(".promo-view");
+      tabs.forEach(tab=>tab.addEventListener("click",()=>{tabs.forEach(x=>x.classList.remove("active"));views.forEach(x=>x.classList.remove("active"));tab.classList.add("active");const target=document.getElementById(tab.dataset.promoView);if(target)target.classList.add("active");}));
+    }
 
     /*
     ============================================================
@@ -2237,6 +2314,9 @@
       */
 
       configureStores();
+
+      configurePromotionalTabs();
+      renderPromotionalPreviousOrders(PROMOTIONAL_PREVIOUS_ORDERS);
 
 
       /*
