@@ -414,12 +414,12 @@
     }
 
     .store-card.apparel {
-      background: var(--navy);
+      background: var(--org-primary, var(--navy));
       color: white;
     }
 
     .store-card.promo {
-      background: linear-gradient(135deg, #0f766e, #115e59);
+      background: var(--org-secondary, var(--navy));
       color: white;
     }
 
@@ -1677,6 +1677,16 @@
 
 
       document.documentElement.style.setProperty("--navy", ORGANIZATION.primaryColor || "#111827");
+
+      document.documentElement.style.setProperty(
+        "--org-primary",
+        ORGANIZATION.primaryColor || "#111827"
+      );
+
+      document.documentElement.style.setProperty(
+        "--org-secondary",
+        ORGANIZATION.accentColor || ORGANIZATION.primaryColor || "#111827"
+      );
 
       if (ORGANIZATION.logo) {
 
