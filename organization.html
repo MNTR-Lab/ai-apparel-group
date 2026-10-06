@@ -1,2594 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Organization Dashboard | AI Apparel Group</title>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --navy: #1d3c7a;
-      --navy-light: #162f61;
-      --teal: #ffffff;
-      --cyan: #1d3c7a;
-      --light: #f3f4f6;
-      --white: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --green: #16a34a;
-      --orange: #ea580c;
-      --blue: #2563eb;
-      --red: #dc2626;
-      --purple: #7c3aed;
-      --max-width: 1400px;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Helvetica, Arial, sans-serif;
-      background: #f8fafc;
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button {
-      font: inherit;
-    }
-
-    /* =====================================================
-       TOP BAR
-       ===================================================== */
-
-    .top-bar {
-      min-height: 38px;
-      padding: 8px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--navy);
-      color: white;
-      text-align: center;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-    }
-
-    /* =====================================================
-       HEADER
-       ===================================================== */
-
-    .site-header {
-      background: white;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .header-inner {
-      max-width: var(--max-width);
-      height: 90px;
-      margin: 0 auto;
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 30px;
-    }
-
-    .brand-logo img {
-      display: block;
-      height: 60px;
-      width: auto;
-      max-width: 220px;
-      object-fit: contain;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .back-home {
-      padding: 11px 17px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      transition: 0.2s;
-    }
-
-    .back-home:hover {
-      background: var(--light);
-    }
-
-    .account-button {
-      padding: 11px 17px;
-      background: var(--navy);
-      color: white;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    /* =====================================================
-       ORGANIZATION HERO
-       ===================================================== */
-
-    .organization-hero {
-      background:
-        radial-gradient(
-          circle at 85% 30%,
-          rgba(255, 255, 255, 0.12),
-          transparent 30%
-        ),
-        var(--navy);
-      color: white;
-    }
-
-    .organization-hero-inner {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 58px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 40px;
-    }
-
-    .organization-label {
-      margin-bottom: 9px;
-      color: var(--teal);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 2.5px;
-    }
-
-    .organization-name {
-      font-size: clamp(42px, 5vw, 66px);
-      line-height: 1;
-      letter-spacing: -2px;
-    }
-
-    .organization-subtitle {
-      margin-top: 13px;
-      color: #d1d5db;
-      font-size: 16px;
-    }
-
-    .organization-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 18px;
-      padding: 7px 12px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background: #22c55e;
-      border-radius: 50%;
-    }
-
-    .organization-logo {
-      width: 170px;
-      height: 170px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: white;
-      border-radius: 18px;
-      color: var(--navy);
-      font-size: 42px;
-      font-weight: 900;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-    }
-
-    .organization-logo img,
-    .organization-logo object {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 12px;
-      border: 0;
-    }
-
-    .admin-preview-banner {
-      display: none;
-      background: #000;
-      color: #fff;
-      padding: 10px 20px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 1.4px;
-    }
-    .admin-preview-banner.show { display: block; }
-    .admin-preview-banner a { color: #fff; text-decoration: underline; margin-left: 12px; }
-
-    /* =====================================================
-       DASHBOARD
-       ===================================================== */
-
-    .dashboard {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 38px 32px 90px;
-    }
-
-    .dashboard-title-row {
-      margin-bottom: 25px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 20px;
-    }
-
-    .eyebrow {
-      margin-bottom: 5px;
-      color: var(--teal);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 2px;
-    }
-
-    .dashboard-title {
-      font-size: 30px;
-      line-height: 1.1;
-    }
-
-    .last-updated {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    /* =====================================================
-       PARTNER ACTION CENTER
-       ===================================================== */
-    .partner-action {
-      display: none;
-      margin: 0 0 28px;
-      padding: 22px 24px;
-      background: #fff;
-      border: 2px solid var(--org-primary, var(--navy));
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
-      align-items: center;
-      gap: 18px;
-    }
-    .partner-action.show { display: flex; }
-    .partner-action-icon {
-      width: 46px; height: 46px; flex: 0 0 46px;
-      border-radius: 50%; display: grid; place-items: center;
-      background: var(--org-primary, var(--navy)); color: #fff;
-      font-weight: 900; font-size: 20px;
-    }
-    .partner-action-copy { flex: 1; }
-    .partner-action-kicker {
-      font-size: 10px; font-weight: 900; letter-spacing: 1.4px;
-      color: var(--org-primary, var(--navy));
-    }
-    .partner-action-title { margin-top: 3px; font-size: 18px; font-weight: 900; }
-    .partner-action-text { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .partner-action-button {
-      border: 0; border-radius: 8px; padding: 12px 17px;
-      background: var(--org-primary, var(--navy)); color: #fff;
-      font-size: 11px; font-weight: 900; cursor: pointer; white-space: nowrap;
-    }
-
-    /* =====================================================
-       REWARDS
-       ===================================================== */
-
-    .rewards-card {
-      padding: 30px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-    }
-
-    .rewards-top {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 45px;
-      align-items: center;
-    }
-
-    .rewards-heading {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.7px;
-    }
-
-    .points {
-      margin-top: 5px;
-      font-size: 54px;
-      font-weight: 800;
-      letter-spacing: -2px;
-      line-height: 1;
-    }
-
-    .points-label {
-      margin-top: 7px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .tier-name {
-      margin-bottom: 6px;
-      font-size: 27px;
-      font-weight: 800;
-    }
-
-    .tier-summary {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .progress-track {
-      height: 11px;
-      margin-top: 18px;
-      overflow: hidden;
-      background: #e5e7eb;
-      border-radius: 999px;
-    }
-
-    .progress-fill {
-      height: 100%;
-      width: 0;
-      background: linear-gradient(90deg, var(--cyan), var(--teal));
-      border-radius: 999px;
-      transition: width 0.5s ease;
-    }
-
-    .progress-labels {
-      margin-top: 7px;
-      display: flex;
-      justify-content: space-between;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .rewards-benefits {
-      margin-top: 28px;
-      padding-top: 22px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      border-top: 1px solid var(--border);
-    }
-
-    .reward-benefit {
-      padding: 5px 20px;
-      border-right: 1px solid var(--border);
-    }
-
-    .reward-benefit:first-child {
-      padding-left: 0;
-    }
-
-    .reward-benefit:last-child {
-      border-right: 0;
-    }
-
-    .reward-benefit-label {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .reward-benefit-value {
-      margin-top: 3px;
-      font-size: 19px;
-      font-weight: 800;
-    }
-
-    /* =====================================================
-       SECTION
-       ===================================================== */
-
-    .section {
-      margin-top: 35px;
-    }
-
-    .section-heading {
-      margin-bottom: 17px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .section-heading h2 {
-      font-size: 23px;
-    }
-
-    .section-heading p {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    /* =====================================================
-       STORES
-       ===================================================== */
-
-    .store-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .store-card {
-      min-height: 230px;
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-radius: 16px;
-    }
-
-    .store-card.apparel {
-      background: var(--navy);
-      color: white;
-    }
-
-    .store-card.promo {
-      background: linear-gradient(135deg, #0f766e, #115e59);
-      color: white;
-    }
-
-    .store-label {
-      color: #d1d5db;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 2px;
-    }
-
-    .store-card h3 {
-      margin-top: 8px;
-      font-size: 28px;
-    }
-
-    .store-card p {
-      max-width: 440px;
-      margin-top: 7px;
-      color: #d1d5db;
-      font-size: 13px;
-    }
-
-    .store-button {
-      display: inline-block;
-      width: fit-content;
-      margin-top: 22px;
-      padding: 11px 17px;
-      background: white;
-      color: var(--navy);
-      border: 0;
-      border-radius: 7px;
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .connection-note {
-      margin-top: 9px;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 10px;
-    }
-
-    /* =====================================================
-       SUMMARY
-       ===================================================== */
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-
-    .summary-card {
-      padding: 20px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-
-    .summary-label {
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    .summary-number {
-      margin-top: 5px;
-      font-size: 27px;
-      font-weight: 800;
-    }
-
-    /* =====================================================
-       ORDERS
-       ===================================================== */
-
-    .orders-card {
-      overflow: hidden;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-    }
-
-    .order-tabs {
-      padding: 16px 18px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .order-tab {
-      padding: 8px 13px;
-      background: var(--light);
-      border: 0;
-      border-radius: 999px;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .order-tab.active {
-      background: var(--navy);
-      color: white;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-
-    .orders-table {
-      width: 100%;
-      min-width: 900px;
-      border-collapse: collapse;
-    }
-
-    .orders-table th {
-      padding: 13px 18px;
-      background: #f8fafc;
-      border-bottom: 1px solid var(--border);
-      color: var(--muted);
-      text-align: left;
-      font-size: 10px;
-      letter-spacing: 0.8px;
-    }
-
-    .orders-table td {
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
-    }
-
-    .orders-table tbody tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .order-number {
-      font-weight: 800;
-    }
-
-    .order-date {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 10px;
-    }
-
-    .order-type {
-      display: inline-block;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 9px;
-      font-weight: 800;
-    }
-
-    .type-online {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .type-quote {
-      background: #ffedd5;
-      color: #9a3412;
-    }
-
-    .type-promo {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-
-    .type-adjustment {
-      background: #ede9fe;
-      color: #6d28d9;
-    }
-
-    .type-refund {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .points-earned {
-      color: var(--green);
-      font-weight: 800;
-    }
-
-    .points-negative {
-      color: var(--red);
-    }
-
-    .empty-state {
-      padding: 45px 25px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 13px;
-    }
-
-
-    /* PROMOTIONAL HISTORY */
-    .promotional-panel{overflow:hidden;background:white;border:1px solid var(--border);border-radius:16px}
-    .promotional-tabs{padding:16px 18px;display:flex;gap:8px;border-bottom:1px solid var(--border)}
-    .promotional-tab{padding:9px 14px;border:0;border-radius:999px;background:var(--light);color:var(--muted);font-size:10px;font-weight:800;cursor:pointer}
-    .promotional-tab.active{background:var(--navy);color:white}
-    .promotional-content{padding:22px}.promo-view{display:none}.promo-view.active{display:block}
-    .promo-empty{padding:34px 20px;text-align:center;color:var(--muted);font-size:13px}
-    .current-quote-list{display:grid;gap:12px}
-    .current-quote-card{padding:18px;border:1px solid var(--border);border-radius:14px;background:#fff;display:flex;align-items:center;gap:16px}
-    .current-quote-main{flex:1}.current-quote-number{font-size:15px;font-weight:900}.current-quote-project{margin-top:3px;color:var(--muted);font-size:11px}
-    .current-quote-status{padding:6px 10px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:9px;font-weight:900;white-space:nowrap}
-    .current-quote-status.ready{background:#fee2e2;color:#991b1b}.current-quote-status.approved{background:#dcfce7;color:#166534}
-    .current-quote-total{font-size:18px;font-weight:900;white-space:nowrap}
-    .current-quote-button{border:0;border-radius:8px;padding:10px 14px;background:var(--org-primary,var(--navy));color:#fff;font-size:10px;font-weight:900;cursor:pointer;white-space:nowrap}
-
-    .previous-orders-list{display:grid;gap:14px}.previous-order-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff}
-    .previous-order-header{padding:17px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;background:#f8fafc;border-bottom:1px solid var(--border)}
-    .previous-order-number{font-size:15px;font-weight:900}.previous-order-date{margin-top:2px;color:var(--muted);font-size:11px}
-    .previous-order-status{padding:6px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:9px;font-weight:900;white-space:nowrap}.previous-order-status.open{background:#dbeafe;color:#1d4ed8}
-    .previous-order-body{padding:18px}.previous-order-item{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border)}.previous-order-item:last-child{padding-bottom:0;margin-bottom:0;border-bottom:0}
-    .previous-order-product{font-size:14px;font-weight:800}.previous-order-meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:7px 16px;color:var(--muted);font-size:11px}.previous-order-meta strong{color:var(--text)}
-    .previous-order-footer{padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#f8fafc;border-top:1px solid var(--border)}
-    .previous-order-total-label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.8px}.previous-order-total{margin-top:2px;font-size:20px;font-weight:900}.historical-note{color:var(--muted);font-size:10px;text-align:right}
-    /* =====================================================
-       CONNECTED SERVICES
-       ===================================================== */
-
-    .api-card {
-      padding: 24px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-    }
-
-    .api-row {
-      padding: 15px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .api-row:last-child {
-      border-bottom: 0;
-    }
-
-    .api-name {
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .api-description {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .api-status {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #fef3c7;
-      color: #92400e;
-      white-space: nowrap;
-      font-size: 9px;
-      font-weight: 800;
-    }
-
-    .api-status.connected {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    /* =====================================================
-       FOOTER
-       ===================================================== */
-
-    footer {
-      padding: 28px;
-      background: #090d14;
-      color: #6b7280;
-      text-align: center;
-      font-size: 11px;
-    }
-
-    /* =====================================================
-       RESPONSIVE
-       ===================================================== */
-
-    @media (max-width: 900px) {
-      .rewards-top,
-      .store-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .summary-grid,
-      .rewards-benefits {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .reward-benefit {
-        padding: 12px;
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .reward-benefit:nth-last-child(-n+2) {
-        border-bottom: 0;
-      }
-    }
-
-    @media (max-width: 650px) {
-      .header-inner {
-        height: 75px;
-        padding: 0 17px;
-      }
-
-      .brand-logo img {
-        height: 48px;
-      }
-
-      .back-home {
-        display: none;
-      }
-
-      .organization-hero-inner {
-        padding: 40px 20px;
-      }
-
-      .organization-logo {
-        display: none;
-      }
-
-      .dashboard {
-        padding: 28px 17px 60px;
-      }
-
-      .dashboard-title-row {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .points {
-        font-size: 43px;
-      }
-
-      .rewards-card {
-        padding: 22px;
-      }
-
-      .summary-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .organization-name {
-        font-size: 42px;
-      }
-
-      .partner-action {
-        align-items: flex-start;
-        flex-wrap: wrap;
-      }
-
-      .partner-action-button {
-        width: 100%;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Apparel Group — Promotional Storefront Concept</title>
+<style>
+:root{
+  --ai-blue:#006FBA;--ai-pink:#FF06EB;--ink:#101114;--muted:#6d7178;
+  --line:#e8e8ea;--soft:#f7f7f5;--org:#F07723;--org2:#1175BC;--white:#fff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);background:#fff}
+button,input{font:inherit}
+a{text-decoration:none;color:inherit}
+.topline{background:var(--ink);color:#fff;text-align:center;padding:9px 16px;font-size:11px;font-weight:750;letter-spacing:.25px}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.nav{max-width:1400px;margin:auto;height:72px;padding:0 30px;display:flex;align-items:center;gap:34px}
+.logo{display:flex;align-items:center;height:44px}.logo img{display:block;max-height:38px;max-width:190px;object-fit:contain}
+.navlinks{display:flex;gap:24px;font-size:12px;font-weight:850;letter-spacing:.3px}
+.navsearch{margin-left:auto;display:flex;align-items:center;background:#f4f4f4;border-radius:999px;padding:0 15px;width:285px}
+.navsearch input{border:0;outline:0;background:transparent;padding:11px 8px;width:100%;font-size:12px}
+.account{width:38px;height:38px;border-radius:50%;background:var(--org);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:900}
+.hero{max-width:1400px;margin:22px auto 0;padding:0 30px}
+.hero-inner{min-height:460px;border-radius:26px;overflow:hidden;position:relative;background:linear-gradient(105deg,#f3eee7 0%,#f6f4f1 48%,#e7eef4 100%);display:flex;align-items:center}
+.hero-copy{width:57%;padding:55px 62px;position:relative;z-index:2}
+.eyebrow{font-size:11px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;color:var(--org2)}
+.hero h1{font-size:58px;line-height:.98;letter-spacing:-3px;margin:12px 0 18px;max-width:700px}
+.hero p{font-size:17px;line-height:1.55;color:#555b64;max-width:560px}
+.big-search{margin-top:27px;background:#fff;border-radius:14px;padding:7px;display:flex;max-width:620px;box-shadow:0 12px 32px #10111413}
+.big-search input{flex:1;border:0;outline:0;padding:15px;font-size:14px}
+.big-search button{border:0;border-radius:10px;background:var(--ink);color:#fff;font-weight:850;padding:0 23px}
+.hero-art{position:absolute;right:0;top:0;width:46%;height:100%;overflow:hidden}
+.blob{position:absolute;border-radius:50%}.b1{width:390px;height:390px;background:var(--org);right:-45px;top:-60px}.b2{width:270px;height:270px;background:var(--org2);right:210px;bottom:-90px}.mock{position:absolute;background:#fff;border-radius:24px;box-shadow:0 22px 55px #0002;display:grid;place-items:center;font-weight:900;color:#92979f}
+.tumbler{width:150px;height:280px;right:105px;top:95px;border-radius:38px;transform:rotate(7deg)}
+.box{width:185px;height:145px;right:290px;top:190px;transform:rotate(-7deg)}
+.orgstrip{max-width:1340px;margin:18px auto 0;padding:0 30px}
+.orgbar{border:1px solid var(--line);border-radius:15px;padding:14px 18px;display:flex;align-items:center;gap:14px;background:#fff}
+.orgmark{width:38px;height:38px;border-radius:10px;background:var(--org);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:900}
+.orgbar strong{font-size:13px}.orgbar span{font-size:12px;color:var(--muted)}
+.quick{margin-left:auto;display:flex;gap:8px}.quick button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 13px;font-size:11px;font-weight:800}.quick button:first-child{background:var(--ink);color:#fff;border-color:var(--ink)}
+.section{max-width:1400px;margin:58px auto 0;padding:0 30px}
+.head{display:flex;align-items:end;justify-content:space-between;margin-bottom:20px}
+.head h2{font-size:30px;letter-spacing:-1.2px;margin:0 0 5px}.head p{margin:0;color:var(--muted);font-size:13px}.view{font-size:12px;font-weight:850;border-bottom:1px solid #111;padding-bottom:2px}
+.catgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.cat{height:210px;border-radius:18px;overflow:hidden;position:relative;background:#eee;cursor:pointer}
+.cat:nth-child(1){background:linear-gradient(145deg,#dce9ef,#aac6d5)}
+.cat:nth-child(2){background:linear-gradient(145deg,#eadfd7,#cdb7a7)}
+.cat:nth-child(3){background:linear-gradient(145deg,#e6e3f0,#beb8d5)}
+.cat:nth-child(4){background:linear-gradient(145deg,#e8ece2,#bdc8ae)}
+.cat:nth-child(5){background:linear-gradient(145deg,#f1e2d7,#d8b59b)}
+.cat:nth-child(6){background:linear-gradient(145deg,#e2e6ea,#bac2ca)}
+.cat:before{content:"PRODUCT IMAGE";position:absolute;inset:0;display:grid;place-items:center;color:#ffffffa8;font-size:10px;font-weight:900;letter-spacing:1px}
+.catname{position:absolute;left:14px;bottom:14px;background:#fff;padding:9px 12px;border-radius:999px;font-size:11px;font-weight:900}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.product{position:relative}
+.photo{height:330px;border-radius:18px;background:linear-gradient(145deg,#f1f2f2,#e2e5e7);display:grid;place-items:center;color:#9aa0a7;font-size:11px;font-weight:850;overflow:hidden;position:relative}
+.badge{position:absolute;left:12px;top:12px;background:#fff;border-radius:999px;padding:7px 9px;font-size:9px;font-weight:900}
+.save{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:50%;border:0;background:#fff;font-size:17px}
+.product h3{font-size:14px;margin:13px 0 5px}.product p{font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.5}
+.productbottom{display:flex;align-items:center;justify-content:space-between}
+.quoteprice{font-size:12px;font-weight:850}.arrow{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;font-weight:900}
+.personal{max-width:1340px;margin:65px auto 0;padding:0 30px}
+.personalbox{background:var(--ink);color:#fff;border-radius:26px;padding:42px;display:grid;grid-template-columns:.85fr 1.7fr;gap:40px;align-items:center;overflow:hidden;position:relative}
+.personalbox:after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:var(--org);opacity:.2;left:-100px;bottom:-130px}
+.personal h2{font-size:36px;letter-spacing:-1.5px;margin:7px 0 12px}.personal p{font-size:13px;color:#c8cbd0;line-height:1.6}.history{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.historycard{background:#fff;color:var(--ink);border-radius:17px;padding:14px;display:grid;grid-template-columns:86px 1fr;gap:13px;align-items:center}
+.histimg{height:86px;border-radius:12px;background:#edf0f2;display:grid;place-items:center;color:#9aa0a7;font-size:8px;font-weight:900}
+.historycard strong{font-size:12px;display:block;line-height:1.35}.historycard span{font-size:10px;color:var(--muted)}.again{margin-top:8px;border:0;background:transparent;padding:0;font-size:10px;font-weight:900;color:var(--org2)}
+.banner{max-width:1340px;margin:65px auto 0;padding:0 30px}
+.bannerin{border-radius:24px;background:var(--org2);color:#fff;padding:44px 50px;display:flex;align-items:center;justify-content:space-between}
+.banner h2{font-size:32px;margin:0 0 7px;letter-spacing:-1px}.banner p{margin:0;color:#e2edf5;font-size:13px}.banner button{border:0;background:#fff;color:var(--ink);border-radius:999px;padding:13px 19px;font-size:11px;font-weight:900}
+footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.quoteview{border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;background:#fff}.quoteview.ready{border-color:var(--org2)}.quoteview-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.quoteview-items{margin-top:14px;border-top:1px solid var(--line)}.quoteview-item{display:grid;grid-template-columns:1fr auto auto auto;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;align-items:center}.quote-summary{margin:14px 0 0 auto;max-width:390px}.quote-summary div{display:flex;justify-content:space-between;padding:5px 0;font-size:12px}.quote-summary .grand{font-size:18px;font-weight:900;border-top:2px solid var(--ink);margin-top:6px;padding-top:10px}.approvebtn{border:0;background:var(--org2);color:#fff;border-radius:10px;padding:13px 18px;font-size:11px;font-weight:900;margin-top:15px}.approvebtn:disabled{opacity:.55}.quote-note-box{background:var(--soft);border-radius:10px;padding:12px;margin-top:12px;font-size:12px;line-height:1.5}.quote-float{position:fixed;right:22px;bottom:20px;background:var(--ink);color:#fff;border-radius:999px;padding:14px 18px;font-size:11px;font-weight:900;box-shadow:0 12px 30px #0003;z-index:12}
+@media(max-width:1000px){.catgrid{grid-template-columns:repeat(3,1fr)}.products{grid-template-columns:repeat(2,1fr)}.hero-copy{width:70%}.hero-art{opacity:.45}.personalbox{grid-template-columns:1fr}.navlinks{display:none}}
+@media(max-width:620px){.nav{padding:0 16px}.navsearch{display:none}.hero,.section,.personal,.banner,.orgstrip{padding-left:16px;padding-right:16px}.hero-copy{width:100%;padding:38px 25px}.hero h1{font-size:42px}.hero-art{display:none}.big-search{flex-direction:column}.big-search button{padding:13px}.quick{display:none}.catgrid{grid-template-columns:repeat(2,1fr)}.cat{height:160px}.products{grid-template-columns:1fr}.photo{height:360px}.history{grid-template-columns:1fr}.personalbox{padding:28px}.bannerin{padding:30px;display:block}.banner button{margin-top:20px}footer{display:block;line-height:2}}
+
+.loading{grid-column:1/-1;padding:38px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted);font-size:13px}
+.cat{border:0;text-align:left;cursor:pointer}.photo{display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f7f7f7}.photo img{width:auto;height:auto;max-width:min(72%,300px);max-height:min(72%,300px);object-fit:contain;background:transparent;image-rendering:auto}.product{cursor:pointer}
+.product .price{font-size:12px;font-weight:900}.errorbox{grid-column:1/-1;padding:20px;border-radius:14px;background:#fff0f0;color:#8b1e1e}
+.modal{position:fixed;inset:0;background:#0009;z-index:50;display:none;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}
+.modalcard{background:#fff;width:min(1080px,100%);max-height:92vh;overflow:auto;border-radius:24px;position:relative}.modalclose{position:absolute;right:16px;top:16px;z-index:3;width:40px;height:40px;border:0;border-radius:50%;background:#111;color:#fff;font-size:20px}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:34px;padding:38px}.detailmain{height:430px;border-radius:18px;background:#f5f5f5;display:grid;place-items:center;overflow:hidden}.detailmain img{width:auto;height:auto;max-width:300px;max-height:300px;object-fit:contain;image-rendering:auto}
+.thumbs{display:flex;gap:8px;overflow:auto;margin-top:10px}.thumb{width:70px;height:70px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:2px}.thumb img{width:100%;height:100%;object-fit:contain;image-rendering:auto}
+.detail h2{font-size:34px;line-height:1.05;margin:8px 0 12px}.detailmeta{font-size:11px;color:var(--muted);font-weight:800}.detaildesc{font-size:13px;line-height:1.65;color:#4f5660}
+.breaks{width:100%;border-collapse:collapse;margin:16px 0}.breaks th,.breaks td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:11px}
+.field{margin:12px 0}.field label{display:block;font-size:10px;font-weight:900;margin-bottom:6px}.field select,.field input,.field textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.addquote{width:100%;border:0;background:var(--ink);color:#fff;padding:15px;border-radius:12px;font-weight:900;margin-top:12px}
+.drawer{position:fixed;right:-430px;top:0;width:min(410px,92vw);height:100vh;background:#fff;z-index:60;box-shadow:-20px 0 50px #0002;transition:.25s;padding:24px;box-sizing:border-box;overflow:auto}.drawer.open{right:0}
+.drawerhead{display:flex;justify-content:space-between;align-items:center}.drawerclose{border:0;background:#eee;border-radius:50%;width:36px;height:36px}.quoteitem{border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}.quoteitem strong{font-size:12px}.quoteitem span{font-size:10px;color:var(--muted);display:block;margin-top:4px}
+.quote-note{font-size:11px;color:var(--muted);line-height:1.5}.requestbtn{width:100%;border:0;background:var(--org2);color:#fff;padding:14px;border-radius:12px;font-weight:900}
+@media(max-width:760px){.detail{grid-template-columns:1fr;padding:22px}.detailmain{height:320px}.detail h2{font-size:27px}}
+
+
+.heroOrgLogo{display:block;max-width:72%;max-height:58%;object-fit:contain;filter:none}
+.mock{display:flex;align-items:center;justify-content:center}
+
+#accountBadge{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:5px;background:#fff;border:1px solid var(--line)}
+#accountBadge img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+
+.product .photo{min-height:245px}
+@media(max-width:760px){.product .photo{min-height:190px}.photo img{max-width:68%;max-height:68%}}
+
+.quote-success{margin-top:14px;padding:14px;border-radius:12px;background:#eef8ee;font-size:12px;line-height:1.5}.quote-error{margin-top:14px;padding:14px;border-radius:12px;background:#fff0f0;color:#8b1e1e;font-size:12px}.currentquote{border:1px solid var(--line);border-radius:16px;padding:16px;margin:10px 0}.currentquote-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.currentquote strong{font-size:13px}.statuspill{font-size:9px;font-weight:900;padding:6px 9px;border-radius:999px;background:#f1f1f1;text-transform:uppercase}.currentquote p{font-size:11px;color:var(--muted);margin:7px 0 0}
+</style>
 </head>
-
 <body>
-  <div class="admin-preview-banner" id="adminPreviewBanner">
-    SUPER ADMIN PREVIEW • YOU ARE VIEWING THIS PAGE AS THE CUSTOMER
-    <a href="./admin.html">RETURN TO SUPER ADMIN</a>
-  </div>
-
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    AI APPAREL GROUP • ORGANIZATION PORTAL
-  </div>
-
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="header-inner">
-
-      <a href="./" class="brand-logo" aria-label="AI Apparel Group Home">
-        <img
-          src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110"
-          alt="AI Apparel Group"
-        >
-      </a>
-
-      <div class="header-right">
-        <a href="./" class="back-home">
-          ← AI APPAREL HOME
-        </a>
-
-        <a href="#" class="account-button">
-          MY ACCOUNT
-        </a>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- ORGANIZATION HERO -->
-  <section class="organization-hero">
-    <div class="organization-hero-inner">
-
-      <div>
-        <div class="organization-label">
-          AI APPAREL ORGANIZATION
-        </div>
-
-        <h1
-          class="organization-name"
-          id="organizationName"
-        >
-          Loading...
-        </h1>
-
-        <p class="organization-subtitle">
-          Apparel • Promotional Products • Rewards • Orders
-        </p>
-
-        <div class="organization-status">
-          <span class="status-dot"></span>
-          AI Partner Rewards Active
-        </div>
-      </div>
-
-      <div
-        class="organization-logo"
-        id="organizationLogo"
-      >
-        --
-      </div>
-
-    </div>
-  </section>
-
-  <!-- DASHBOARD -->
-  <main class="dashboard">
-
-    <div class="dashboard-title-row">
-      <div>
-        <div class="eyebrow">
-          ORGANIZATION DASHBOARD
-        </div>
-
-        <h2
-          class="dashboard-title"
-          id="welcomeTitle"
-        >
-          Welcome
-        </h2>
-      </div>
-
-      <div
-        class="last-updated"
-        id="lastUpdated"
-      ></div>
-    </div>
-
-    <!-- ACTION REQUIRED -->
-    <section class="partner-action" id="quoteApprovalAction">
-      <div class="partner-action-icon">!</div>
-      <div class="partner-action-copy">
-        <div class="partner-action-kicker">ACTION REQUIRED</div>
-        <div class="partner-action-title" id="quoteApprovalTitle">
-          Promotional quote ready for approval
-        </div>
-        <div class="partner-action-text" id="quoteApprovalText">
-          AI Apparel has completed pricing. Review and approve your quote to move forward.
-        </div>
-      </div>
-      <button class="partner-action-button" id="reviewQuoteButton" type="button">
-        REVIEW &amp; APPROVE
-      </button>
-    </section>
-
-    <!-- REWARDS -->
-    <section class="rewards-card">
-
-      <div class="rewards-top">
-
-        <div>
-          <div class="rewards-heading">
-            AI PARTNER REWARDS
-          </div>
-
-          <div
-            class="points"
-            id="totalPoints"
-          >
-            0
-          </div>
-
-          <div class="points-label">
-            TOTAL ORGANIZATION POINTS
-          </div>
-        </div>
-
-        <div>
-          <div
-            class="tier-name"
-            id="tierName"
-          >
-            Partner
-          </div>
-
-          <div
-            class="tier-summary"
-            id="tierSummary"
-          ></div>
-
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              id="progressFill"
-            ></div>
-          </div>
-
-          <div class="progress-labels">
-            <span id="tierMinimum"></span>
-            <span id="nextTierMinimum"></span>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="rewards-benefits">
-
-        <div class="reward-benefit">
-          <div class="reward-benefit-label">
-            APPAREL DISCOUNT
-          </div>
-
-          <div
-            class="reward-benefit-value"
-            id="apparelDiscount"
-          >
-            0%
-          </div>
-        </div>
-
-        <div class="reward-benefit">
-          <div class="reward-benefit-label">
-            PROMOTIONAL DISCOUNT
-          </div>
-
-          <div
-            class="reward-benefit-value"
-            id="promoDiscount"
-          >
-            0%
-          </div>
-        </div>
-
-        <div class="reward-benefit">
-          <div class="reward-benefit-label">
-            AVAILABLE CREDIT
-          </div>
-
-          <div
-            class="reward-benefit-value"
-            id="availableCredit"
-          >
-            $0.00
-          </div>
-        </div>
-
-        <div class="reward-benefit">
-          <div class="reward-benefit-label">
-            NEXT TIER
-          </div>
-
-          <div
-            class="reward-benefit-value"
-            id="nextTier"
-          >
-            --
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- STORES -->
-    <section class="section">
-
-      <div class="section-heading">
-        <div>
-          <h2>Your Stores</h2>
-
-          <p id="storesDescription">
-            Access your organization's connected stores.
-          </p>
-        </div>
-      </div>
-
-      <div class="store-grid">
-
-        <!-- SHOPIFY / APPAREL -->
-        <div class="store-card apparel">
-
-          <div>
-            <div class="store-label">
-              ONLINE APPAREL STORE
-            </div>
-
-            <h3 id="apparelStoreName">
-              Organization Apparel
-            </h3>
-
-            <p>
-              Shop your organization's apparel and online-store products.
-            </p>
-          </div>
-
-          <div>
-            <a
-              id="apparelStoreButton"
-              href="#"
-              class="store-button"
-            >
-              SHOP APPAREL
-            </a>
-
-            <div
-              class="connection-note"
-              id="shopifyConnectionText"
-            >
-              Company Store connection pending
-            </div>
-          </div>
-
-        </div>
-
-        <!-- PROMOPLACE -->
-        <div class="store-card promo">
-
-          <div>
-            <div class="store-label">
-              PROMOTIONAL PRODUCTS
-            </div>
-
-            <h3 id="promoStoreName">
-              Organization Promotional
-            </h3>
-
-            <p>
-              Access your organization's promotional product catalog.
-            </p>
-          </div>
-
-          <div>
-            <a
-              id="promoStoreButton"
-              href="#"
-              class="store-button"
-            >
-              SHOP PROMOTIONAL PRODUCTS
-            </a>
-
-            <div
-              class="connection-note"
-              id="promoConnectionText"
-            >
-              Promotional connection pending
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ORGANIZATION ACTIVITY -->
-    <section class="section">
-
-      <div class="section-heading">
-        <div>
-          <h2>Organization Activity</h2>
-
-          <p>
-            Combined activity across connected ordering channels.
-          </p>
-        </div>
-      </div>
-
-      <div class="summary-grid">
-
-        <div class="summary-card">
-          <div class="summary-label">
-            TOTAL ORDERS
-          </div>
-
-          <div
-            class="summary-number"
-            id="totalOrders"
-          >
-            0
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-label">
-            ONLINE ORDERS
-          </div>
-
-          <div
-            class="summary-number"
-            id="onlineOrders"
-          >
-            0
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-label">
-            QUOTE / BULK
-          </div>
-
-          <div
-            class="summary-number"
-            id="quoteOrders"
-          >
-            0
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-label">
-            PROMOTIONAL ORDERS
-          </div>
-
-          <div
-            class="summary-number"
-            id="promoOrders"
-          >
-            0
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ORDER HISTORY -->
-    <section class="section">
-
-      <div class="section-heading">
-        <div>
-          <h2>Order History</h2>
-
-          <p id="orderHistoryDescription">
-            All orders associated with this organization.
-          </p>
-        </div>
-      </div>
-
-      <div class="orders-card">
-
-        <div class="order-tabs">
-          <label for="quarterFilter" style="font-size:10px;font-weight:800;color:var(--muted);align-self:center;">
-            QUARTER
-          </label>
-          <select id="quarterFilter" style="padding:8px 13px;border:1px solid var(--border);border-radius:8px;background:white;font-weight:800;">
-            <option value="2026-Q3">Q3 2026 — Available history from Aug 15</option>
-            <option value="2026-Q4">Q4 2026 — Oct–Dec</option>
-            <option value="ALL">ALL AVAILABLE</option>
-          </select>
-        </div>
-
-        <div class="table-wrap">
-
-          <table class="orders-table">
-
-            <thead>
-              <tr>
-                <th>ORDER</th>
-                <th>TYPE</th>
-                <th>PURCHASED BY</th>
-                <th>COUPON / DISCOUNT</th>
-                <th>DISCOUNT AMOUNT</th>
-                <th>QUALIFYING TOTAL</th>
-                <th>POINTS</th>
-              </tr>
-            </thead>
-
-            <tbody id="ordersBody"></tbody>
-
-          </table>
-
-        </div>
-
-        <div
-          class="empty-state"
-          id="emptyOrders"
-          style="display:none;"
-        >
-          No orders found for this category.
-        </div>
-
-      </div>
-    </section>
-
-    <!-- PROMOTIONAL -->
-    <section class="section">
-      <div class="section-heading"><div><h2>Promotional</h2><p id="promotionalDescription">Quotes and previous promotional orders for this organization.</p></div></div>
-      <div class="promotional-panel">
-        <div class="promotional-tabs">
-          <button class="promotional-tab active" type="button" data-promo-view="currentQuotes">CURRENT QUOTES</button>
-          <button class="promotional-tab" type="button" data-promo-view="previousOrders">PREVIOUS ORDERS</button>
-        </div>
-        <div class="promotional-content">
-          <div class="promo-view active" id="currentQuotes">
-            <div class="current-quote-list" id="currentQuotesList"></div>
-            <div class="promo-empty" id="emptyCurrentQuotes">No current Promotional quotes.</div>
-          </div>
-          <div class="promo-view" id="previousOrders"><div class="previous-orders-list" id="previousOrdersList"></div><div class="promo-empty" id="emptyPreviousOrders" style="display:none;">No previous Promotional orders are available for this organization.</div></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CONNECTED SERVICES -->
-    <section class="section">
-
-      <div class="section-heading">
-        <div>
-          <h2>Connected Services</h2>
-
-          <p>
-            These connections will provide live organization data.
-          </p>
-        </div>
-      </div>
-
-      <div class="api-card">
-
-        <div class="api-row">
-          <div>
-            <div class="api-name">
-              Online Company Store
-            </div>
-
-            <div class="api-description">
-              Online store orders, customers and organization tags.
-            </div>
-          </div>
-
-          <div
-            class="api-status"
-            id="shopifyStatus"
-          >
-            CONNECTION PENDING
-          </div>
-        </div>
-
-        <div class="api-row">
-          <div>
-            <div class="api-name">
-              Promotional
-            </div>
-
-            <div class="api-description">
-              Promotional products and order activity.
-            </div>
-          </div>
-
-          <div
-            class="api-status"
-            id="promoStatus"
-          >
-            CONNECTION PENDING
-          </div>
-        </div>
-
-        <div class="api-row">
-          <div>
-            <div class="api-name">
-              AI Partner Rewards
-            </div>
-
-            <div class="api-description">
-              Organization rewards ledger and tier calculation.
-            </div>
-          </div>
-
-          <div class="api-status connected">
-            LIVE DATA
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <footer>
-    © <span id="year"></span>
-    AI Apparel Group • Organization Portal
-  </footer>
-
-  <script>
-
-    /*
-    ============================================================
-    MASTER ORGANIZATION DASHBOARD
-    ============================================================
-
-    IMPORTANT:
-
-    Carolina ENT is only the FIRST organization being used
-    to develop this dashboard.
-
-    We are NOT creating separate HTML pages for every business.
-
-    Later this ORGANIZATION object will be loaded automatically
-    from our database after the user logs in.
-
-    ============================================================
-    */
-
-    const params = new URLSearchParams(window.location.search);
-    const requestedOrganizationId = params.get("organization_id") || "org_carolina_ent";
-
-    const ORGANIZATION = {
-      id: requestedOrganizationId,
-      tag: "",
-      name: "Loading...",
-      shortName: "--",
-      status: "active",
-      logo: "",
-      primaryColor: "#111827",
-      secondaryColor: "#FFFFFF",
-      accentColor: "#000000",
-      rewards: { enabled: true },
-      shopify: { connected: false, customerTag: "", storeUrl: "" },
-      promoPlace: { connected: false, storeId: "", storeUrl: "" }
-    };
-
-    let PROMOTIONAL_PREVIOUS_ORDERS = [];
-
-    async function loadOrganizationProfile() {
-      const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" + encodeURIComponent(ORGANIZATION.id);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Unable to load organization profile.");
-      const payload = await response.json();
-      const org = payload.organization || {};
-      const integrations = payload.integrations || [];
-      const companyStore = integrations.find(x => x.provider === "shopify" && x.enabled);
-      const promotional = integrations.find(x => ["promoplace", "sage", "promo"].includes(String(x.provider || "").toLowerCase()) && x.enabled);
-      PROMOTIONAL_PREVIOUS_ORDERS = Array.isArray(payload.promotionalPreviousOrders) ? payload.promotionalPreviousOrders : [];
-      const meta = (companyStore && companyStore.metadata) || {};
-
-      ORGANIZATION.tag = org.tag || "";
-      ORGANIZATION.name = org.name || "Organization";
-      ORGANIZATION.shortName = org.short_name || "--";
-      ORGANIZATION.status = org.status || "active";
-      ORGANIZATION.logo = org.logo_url || "";
-      ORGANIZATION.primaryColor = meta.primary_color || (ORGANIZATION.id === "org_lenoir_rhyne_bears" ? "#98002E" : "#1D3C7A");
-      ORGANIZATION.secondaryColor = meta.accent_color || "#FFFFFF";
-      ORGANIZATION.accentColor = meta.secondary_color || "#000000";
-      ORGANIZATION.shopify.connected = Boolean(companyStore);
-      ORGANIZATION.shopify.customerTag = companyStore?.customer_tag || "";
-      ORGANIZATION.shopify.storeUrl = companyStore?.store_url || "";
-      ORGANIZATION.promoPlace.connected = Boolean(promotional) || PROMOTIONAL_PREVIOUS_ORDERS.length > 0;
-      ORGANIZATION.promoPlace.storeUrl = promotional?.store_url || "";
-      return payload;
+<div class="topline">Your dedicated AI Apparel promotional showroom · Products are quoted with current pricing & availability</div>
+<header><div class="nav">
+<div class="logo"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group"></div>
+<div class="navlinks"><a>APPAREL</a><a>PROMOTIONAL</a><a>REWARDS</a><a>ORDERS</a></div>
+<form class="navsearch" id="navSearch">⌕ <input id="navSearchInput" placeholder="Search promotional products"></form>
+<div class="account" id="accountBadge"><img id="accountLogo" alt="Organization logo"></div>
+</div></header>
+
+<section class="hero"><div class="hero-inner">
+<div class="hero-copy">
+<div class="eyebrow">Promotional · <span id="heroOrgName">Your Organization</span></div>
+<h1>Put your brand on something better.</h1>
+<p>Discover branded products for your team, customers and events. Find the idea—you tell us what you need, and AI Apparel handles the details.</p>
+<form class="big-search" id="heroSearch"><input id="heroSearchInput" placeholder="Search drinkware, tech, bags, giveaways and more"><button type="submit">Search products</button></form>
+</div>
+<div class="hero-art"><div class="blob b1"></div><div class="blob b2"></div><div class="mock tumbler"><img class="heroOrgLogo" alt="Organization logo"></div><div class="mock box"><img class="heroOrgLogo" alt="Organization logo"></div></div>
+</div></section>
+
+<div class="orgstrip"><div class="orgbar">
+<div class="orgmark" id="orgMark">ORG</div><div><strong>Your Promotional Workspace</strong><br><span>Search, request quotes, and reorder previous products.</span></div>
+<div class="quick"><button data-scroll="catalog">Discover</button><button id="quotesBtn">Current Quotes</button><button data-scroll="previous">Previous Orders</button></div>
+</div></div>
+<section class="section">
+<div class="head"><div><h2>What are you shopping for?</h2><p>Start with a category or search the full promotional catalog.</p></div><div class="view">VIEW ALL CATEGORIES</div></div>
+<div class="catgrid">
+<button class="cat" type="button" data-query="Drinkware"><span class="catname">Drinkware</span></button>
+<button class="cat" type="button" data-query="Bags"><span class="catname">Bags</span></button>
+<button class="cat" type="button" data-query="Tech"><span class="catname">Tech</span></button>
+<button class="cat" type="button" data-query="Office"><span class="catname">Office</span></button>
+<button class="cat" type="button" data-query="Outdoor"><span class="catname">Outdoor</span></button>
+<button class="cat" type="button" data-query="Events"><span class="catname">Events</span></button>
+</div>
+</section>
+
+<section class="section" id="approvedShowroom" style="display:none">
+<div class="head"><div><div class="eyebrow" style="color:var(--org1)">ORGANIZATION COLLECTION</div><h2 id="approvedTitle">Approved Products</h2><p>Products selected specifically for your organization. All quote requests are handled through AI Apparel.</p></div><div class="view">APPROVED COLLECTION</div></div>
+<div class="products" id="approvedGrid"><div class="loading">Loading approved products…</div></div>
+</section>
+
+<section class="section" id="catalog">
+<div class="head"><div><h2 id="catalogTitle">Products worth putting your logo on.</h2><p>A curated starting point. Search opens the much larger live catalog.</p></div><div class="view">SHOP ALL PRODUCTS</div></div>
+<div class="products" id="productGrid"><div class="loading">Search the live Promotional catalog above.</div></div>
+</section>
+
+<section class="personal" id="previous"><div class="personalbox">
+<div><div class="eyebrow" style="color:#8fc8ef">PERSONALIZED FOR <span id="personalOrg">YOUR ORGANIZATION</span></div><h2>You've ordered it before. Get it again.</h2><p>Your previous promotional purchases live here, so reordering starts with one click. We'll verify today's pricing, inventory and decoration before finalizing the quote.</p></div>
+<div class="history" id="previousOrders"><div class="loading">Loading previous orders…</div></div>
+</div></section>
+
+<div class="banner"><div class="bannerin"><div><h2>Can't find exactly what you need?</h2><p>Tell AI Apparel what you're planning and we'll help source the right promotional product.</p></div><button>START A PRODUCT REQUEST</button></div></div>
+
+<footer><div><strong>AI APPAREL GROUP</strong> · Promotional Showroom Concept</div><div>Company Store · Promotional · Rewards · Account</div></footer>
+<button class="quote-float" id="quoteFloat">QUOTE REQUEST · <span id="quoteCount">0</span> ITEMS</button>
+
+<div class="modal" id="quotesModal"><div class="modalcard"><button class="modalclose" id="quotesClose">×</button><div style="padding:38px"><div class="detailmeta">PROMOTIONAL</div><h2 style="font-size:34px;margin:6px 0 20px">Current Quotes</h2><div id="currentQuotes"><div class="loading">Loading quotes…</div></div></div></div></div>
+<div class="modal" id="productModal"><div class="modalcard"><button class="modalclose" id="modalClose">×</button><div id="detailBody"></div></div></div>
+<aside class="drawer" id="quoteDrawer"><div class="drawerhead"><h2>Quote Request</h2><button class="drawerclose" id="drawerClose">×</button></div><div id="quoteItems"></div><div id="quoteForm"><div class="field"><label>CONTACT NAME</label><input id="quoteContactName" placeholder="Name"></div><div class="field"><label>EMAIL</label><input id="quoteContactEmail" type="email" placeholder="Email"></div><div class="field"><label>PHONE</label><input id="quoteContactPhone" placeholder="Phone"></div><div class="field"><label>PROJECT / EVENT</label><input id="quoteProjectName" placeholder="Project name"></div><div class="field"><label>NEEDED BY</label><input id="quoteNeededBy" type="date"></div><div class="field"><label>NOTES</label><textarea id="quoteNotes" rows="4" placeholder="Anything AI Apparel should know?"></textarea></div></div><p class="quote-note">Submitting this request does not place an order. AI Apparel will verify current pricing, availability, decoration and freight before preparing the quote.</p><button class="requestbtn" id="prepareRequest">SUBMIT QUOTE REQUEST</button><div id="quoteMessage"></div></aside>
+
+<script>
+const API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-sage-products";
+const FEED="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed";
+const QUOTE_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-quote-request";
+const SHOWROOM_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-showroom";
+const AI_LOGO="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110";
+const qs=new URLSearchParams(location.search);
+const orgId=qs.get("organization_id")||"org_erx";
+let ORG={id:orgId,name:"Emergency Restoration Xperts",shortName:"ERX",logo:"https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ERX.png?v=1791225892",primaryColor:"#F07723",secondaryColor:"#1175BC"};
+let quote=[];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const sageImage=(url,size=300)=>{
+ try{
+  const u=new URL(url);
+  if(u.hostname.includes("promoplace.com") && u.pathname.includes("QPic")) u.searchParams.set("RS","300");
+  return u.toString();
+ }catch{return url||""}
+};
+
+function applyOrg(){
+ document.documentElement.style.setProperty("--org",ORG.primaryColor||"#006FBA");
+ document.documentElement.style.setProperty("--org2",ORG.secondaryColor||ORG.primaryColor||"#006FBA");
+ $("#heroOrgName").textContent=ORG.name;
+ const accountBadge=$("#accountBadge");
+ if(ORG.logo){
+   accountBadge.innerHTML=`<img id="accountLogo" src="${esc(ORG.logo)}" alt="${esc(ORG.name)} logo">`;
+ }else{
+   accountBadge.textContent=ORG.shortName||ORG.name;
+ }
+ $("#personalOrg").textContent=(ORG.shortName||ORG.name).toUpperCase();
+ const mark=$("#orgMark");
+ if(ORG.logo){mark.innerHTML=`<img src="${esc(ORG.logo)}" alt="${esc(ORG.name)}" style="max-width:100%;max-height:42px;object-fit:contain">`; mark.style.background="#fff";}
+ else mark.textContent=ORG.shortName||"ORG";
+ document.querySelectorAll(".heroOrgLogo").forEach(img=>{
+   if(ORG.logo){img.src=ORG.logo;img.alt=ORG.name+" logo";img.style.display="block";}
+   else{img.style.display="none";}
+ });
+}
+async function loadOrg(){
+ try{
+  const r=await fetch(`${FEED}?organization_id=${encodeURIComponent(orgId)}`);
+  const d=await r.json();
+  const o=d.organization||{};
+  ORG={...ORG,id:o.id||ORG.id,name:o.name||ORG.name,shortName:o.shortName||o.short_name||ORG.shortName,logo:o.logo||o.logo_url||ORG.logo,primaryColor:o.primaryColor||ORG.primaryColor,secondaryColor:o.secondaryColor||ORG.secondaryColor};
+  applyOrg();
+  renderPrevious(d.promotionalPreviousOrders||[]);
+ }catch(e){applyOrg();$("#previousOrders").innerHTML='<div class="loading">Previous orders are unavailable right now.</div>'}
+}
+function renderPrevious(orders){
+ const items=[];
+ orders.forEach(o=>(o.items||[]).forEach(i=>items.push({o,i})));
+ if(!items.length){$("#previousOrders").innerHTML='<div class="loading">No previous Promotional orders yet.</div>';return}
+ $("#previousOrders").innerHTML=items.slice(0,4).map(({o,i})=>`<div class="historycard"><div class="histimg">PREVIOUS<br>ORDER</div><div><strong>${esc(i.description||i.itemNumber||"Promotional Product")}</strong><span>Previously ordered · ${esc(i.quantity||"")} units</span><br><button class="again" data-reorder="${esc(i.description||i.itemNumber||"")}">REQUEST AGAIN →</button></div></div>`).join("");
+ document.querySelectorAll("[data-reorder]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.reorder));
+}
+async function loadApprovedShowroom(){
+ try{
+  const r=await fetch(`${SHOWROOM_API}?organization_id=${encodeURIComponent(orgId)}`), d=await r.json();
+  if(!r.ok||!d.ok||!d.showroom)return;
+  const products=d.products||[];
+  $("#approvedShowroom").style.display="block";
+  $("#approvedTitle").textContent=d.showroom.label||`${ORG.name} Approved Products`;
+  if(!products.length){$("#approvedGrid").innerHTML='<div class="loading">No approved products are available right now.</div>';return}
+  $("#approvedGrid").innerHTML=products.map((p,i)=>`<article class="product" data-approved-index="${i}"><div class="photo">${p.image?`<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name||"Approved Product")}</h3><p>${esc(p.itemNumber||"Approved Promotional Product")}</p><div class="productbottom"><span class="price">${esc(p.price||"Request current pricing")}</span><button class="arrow" type="button">→</button></div></article>`).join("");
+  document.querySelectorAll("[data-approved-index]").forEach(card=>card.onclick=()=>openApprovedProduct(products[Number(card.dataset.approvedIndex)]));
+ }catch(e){console.error("Approved showroom",e)}
+}
+function openApprovedProduct(p){
+ $("#detailBody").innerHTML=`<div class="detail"><div><div class="detailmain">${p.image?`<img src="${esc(p.image)}" alt="${esc(p.name)}">`:"PRODUCT IMAGE"}</div></div><div><div class="detailmeta">APPROVED FOR ${esc(ORG.name.toUpperCase())} · ${esc(p.itemNumber||"")}</div><h2>${esc(p.name||"Approved Product")}</h2><p class="detaildesc">This product is part of your organization's approved Promotional collection. Submit it through AI Apparel for current availability and final quote pricing.</p><div class="field"><label>QUANTITY</label><input id="customQty" type="number" min="1" value="1"></div><div class="field"><label>COLOR / PRODUCT DETAILS</label><input id="customColor" placeholder="Enter color or details if needed"></div><div class="field"><label>DECORATION / NOTES</label><input id="customDecoration" placeholder="Enter decoration details if needed"></div><div class="detailmeta">Reference pricing: ${esc(p.price||"Current pricing will be quoted")}</div><button class="addquote" id="addCustomQuote">ADD TO QUOTE REQUEST</button></div></div>`;
+ $("#productModal").classList.add("open");
+ $("#addCustomQuote").onclick=()=>{
+   quote.push({id:null,showroomProductId:p.showroomProductId||null,name:p.name||"Approved Product",qty:$("#customQty").value,color:$("#customColor").value,decoration:$("#customDecoration").value,code:p.itemNumber||"",image:p.image||""});
+   renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open");
+ };
+}
+async function searchProducts(q){
+ q=(q||"").trim(); if(!q)return;
+ $("#catalogTitle").textContent=`Search results for “${q}”`;
+ $("#productGrid").innerHTML='<div class="loading">Searching the live Promotional catalog…</div>';
+ document.querySelector("#catalog").scrollIntoView({behavior:"smooth"});
+ try{
+  const r=await fetch(`${API}?q=${encodeURIComponent(q)}`);
+  const d=await r.json();
+  if(!d.ok)throw new Error(d.error||d.errMsg||"Search failed");
+  const products=d.products||[];
+  $("#productGrid").innerHTML=products.slice(0,24).map(p=>`<article class="product" data-id="${p.id}"><div class="photo">${p.image?`<img src="${esc(sageImage(p.image,300))}" alt="${esc(p.name)}" loading="lazy">`:"PRODUCT IMAGE"}</div><h3>${esc(p.name)}</h3><p>${esc(p.code||"Promotional")} · Live catalog</p><div class="productbottom"><span class="price">${p.price?`$${esc(p.price)}`:"Request current pricing"}</span><button class="arrow" type="button">→</button></div></article>`).join("") || '<div class="loading">No products found. Try another search.</div>';
+  document.querySelectorAll(".product[data-id]").forEach(card=>card.onclick=()=>openDetail(card.dataset.id));
+ }catch(e){$("#productGrid").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
+}
+async function openDetail(id){
+ $("#detailBody").innerHTML='<div class="loading" style="margin:50px">Loading live product details…</div>';
+ $("#productModal").classList.add("open");
+ try{
+  const r=await fetch(`${API}?productId=${encodeURIComponent(id)}`), d=await r.json();
+  if(!d.ok)throw new Error(d.error||d.errMsg||"Could not load product");
+  const p=d.product?.product||d.product||{};
+  const pics=(p.pics||[]).filter(x=>x.url);
+  const qty=p.qty||[], prc=p.prc||[];
+  const colors=String(p.colors||"").split(",").map(x=>x.trim()).filter(Boolean);
+  const methods=String(p.decorationMethod||"").split(",").map(x=>x.trim()).filter(Boolean);
+  const rows=qty.map((q,i)=>q&&Number(q)>0&&prc[i]?`<tr><td>${esc(q)}</td><td>$${esc(prc[i])}</td></tr>`:"").join("");
+  $("#detailBody").innerHTML=`<div class="detail"><div><div class="detailmain">${pics[0]?`<img id="mainPic" src="${esc(sageImage(pics[0].url,300))}" alt="${esc(p.prName)}">`:"PRODUCT IMAGE"}</div><div class="thumbs">${pics.map(x=>`<button class="thumb" data-pic="${esc(sageImage(x.url,300))}"><img src="${esc(sageImage(x.url,300))}" alt="" loading="lazy"></button>`).join("")}</div></div><div><div class="detailmeta">${esc(p.category||"PROMOTIONAL")} · ${esc(p.spc||"")}</div><h2>${esc(p.prName||"Product")}</h2><p class="detaildesc">${esc(p.description||"")}</p>${rows?`<table class="breaks"><thead><tr><th>Quantity</th><th>Catalog price / ea.</th></tr></thead><tbody>${rows}</tbody></table>`:""}<div class="field"><label>QUANTITY</label><input id="detailQty" type="number" min="1" value="${esc(qty.find(x=>Number(x)>0)||"")}"></div><div class="field"><label>COLOR</label><select id="detailColor"><option value="">Select color</option>${colors.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div><div class="field"><label>DECORATION</label><select id="detailDecoration"><option value="">Select decoration</option>${methods.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div><div class="detailmeta">Production: ${esc(p.prodTime||"Quoted")} · Availability: ${p.onHand!=null?esc(p.onHand)+" reported on hand":"verified with quote"}</div><button class="addquote" id="addQuote">ADD TO QUOTE REQUEST</button></div></div>`;
+  document.querySelectorAll("[data-pic]").forEach(b=>b.onclick=()=>$("#mainPic").src=b.dataset.pic);
+  $("#addQuote").onclick=()=>{quote.push({id:p.prodEid||p.prodEId||id,name:p.prName||"Product",qty:$("#detailQty").value,color:$("#detailColor").value,decoration:$("#detailDecoration").value,code:p.spc||"",image:(pics[0]?.url||"")});renderQuote();$("#productModal").classList.remove("open");$("#quoteDrawer").classList.add("open")};
+ }catch(e){$("#detailBody").innerHTML=`<div class="errorbox" style="margin:50px">${esc(e.message)}</div>`}
+}
+function renderQuote(){
+ $("#quoteCount").textContent=quote.length;
+ $("#quoteItems").innerHTML=quote.length?quote.map((x,i)=>`<div class="quoteitem"><strong>${esc(x.name)}</strong><span>${esc(x.code)} · Qty ${esc(x.qty||"TBD")}</span><span>${esc(x.color||"Color TBD")} · ${esc(x.decoration||"Decoration TBD")}</span><button class="again" data-remove="${i}">REMOVE</button></div>`).join(""):'<div class="loading">Your quote request is empty.</div>';
+ document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{quote.splice(Number(b.dataset.remove),1);renderQuote()});
+}
+$("#heroSearch").onsubmit=e=>{e.preventDefault();searchProducts($("#heroSearchInput").value)};
+$("#navSearch").onsubmit=e=>{e.preventDefault();searchProducts($("#navSearchInput").value)};
+document.querySelectorAll("[data-query]").forEach(b=>b.onclick=()=>searchProducts(b.dataset.query));
+document.querySelectorAll("[data-scroll]").forEach(b=>b.onclick=()=>document.querySelector("#"+b.dataset.scroll)?.scrollIntoView({behavior:"smooth"}));
+$("#modalClose").onclick=()=>$("#productModal").classList.remove("open");
+$("#productModal").onclick=e=>{if(e.target.id==="productModal")e.currentTarget.classList.remove("open")};
+$("#quoteFloat").onclick=()=>{$("#quoteDrawer").classList.add("open");renderQuote()};
+$("#drawerClose").onclick=()=>$("#quoteDrawer").classList.remove("open");
+async function submitQuoteRequest(){
+ const msg=$("#quoteMessage");
+ if(!quote.length){msg.innerHTML='<div class="quote-error">Add at least one product before submitting.</div>';return}
+ const email=$("#quoteContactEmail").value.trim();
+ if(!email){msg.innerHTML='<div class="quote-error">Please enter a contact email.</div>';return}
+ $("#prepareRequest").disabled=true; $("#prepareRequest").textContent="SUBMITTING…"; msg.innerHTML="";
+ try{
+  const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+   organization_id:orgId,
+   contact_name:$("#quoteContactName").value,
+   contact_email:email,
+   contact_phone:$("#quoteContactPhone").value,
+   project_name:$("#quoteProjectName").value,
+   needed_by:$("#quoteNeededBy").value||null,
+   notes:$("#quoteNotes").value,
+   items:quote
+  })});
+  const d=await r.json();
+  if(!r.ok||!d.ok) throw new Error(d.error||"Quote request could not be submitted");
+  msg.innerHTML=`<div class="quote-success"><strong>Request received.</strong><br>Your request number is <strong>${esc(d.quoteRequest.requestNumber)}</strong>. AI Apparel can now review this request and prepare current pricing.</div>`;
+  quote=[];renderQuote();
+ }catch(e){msg.innerHTML=`<div class="quote-error">${esc(e.message)}</div>`}
+ finally{$("#prepareRequest").disabled=false;$("#prepareRequest").textContent="SUBMIT QUOTE REQUEST"}
+}
+const statusLabel=s=>({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"}[s]||s);
+const money=v=>"$"+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+function renderCustomerQuote(q){
+ const items=q.ai_apparel_quote_request_items||[],ready=["quote_ready","approved","invoiced","completed"].includes(q.status);
+ if(!ready)return `<div class="quoteview"><div class="quoteview-head"><strong>${esc(q.request_number)}</strong><span class="statuspill">${esc(statusLabel(q.status))}</span></div><p>${esc(q.project_name||"Promotional Quote")} · ${items.length} item(s) · ${new Date(q.submitted_at).toLocaleDateString()}</p><div class="quote-note-box">AI Apparel is preparing current pricing for this request.</div></div>`;
+ const charges=[["Setup",q.setup_charge],["Decoration",q.decoration_charge],["Freight",q.freight_charge],["Other Charge",q.additional_charge]].filter(x=>Number(x[1])!==0);
+ return `<div class="quoteview ready"><div class="quoteview-head"><div><strong>${esc(q.request_number)}</strong><div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(q.project_name||"Promotional Quote")}</div></div><span class="statuspill">${esc(statusLabel(q.status))}</span></div><div class="quoteview-items">${items.map(i=>`<div class="quoteview-item"><div><strong>${esc(i.product_name)}</strong><div style="color:var(--muted)">${esc(i.product_code||"")}${i.color?" · "+esc(i.color):""}${i.decoration?" · "+esc(i.decoration):""}</div></div><div>Qty ${esc(i.quoted_quantity??i.quantity??"—")}</div><div>${money(i.unit_selling_price)}/ea.</div><strong>${money(i.line_total)}</strong></div>`).join("")}</div><div class="quote-summary"><div><span>Product Subtotal</span><strong>${money(q.quoted_subtotal)}</strong></div>${charges.map(x=>`<div><span>${x[0]}</span><strong>${money(x[1])}</strong></div>`).join("")}${Number(q.discount_amount)?`<div><span>Discount</span><strong>-${money(q.discount_amount)}</strong></div>`:""}<div class="grand"><span>Quote Total</span><span>${money(q.quoted_total)}</span></div></div>${q.customer_quote_notes?`<div class="quote-note-box"><strong>AI Apparel Notes</strong><br>${esc(q.customer_quote_notes)}</div>`:""}${q.status==="quote_ready"?`<button class="approvebtn" data-approve-quote="${q.id}">APPROVE QUOTE · ${money(q.quoted_total)}</button>`:`<div class="quote-note-box"><strong>${esc(statusLabel(q.status))}</strong>${q.status==="approved"?" — Thank you. AI Apparel will prepare the invoice for this approved quote.":""}</div>`}</div>`;
+}
+async function approveCustomerQuote(id){
+ const btn=document.querySelector(`[data-approve-quote="${id}"]`); if(!btn)return;
+ if(!confirm("Approve this quote and authorize AI Apparel to proceed with invoicing?"))return;
+ btn.disabled=true;btn.textContent="APPROVING…";
+ try{const r=await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve_quote",organization_id:orgId,quote_id:id})}),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Quote could not be approved");await loadCurrentQuotes();}catch(e){btn.disabled=false;btn.textContent="APPROVE QUOTE";alert(e.message);}
+}
+async function loadCurrentQuotes(){
+ $("#quotesModal").classList.add("open");
+ $("#currentQuotes").innerHTML='<div class="loading">Loading quotes…</div>';
+ try{
+  const r=await fetch(`${QUOTE_API}?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(d.error||"Could not load quotes");
+  const quotes=d.quotes||[];
+  $("#currentQuotes").innerHTML=quotes.map(q=>renderCustomerQuote(q)).join("")||'<div class="loading">No current quote requests yet.</div>';
+  document.querySelectorAll("[data-approve-quote]").forEach(b=>b.onclick=()=>approveCustomerQuote(b.dataset.approveQuote));
+  const requestedQuoteId=new URLSearchParams(location.search).get("quote_id");
+  if(requestedQuoteId){
+    const target=document.querySelector(`[data-quote-id="${CSS.escape(requestedQuoteId)}"]`);
+    if(target){
+      target.scrollIntoView({behavior:"smooth",block:"center"});
+      target.style.boxShadow="0 0 0 3px var(--org1)";
     }
-
-
-    /*
-    ============================================================
-    REWARDS TIERS
-    ============================================================
-    */
-
-    const REWARD_TIERS = [
-
-      {
-        name: "Partner",
-        min: 0,
-        max: 9999.99,
-        apparelDiscount: 0,
-        promoDiscount: 0
-      },
-
-      {
-        name: "Advanced Partner",
-        min: 10000,
-        max: 24999.99,
-        apparelDiscount: 2,
-        promoDiscount: 0
-      },
-
-      {
-        name: "Elite Partner",
-        min: 25000,
-        max: 49999.99,
-        apparelDiscount: 5,
-        promoDiscount: 3
-      },
-
-      {
-        name: "Premier Partner",
-        min: 50000,
-        max: 99999.99,
-        apparelDiscount: 7,
-        promoDiscount: 5
-      },
-
-      {
-        name: "Legendary Partner",
-        min: 100000,
-        max: null,
-        apparelDiscount: 10,
-        promoDiscount: 10
-      }
-
-    ];
-    /*
-    ============================================================
-    REWARD POINT CALCULATION
-    ============================================================
-
-    Current program rules:
-
-    ONLINE STORE:
-    2 points per $1
-
-    QUOTE / BULK:
-    1 point per $1
-
-    PROMO:
-    1 point per $1
-
-    100 points = $1 reward credit
-
-    ============================================================
-    */
-
-    function calculatePoints(order) {
-
-      if (typeof order.manualPoints === "number") {
-        return order.manualPoints;
-      }
-
-      if (order.type === "ONLINE") {
-        return order.total * 2;
-      }
-
-      if (order.type === "QUOTE") {
-        return order.total;
-      }
-
-      if (order.type === "PROMO") {
-        return order.total;
-      }
-
-      if (order.type === "REFUND") {
-        return Number(order.points || 0);
-      }
-
-      return 0;
-    }
-
-
-    /*
-    ============================================================
-    FUTURE SHOPIFY API
-    ============================================================
-
-    DO NOT place Shopify API secrets in this file.
-
-    Later this function will call our secure backend.
-
-    Example future endpoint:
-
-    /api/organizations/org_carolina_ent/orders/shopify
-
-    ============================================================
-    */
-
-    async function getShopifyOrders(organizationId) {
-
-      const url =
-        "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed?organization_id=" +
-        encodeURIComponent(organizationId);
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Unable to load organization orders.");
-      }
-
-      const payload = await response.json();
-
-      return (payload.orders || []).map(order => ({
-        ...order,
-        date: order.date || order.ordered_at,
-        coupon:
-          Array.isArray(order.discountCodes) && order.discountCodes.length
-            ? order.discountCodes.join(", ")
-            : "—",
-        discountAmount: Number(order.discountAmount || 0)
-      }));
-
-    }
-
-
-    /*
-    ============================================================
-    FUTURE PROMOTIONAL API
-    ============================================================
-    */
-
-    async function getPromoPlaceOrders(organizationId) {
-
-      return [];
-
-    }
-
-
-    /*
-    ============================================================
-    FUTURE QUOTE / BULK ORDER DATABASE
-    ============================================================
-    */
-
-    async function getQuoteOrders(organizationId) {
-
-      return [];
-
-    }
-
-
-    /*
-    ============================================================
-    GET ALL ORGANIZATION ORDERS
-    ============================================================
-    */
-
-    async function getOrganizationOrders() {
-
-      return await getShopifyOrders(ORGANIZATION.id);
-
-    }
-
-    /*
-    ============================================================
-    FIND CURRENT REWARDS TIER
-    ============================================================
-    */
-
-    function getTier(points) {
-
-      let currentTier = REWARD_TIERS[0];
-
-      for (const tier of REWARD_TIERS) {
-
-        if (points >= tier.min) {
-          currentTier = tier;
-        }
-
-      }
-
-      const tierIndex =
-        REWARD_TIERS.indexOf(currentTier);
-
-      const nextTier =
-        REWARD_TIERS[tierIndex + 1] || null;
-
-      return {
-        currentTier,
-        nextTier
-      };
-
-    }
-
-
-    /*
-    ============================================================
-    FORMATTERS
-    ============================================================
-    */
-
-    function formatNumber(value) {
-
-      return Number(value).toLocaleString(
-        "en-US",
-        {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2
-        }
-      );
-
-    }
-
-
-    function formatMoney(value) {
-
-      return Number(value).toLocaleString(
-        "en-US",
-        {
-          style: "currency",
-          currency: "USD"
-        }
-      );
-
-    }
-
-
-    function formatDate(date) {
-
-      return new Date(date).toLocaleDateString(
-        "en-US",
-        {
-          month: "short",
-          day: "numeric",
-          year: "numeric"
-        }
-      );
-
-    }
-
-
-    /*
-    ============================================================
-    LOAD ORGANIZATION INFORMATION
-    ============================================================
-    */
-
-    const QUOTE_API =
-      "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-quote-request";
-
-    function quoteStatusLabel(status) {
-      const labels = {
-        request_received: "REQUEST RECEIVED",
-        pricing: "PRICING",
-        quote_ready: "READY FOR APPROVAL",
-        approved: "APPROVED",
-        invoiced: "INVOICED",
-        completed: "COMPLETED",
-        cancelled: "CANCELLED"
-      };
-      return labels[status] || String(status || "").replaceAll("_"," ").toUpperCase();
-    }
-
-    function renderCurrentQuotes(quotes) {
-      const list = document.getElementById("currentQuotesList");
-      const empty = document.getElementById("emptyCurrentQuotes");
-      if (!list || !empty) return;
-
-      const current = (quotes || []).filter(q => !["completed","cancelled"].includes(q.status));
-      list.innerHTML = "";
-
-      if (!current.length) {
-        empty.style.display = "block";
-        return;
-      }
-
-      empty.style.display = "none";
-
-      current.forEach(quote => {
-        const card = document.createElement("article");
-        card.className = "current-quote-card";
-        const statusClass = quote.status === "quote_ready" ? " ready" : quote.status === "approved" ? " approved" : "";
-        const total = Number(quote.quoted_total || 0) > 0 ? formatMoney(quote.quoted_total) : "Pricing in progress";
-        const buttonLabel = quote.status === "quote_ready" ? "REVIEW & APPROVE" : "VIEW QUOTE";
-
-        card.innerHTML = `
-          <div class="current-quote-main">
-            <div class="current-quote-number">${escapeHtml(quote.request_number || "Promotional Quote")}</div>
-            <div class="current-quote-project">${escapeHtml(quote.project_name || "Promotional Request")}</div>
-          </div>
-          <div class="current-quote-status${statusClass}">${quoteStatusLabel(quote.status)}</div>
-          <div class="current-quote-total">${total}</div>
-          <button class="current-quote-button" type="button">${buttonLabel}</button>
-        `;
-
-        card.querySelector("button").onclick = () => {
-          const target = new URL("./promotional.html", window.location.href);
-          target.searchParams.set("organization_id", ORGANIZATION.id);
-          target.searchParams.set("open_quotes", "1");
-          target.searchParams.set("quote_id", quote.id);
-          window.location.href = target.toString();
-        };
-        list.appendChild(card);
-      });
-    }
-
-    async function loadQuoteApprovalAction() {
-      try {
-        const response = await fetch(
-          QUOTE_API +
-          "?organization_id=" +
-          encodeURIComponent(ORGANIZATION.id)
-        );
-
-        const payload = await response.json();
-
-        if (!response.ok || !payload.ok) {
-          return;
-        }
-
-        const allQuotes = payload.quotes || [];
-        renderCurrentQuotes(allQuotes);
-
-        const readyQuotes = allQuotes.filter(
-          quote => quote.status === "quote_ready"
-        );
-
-        const actionBox =
-          document.getElementById("quoteApprovalAction");
-
-        if (!readyQuotes.length) {
-          actionBox.classList.remove("show");
-          return;
-        }
-
-        actionBox.classList.add("show");
-
-        if (readyQuotes.length === 1) {
-          const quote = readyQuotes[0];
-
-          document.getElementById(
-            "quoteApprovalTitle"
-          ).textContent =
-            quote.request_number +
-            " is ready for your approval";
-
-          document.getElementById(
-            "quoteApprovalText"
-          ).textContent =
-            "AI Apparel has completed pricing for " +
-            (quote.project_name || "your Promotional request") +
-            ". Review the quote and approve it to move forward.";
-        } else {
-          document.getElementById(
-            "quoteApprovalTitle"
-          ).textContent =
-            readyQuotes.length +
-            " Promotional quotes are ready for your approval";
-
-          document.getElementById(
-            "quoteApprovalText"
-          ).textContent =
-            "AI Apparel has completed pricing. Review your pending quotes and approve the ones you want to move forward.";
-        }
-
-        document.getElementById(
-          "reviewQuoteButton"
-        ).onclick = function() {
-          const target = new URL("./promotional.html", window.location.href);
-          target.searchParams.set("organization_id", ORGANIZATION.id);
-          target.searchParams.set("open_quotes", "1");
-          target.searchParams.set("quote_id", readyQuotes[0].id);
-          window.location.href = target.toString();
-        };
-
-      } catch (error) {
-        console.error(
-          "Quote approval check:",
-          error
-        );
-      }
-    }
-
-
-    function renderOrganization() {
-
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("admin_preview") === "1") {
-        document.getElementById("adminPreviewBanner").classList.add("show");
-      }
-
-      document.title =
-        ORGANIZATION.name +
-        " | AI Apparel Group";
-
-
-      document.getElementById(
-        "organizationName"
-      ).textContent =
-        ORGANIZATION.name;
-
-
-      document.getElementById(
-        "welcomeTitle"
-      ).textContent =
-        "Welcome, " + ORGANIZATION.name;
-
-
-      document.getElementById(
-        "storesDescription"
-      ).textContent =
-        "Shop through " +
-        ORGANIZATION.name +
-        "'s connected AI Apparel stores.";
-
-
-      document.getElementById(
-        "apparelStoreName"
-      ).textContent =
-        ORGANIZATION.name +
-        " Apparel";
-
-
-      document.getElementById(
-        "promoStoreName"
-      ).textContent =
-        ORGANIZATION.name +
-        " Promotional";
-
-
-      document.getElementById(
-        "orderHistoryDescription"
-      ).textContent =
-        "Available Company Store history for " +
-        ORGANIZATION.name +
-        ". Q3 2026 is partial and begins Aug 15.";
-
-      document.getElementById("promotionalDescription").textContent =
-        "Current quotes and previous Promotional orders for " + ORGANIZATION.name + ".";
-
-      const logoContainer =
-        document.getElementById(
-          "organizationLogo"
-        );
-
-
-      document.documentElement.style.setProperty("--navy", ORGANIZATION.primaryColor || "#111827");
-
-      if (ORGANIZATION.logo) {
-
-        const isPdf = ORGANIZATION.logo.toLowerCase().includes(".pdf");
-        logoContainer.innerHTML = isPdf ? `
-          <object data="${ORGANIZATION.logo}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" aria-label="${ORGANIZATION.name} logo">
-            ${ORGANIZATION.shortName}
-          </object>
-        ` : `
-          <img src="${ORGANIZATION.logo}" alt="${ORGANIZATION.name}">
-        `;
-
-      } else {
-
-        logoContainer.textContent =
-          ORGANIZATION.shortName;
-
-      }
-
-    }
-
-
-    /*
-    ============================================================
-    RENDER REWARDS
-    ============================================================
-    */
-
-    function renderRewards(orders) {
-
-      const totalPoints =
-        orders.reduce(
-          (sum, order) =>
-            sum + Number(order.points || 0),
-          0
-        );
-
-
-      const {
-        currentTier,
-        nextTier
-      } = getTier(totalPoints);
-
-
-      document.getElementById(
-        "totalPoints"
-      ).textContent =
-        formatNumber(totalPoints);
-
-
-      document.getElementById(
-        "tierName"
-      ).textContent =
-        currentTier.name;
-
-
-      document.getElementById(
-        "apparelDiscount"
-      ).textContent =
-        currentTier.apparelDiscount + "%";
-
-
-      document.getElementById(
-        "promoDiscount"
-      ).textContent =
-        currentTier.promoDiscount + "%";
-
-
-      /*
-      100 points = $1
-      */
-
-      document.getElementById(
-        "availableCredit"
-      ).textContent =
-        formatMoney(totalPoints / 100);
-
-
-      if (nextTier) {
-
-        const pointsNeeded =
-          Math.max(
-            0,
-            nextTier.min - totalPoints
-          );
-
-
-        document.getElementById(
-          "nextTier"
-        ).textContent =
-          nextTier.name;
-
-
-        document.getElementById(
-          "tierSummary"
-        ).textContent =
-          formatNumber(pointsNeeded) +
-          " points until " +
-          nextTier.name;
-
-
-        document.getElementById(
-          "tierMinimum"
-        ).textContent =
-          formatNumber(currentTier.min) +
-          " pts";
-
-
-        document.getElementById(
-          "nextTierMinimum"
-        ).textContent =
-          formatNumber(nextTier.min) +
-          " pts";
-
-
-        const tierRange =
-          nextTier.min -
-          currentTier.min;
-
-
-        const tierProgress =
-          totalPoints -
-          currentTier.min;
-
-
-        const percentage =
-          Math.max(
-            0,
-            Math.min(
-              100,
-              (tierProgress / tierRange) * 100
-            )
-          );
-
-
-        document.getElementById(
-          "progressFill"
-        ).style.width =
-          percentage + "%";
-
-      } else {
-
-        document.getElementById(
-          "nextTier"
-        ).textContent =
-          "TOP TIER";
-
-
-        document.getElementById(
-          "tierSummary"
-        ).textContent =
-          "You've reached Legendary Partner status";
-
-
-        document.getElementById(
-          "tierMinimum"
-        ).textContent =
-          formatNumber(currentTier.min) +
-          "+ pts";
-
-
-        document.getElementById(
-          "nextTierMinimum"
-        ).textContent =
-          "Legendary";
-
-
-        document.getElementById(
-          "progressFill"
-        ).style.width =
-          "100%";
-
-      }
-
-    }
-
-
-    /*
-    ============================================================
-    ORDER TYPE DISPLAY
-    ============================================================
-    */
-
-    function getTypeClass(type) {
-
-      switch (type) {
-
-        case "ONLINE":
-          return "type-online";
-
-        case "QUOTE":
-          return "type-quote";
-
-        case "PROMO":
-          return "type-promo";
-
-        case "REFUND":
-          return "type-refund";
-
-        default:
-          return "type-adjustment";
-
-      }
-
-    }
-
-
-    function getTypeLabel(type) {
-
-      switch (type) {
-
-        case "ONLINE":
-          return "ONLINE";
-
-        case "QUOTE":
-          return "QUOTE / BULK";
-
-        case "PROMO":
-          return "PROMOTIONAL";
-
-        case "REFUND":
-          return "REFUND";
-
-        case "ADJUSTMENT":
-          return "ADJUSTMENT";
-
-        default:
-          return type;
-
-      }
-
-    }
-
-
-    /*
-    ============================================================
-    RENDER ORDER HISTORY
-    ============================================================
-    */
-
-    function getQuarterKey(date) {
-
-      const d = new Date(date);
-      const quarter = Math.floor(d.getUTCMonth() / 3) + 1;
-
-      return d.getUTCFullYear() + "-Q" + quarter;
-
-    }
-
-
-    function renderOrders(orders, quarter = "2026-Q3") {
-
-      const tbody = document.getElementById("ordersBody");
-      const empty = document.getElementById("emptyOrders");
-
-      tbody.innerHTML = "";
-
-      const visibleOrders =
-        quarter === "ALL"
-          ? orders
-          : orders.filter(
-              order => getQuarterKey(order.date) === quarter
-            );
-
-      if (!visibleOrders.length) {
-
-        empty.style.display = "block";
-
-        empty.textContent =
-          quarter === "2026-Q4"
-            ? "No qualifying organization orders in Q4 2026 yet."
-            : "No orders found for this quarter.";
-
-        return;
-
-      }
-
-      empty.style.display = "none";
-
-      visibleOrders.forEach(order => {
-
-        const row = document.createElement("tr");
-
-        const pointsClass =
-          order.points < 0
-            ? "points-earned points-negative"
-            : "points-earned";
-
-        const pointPrefix =
-          order.points > 0 ? "+" : "";
-
-        row.innerHTML = `
-          <td>
-            <div class="order-number">${order.id}</div>
-            <div class="order-date">${formatDate(order.date)}</div>
-          </td>
-
-          <td>
-            <span class="order-type ${getTypeClass(order.type)}">
-              ${getTypeLabel(order.type)}
-            </span>
-          </td>
-
-          <td>${order.customer || "—"}</td>
-
-          <td>${order.coupon || "—"}</td>
-
-          <td>
-            ${
-              Number(order.discountAmount || 0) > 0
-                ? formatMoney(order.discountAmount)
-                : "—"
-            }
-          </td>
-
-          <td>${formatMoney(order.total || 0)}</td>
-
-          <td class="${pointsClass}">
-            ${pointPrefix}${formatNumber(order.points)}
-          </td>
-        `;
-
-        tbody.appendChild(row);
-
-      });
-
-    }
-
-    /*
-    ============================================================
-    ORGANIZATION ORDER SUMMARY
-    ============================================================
-    */
-
-    function renderOrderSummary(orders) {
-
-      const actualOrders =
-        orders.filter(
-          order =>
-            ![
-              "ADJUSTMENT",
-              "REFUND"
-            ].includes(order.type)
-        );
-
-
-      document.getElementById(
-        "totalOrders"
-      ).textContent =
-        actualOrders.length;
-
-
-      document.getElementById(
-        "onlineOrders"
-      ).textContent =
-        orders.filter(
-          order =>
-            order.type === "ONLINE"
-        ).length;
-
-
-      document.getElementById(
-        "quoteOrders"
-      ).textContent =
-        orders.filter(
-          order =>
-            order.type === "QUOTE"
-        ).length;
-
-
-      document.getElementById(
-        "promoOrders"
-      ).textContent =
-        orders.filter(
-          order =>
-            order.type === "PROMO"
-        ).length + PROMOTIONAL_PREVIOUS_ORDERS.length;
-
-      document.getElementById("totalOrders").textContent =
-        actualOrders.length + PROMOTIONAL_PREVIOUS_ORDERS.length;
-
-    }
-
-
-
-    function escapeHtml(value) {
-      return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-    }
-
-    function renderPromotionalPreviousOrders(previousOrders) {
-      const list=document.getElementById("previousOrdersList");
-      const empty=document.getElementById("emptyPreviousOrders");
-      list.innerHTML="";
-      if(!previousOrders.length){empty.style.display="block";return;}
-      empty.style.display="none";
-      previousOrders.forEach(order=>{
-        const card=document.createElement("article"); card.className="previous-order-card";
-        const items=Array.isArray(order.items)?order.items:[];
-        const itemHtml=items.map(item=>{
-          const details=[];
-          if(item.itemNumber) details.push(`<span>ITEM <strong>${escapeHtml(item.itemNumber)}</strong></span>`);
-          details.push(`<span>QTY <strong>${formatNumber(item.quantity||0)}</strong></span>`);
-          if(item.color) details.push(`<span>COLOR <strong>${escapeHtml(item.color)}</strong></span>`);
-          if(item.size) details.push(`<span>SIZE <strong>${escapeHtml(item.size)}</strong></span>`);
-          if(item.imprint) details.push(`<span>IMPRINT <strong>${escapeHtml(item.imprint)}</strong></span>`);
-          details.push(`<span>PREVIOUS UNIT PRICE <strong>${formatMoney(item.previousUnitPrice||0)}</strong></span>`);
-          details.push(`<span>PREVIOUS EXTENDED PRICE <strong>${formatMoney(item.previousExtendedPrice||0)}</strong></span>`);
-          return `<div class="previous-order-item"><div class="previous-order-product">${escapeHtml(item.description||"Promotional Product")}</div><div class="previous-order-meta">${details.join("")}</div></div>`;
-        }).join("");
-        const displayNumber=order.jobNumber||order.poNumber||order.id||"Previous Order";
-        const statusClass=String(order.status||"").toLowerCase()==="open"?"previous-order-status open":"previous-order-status";
-        card.innerHTML=`<div class="previous-order-header"><div><div class="previous-order-number">JOB / ORDER ${escapeHtml(displayNumber)}</div><div class="previous-order-date">${order.date?formatDate(order.date):"Date unavailable"}</div></div><div class="${statusClass}">${escapeHtml(order.status||"Previous Order").toUpperCase()}</div></div><div class="previous-order-body">${itemHtml||'<div class="promo-empty">Product details are not available for this order.</div>'}</div><div class="previous-order-footer"><div><div class="previous-order-total-label">PREVIOUS ORDER TOTAL</div><div class="previous-order-total">${formatMoney(order.total||0)}</div></div><div class="historical-note">Historical Promotional order<br>Not included in AI Partner Rewards</div></div>`;
-        list.appendChild(card);
-      });
-    }
-
-    function configurePromotionalTabs(){
-      const tabs=document.querySelectorAll("[data-promo-view]"); const views=document.querySelectorAll(".promo-view");
-      tabs.forEach(tab=>tab.addEventListener("click",()=>{tabs.forEach(x=>x.classList.remove("active"));views.forEach(x=>x.classList.remove("active"));tab.classList.add("active");const target=document.getElementById(tab.dataset.promoView);if(target)target.classList.add("active");}));
-    }
-
-    /*
-    ============================================================
-    STORE CONNECTIONS
-    ============================================================
-    */
-
-    function configureStores() {
-
-      const apparelButton =
-        document.getElementById(
-          "apparelStoreButton"
-        );
-
-
-      const promoButton =
-        document.getElementById(
-          "promoStoreButton"
-        );
-
-
-      /*
-      SHOPIFY STORE
-      */
-
-      if (ORGANIZATION.shopify.storeUrl) {
-
-        apparelButton.href =
-          ORGANIZATION.shopify.storeUrl;
-
-        apparelButton.target =
-          "_blank";
-
-        apparelButton.rel =
-          "noopener noreferrer";
-
-      } else {
-
-        apparelButton.href = "#";
-
-        apparelButton.addEventListener(
-          "click",
-          function(event) {
-
-            event.preventDefault();
-
-            alert(
-              ORGANIZATION.name +
-              "'s apparel store connection will be added here."
-            );
-
-          }
-        );
-
-      }
-
-
-      /*
-      PROMOPLACE STORE
-      */
-
-      if (ORGANIZATION.promoPlace.storeUrl) {
-
-        promoButton.href =
-          ORGANIZATION.promoPlace.storeUrl;
-
-        promoButton.target =
-          "_blank";
-
-        promoButton.rel =
-          "noopener noreferrer";
-
-      } else {
-
-        promoButton.href = "#";
-
-        promoButton.addEventListener(
-          "click",
-          function(event) {
-
-            event.preventDefault();
-
-            alert(
-              ORGANIZATION.name +
-              "'s Promotional connection will be added here."
-            );
-
-          }
-        );
-
-      }
-
-
-      /*
-      CONNECTION STATUS
-      */
-
-      if (ORGANIZATION.shopify.connected) {
-
-        const shopifyStatus =
-          document.getElementById(
-            "shopifyStatus"
-          );
-
-
-        shopifyStatus.textContent =
-          "CONNECTED";
-
-
-        shopifyStatus.classList.add(
-          "connected"
-        );
-
-
-        document.getElementById(
-          "shopifyConnectionText"
-        ).textContent =
-          "Live online order data connected";
-
-      }
-
-
-      if (ORGANIZATION.promoPlace.connected) {
-
-        const promoStatus =
-          document.getElementById(
-            "promoStatus"
-          );
-
-
-        promoStatus.textContent =
-          "CONNECTED";
-
-
-        promoStatus.classList.add(
-          "connected"
-        );
-
-
-        document.getElementById(
-          "promoConnectionText"
-        ).textContent =
-          "Connected to Promotional";
-
-      }
-
-    }
-
-
-    /*
-    ============================================================
-    FILTER BUTTONS
-    ============================================================
-    */
-
-    function configureOrderFilters(orders) {
-
-      const quarterFilter =
-        document.getElementById("quarterFilter");
-
-      quarterFilter.addEventListener(
-        "change",
-        function() {
-
-          renderOrders(
-            orders,
-            this.value
-          );
-
-        }
-      );
-
-    }
-
-    /*
-    ============================================================
-    START DASHBOARD
-    ============================================================
-    */
-
-    async function initializeDashboard() {
-
-      document.getElementById(
-        "year"
-      ).textContent =
-        new Date().getFullYear();
-
-
-      document.getElementById(
-        "lastUpdated"
-      ).textContent =
-        "Updated " +
-        new Date().toLocaleString(
-          "en-US",
-          {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "numeric",
-            minute: "2-digit"
-          }
-        );
-
-
-      /*
-      Load organization identity.
-      */
-
-      const profilePayload = await loadOrganizationProfile();
-      renderOrganization();
-      await loadQuoteApprovalAction();
-
-
-      /*
-      Configure Shopify / Promotional buttons.
-      */
-
-      configureStores();
-
-      configurePromotionalTabs();
-      renderPromotionalPreviousOrders(PROMOTIONAL_PREVIOUS_ORDERS);
-
-
-      /*
-      Load organization transactions.
-      */
-
-      const orders = (profilePayload.orders || []).map(order => ({
-        ...order,
-        date: order.date || order.ordered_at,
-        coupon: Array.isArray(order.discountCodes) && order.discountCodes.length ? order.discountCodes.join(", ") : "—",
-        discountAmount: Number(order.discountAmount || 0)
-      }));
-
-
-      /*
-      Calculate rewards from those transactions.
-      */
-
-      renderRewards(
-        orders
-      );
-
-
-      /*
-      Calculate order counts.
-      */
-
-      renderOrderSummary(
-        orders
-      );
-
-
-      /*
-      Display order history.
-      */
-
-      renderOrders(
-        orders,
-        "2026-Q3"
-      );
-
-
-      /*
-      Enable order filters.
-      */
-
-      configureOrderFilters(
-        orders
-      );
-
-    }
-
-
-    initializeDashboard().catch(error => {
-      console.error("Dashboard load error:", error);
-      const empty = document.getElementById("emptyOrders");
-      if (empty) {
-        empty.style.display = "block";
-        empty.textContent = "Unable to load live organization data. Please refresh or contact AI Apparel Group.";
-      }
-    });
-
-  </script>
+  }
+
+ }catch(e){$("#currentQuotes").innerHTML=`<div class="errorbox">${esc(e.message)}</div>`}
+}
+$("#prepareRequest").onclick=submitQuoteRequest;
+$("#quotesBtn").onclick=loadCurrentQuotes;
+$("#quotesClose").onclick=()=>$("#quotesModal").classList.remove("open");
+$("#quotesModal").onclick=e=>{if(e.target.id==="quotesModal")e.currentTarget.classList.remove("open")};
+loadOrg().then(async()=>{await loadApprovedShowroom();
+  if(new URLSearchParams(location.search).get("open_quotes")==="1"){
+    await loadCurrentQuotes();
+  }
+});
+searchProducts("tumbler");
+</script>
 
 </body>
 </html>
