@@ -1840,7 +1840,7 @@
           target.searchParams.set("organization_id", ORGANIZATION.id);
           target.searchParams.set("open_quotes", "1");
           target.searchParams.set("quote_id", quote.id);
-          window.location.href = target.toString();
+          window.open(target.toString(), "_blank", "noopener,noreferrer");
         };
         list.appendChild(card);
       });
@@ -1912,7 +1912,7 @@
           target.searchParams.set("organization_id", ORGANIZATION.id);
           target.searchParams.set("open_quotes", "1");
           target.searchParams.set("quote_id", readyQuotes[0].id);
-          window.location.href = target.toString();
+          window.open(target.toString(), "_blank", "noopener,noreferrer");
         };
 
       } catch (error) {
