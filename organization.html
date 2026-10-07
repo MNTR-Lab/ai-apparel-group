@@ -1446,15 +1446,14 @@
     let pendingLoginEmail="";
     async function requirePortalSession(){const {data:{session}}=await supabaseClient.auth.getSession();if(!session){loginGate.style.display="flex";return false;}PORTAL_ACCESS_TOKEN=session.access_token;loginGate.style.display="none";return true;}
     loginForm.addEventListener("submit",async(e)=>{e.preventDefault();const email=loginEmail.value.trim().toLowerCase();if(!email)return;pendingLoginEmail=email;loginButton.disabled=true;loginButton.textContent="SENDING CODE...";loginMessage.textContent="Sending your secure sign-in code...";const {error}=await supabaseClient.auth.signInWithOtp({email,options:{shouldCreateUser:false}});if(error){loginMessage.textContent=error.message;loginButton.disabled=false;loginButton.textContent="SEND SECURE SIGN-IN CODE";return;}emailStep.style.display="none";codeStep.style.display="block";loginMessage.textContent="Enter the secure sign-in code we emailed to "+email+".";loginCode.focus();});
-    verifyButton.addEventListener("click",async()=>{const token=loginCode.value.trim();if(!/^\d{8}$/.test(token)){loginMessage.textContent="Enter the complete 8-digit sign-in code.";return;}verifyButton.disabled=true;verifyButton.textContent="SIGNING IN...";const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingLoginEmail,token,type:"email"});if(error||!data.session){loginMessage.textContent=error?.message||"That code could not be verified.";verifyButton.disabled=false;verifyButton.textContent="SIGN IN";return;}PORTAL_ACCESS_TOKEN=data.session.access_token;loginGate.style.display="none";window.location.reload();});
+    verifyButton.addEventListener("click",async()=>{const token=loginCode.value.trim();if(!/^\d{8}$/.test(token)){loginMessage.textContent="Enter the complete 8-digit sign-in code.";return;}verifyButton.disabled=true;verifyButton.textContent="SIGNING IN...";const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingLoginEmail,token,type:"email"});if(error||!data.session){loginMessage.textContent=error?.message||"That code could not be verified.";verifyButton.disabled=false;verifyButton.textContent="SIGN IN";return;}PORTAL_ACCESS_TOKEN=data.session.access_token;loginGate.style.display="none";await initializeDashboard();});
     differentEmailButton.addEventListener("click",()=>{pendingLoginEmail="";loginCode.value="";codeStep.style.display="none";emailStep.style.display="block";loginButton.disabled=false;loginButton.textContent="SEND SECURE SIGN-IN CODE";loginMessage.textContent="Sign in with the email address assigned to your organization.";loginEmail.focus();});
 
     const params = new URLSearchParams(window.location.search);
     const requestedOrganizationId = params.get("organization_id") || "";
     const organizationPromoLink = document.getElementById("organizationPromoLink");
     if (organizationPromoLink) {
-      organizationPromoLink.href =
-        "./promotional.html?organization_id=" + encodeURIComponent(requestedOrganizationId);
+      organizationPromoLink.href = "./promotional.html";
     }
 
     const ORGANIZATION = {
@@ -1506,6 +1505,10 @@
       const meta = (companyStore && companyStore.metadata) || {};
 
       ORGANIZATION.id = org.id || ORGANIZATION.id;
+      if (organizationPromoLink && ORGANIZATION.id) {
+        organizationPromoLink.href =
+          "./promotional.html?organization_id=" + encodeURIComponent(ORGANIZATION.id);
+      }
       ORGANIZATION.tag = org.tag || "";
       ORGANIZATION.name = org.name || "Organization";
       ORGANIZATION.shortName = org.short_name || "--";
