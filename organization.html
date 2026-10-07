@@ -1808,7 +1808,7 @@
       const empty = document.getElementById("emptyCurrentQuotes");
       if (!list || !empty) return;
 
-      const current = (quotes || []).filter(q => !["completed","cancelled"].includes(q.status));
+      const current = (quotes || []).filter(q => ["request_received","pricing","quote_ready","approved"].includes(String(q.status || "").toLowerCase()));
       list.innerHTML = "";
 
       if (!current.length) {
