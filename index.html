@@ -1139,6 +1139,71 @@
 
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style id="ai-partners-portal-refresh">
+/* AI Apparel Portal refresh — based on the approved AI Partner Rewards design language */
+:root{--ai-blue:#006FBA;--ai-pink:#FF06EB;--ai-black:#000;--ai-white:#fff;--ai-soft:#F3F4F6;--ai-muted:#6B7280;}
+body{background:var(--ai-white);color:#111827;}
+.top-bar{background:var(--ai-black);font-size:11px;letter-spacing:1.8px;}
+.site-header{box-shadow:none;background:#fff;}
+.desktop-nav a::after{background:var(--ai-blue);height:3px;}
+.header-account .account-icon{color:var(--ai-blue);}
+.hero{min-height:560px;background:var(--ai-black);padding:78px 24px;}
+.hero::before,.hero::after{display:none!important;}
+.hero-inner{max-width:1000px;margin:0 auto;text-align:center;display:block;}
+.hero-content{max-width:800px;margin:0 auto;}
+.hero-eyebrow{color:var(--ai-blue);font-size:13px;letter-spacing:3px;margin-bottom:18px;}
+.hero h1{font-size:clamp(48px,7vw,82px);line-height:.96;letter-spacing:-3px;color:#fff;}
+.hero-description{max-width:650px;margin:24px auto 0;color:#e5e7eb;font-size:18px;line-height:1.7;}
+.hero-buttons{justify-content:center;gap:12px;margin-top:32px;}
+.button{border-radius:999px;min-height:50px;padding:0 27px;}
+.button-teal{background:var(--ai-blue);color:#fff;}
+.button-teal:hover{background:#005b99;}
+.button-outline{border:1px solid rgba(255,255,255,.7);color:#fff;}
+.button-white{color:#111827;background:#fff;}
+.button-dark{background:#000;color:#fff;}
+.intro{max-width:none;padding:70px 24px;background:var(--ai-soft);}
+.intro h2{font-size:clamp(32px,4vw,46px);}
+.intro p{max-width:760px;}
+.section-label{color:var(--ai-blue);}
+.solutions{max-width:1100px;padding:55px 24px 75px;gap:22px;}
+.solution-card{min-height:390px;padding:38px;border-radius:18px;box-shadow:0 18px 40px rgba(15,23,42,.10);}
+.solution-card::before{background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.45));}
+.apparel-card{background:linear-gradient(135deg,#006FBA,#000);}
+.promo-card{background:linear-gradient(135deg,#000,#006FBA);}
+.solution-number{color:#fff;opacity:.8;}
+.solution-card h3{font-size:36px;}
+.rewards-section{background:#fff;padding:80px 24px;}
+.rewards-inner{max-width:1050px;gap:55px;}
+.rewards-copy h2{font-size:clamp(34px,4vw,46px);}
+.rewards-card{background:var(--ai-soft);box-shadow:none;border-radius:18px;padding:30px;}
+.rewards-card-title{font-size:22px;}
+.reward-stat-number{color:var(--ai-blue);}
+.ai-tier-overview{padding:70px 24px;background:var(--ai-soft);}
+.ai-tier-wrap{max-width:1050px;margin:0 auto;}
+.ai-tier-wrap h2{text-align:center;font-size:clamp(32px,4vw,42px);margin-bottom:12px;}
+.ai-tier-intro{text-align:center;max-width:700px;margin:0 auto 28px;color:var(--ai-muted);font-size:16px;line-height:1.7;}
+.ai-tier-table-wrap{overflow-x:auto;border-radius:16px;box-shadow:0 16px 35px rgba(15,23,42,.08);}
+.ai-tier-table{width:100%;border-collapse:collapse;background:#fff;min-width:700px;}
+.ai-tier-table thead{background:#000;color:#fff;}
+.ai-tier-table th,.ai-tier-table td{padding:17px 18px;text-align:left;border-bottom:1px solid #e5e7eb;}
+.ai-tier-table th{font-size:12px;letter-spacing:.7px;text-transform:uppercase;}
+.ai-tier-table td:first-child{font-weight:800;}
+.ai-tier-table tbody tr:nth-child(even){background:#F9FAFB;}
+.ai-tier-table tbody tr:last-child td{border-bottom:0;}
+.ai-tier-note{text-align:center;margin-top:20px;color:var(--ai-muted);font-size:13px;}
+.organization-section{background:#000;padding:85px 24px;}
+.organization-inner{max-width:850px;}
+.organization-inner h2{font-size:clamp(36px,5vw,50px);}
+.organization-features{border-color:rgba(255,255,255,.18);}
+.organization-feature{border-color:rgba(255,255,255,.18);}
+.why-section{background:#fff;}
+.why-card{border-radius:16px;}
+.why-number{color:var(--ai-blue)!important;}
+.cta{background:var(--ai-soft);}
+.customer-login-card{border-radius:18px!important;}
+@media(max-width:760px){.hero{min-height:auto;padding:60px 20px}.hero h1{letter-spacing:-2px}.hero-buttons{flex-direction:column;align-items:stretch}.hero-buttons .button{width:100%}.solutions{grid-template-columns:1fr}.solution-card{min-height:330px}.rewards-inner{grid-template-columns:1fr;gap:35px}.organization-features{grid-template-columns:1fr 1fr}.desktop-nav{display:none}}
+</style>
 </head>
 
 
@@ -1319,7 +1384,7 @@
 
       <p>
         AI Apparel Group brings apparel, promotional products,
-        online company stores and partner rewards together under
+        Company Stores and partner rewards together under
         one relationship — making it easier to build, manage and
         grow your brand.
       </p>
@@ -1495,7 +1560,7 @@
               </strong>
 
               <span>
-                Purchases through online stores
+                Purchases through Company Stores
               </span>
 
             </div>
@@ -1529,6 +1594,30 @@
 
     </section>
 
+
+    <!-- =====================================================
+         AI PARTNER REWARDS TIERS
+         ===================================================== -->
+    <section class="ai-tier-overview" aria-labelledby="partner-tier-title">
+      <div class="ai-tier-wrap">
+        <div class="section-label" style="text-align:center;">AI PARTNER REWARDS</div>
+        <h2 id="partner-tier-title">The More You Partner, the More You Save.</h2>
+        <p class="ai-tier-intro">Earn points on qualifying purchases, move through partner levels, and unlock tier-based discounts as your relationship with AI Apparel Group grows.</p>
+        <div class="ai-tier-table-wrap">
+          <table class="ai-tier-table">
+            <thead><tr><th>Tier</th><th>Points</th><th>Apparel Discount</th><th>Promotional Discount</th></tr></thead>
+            <tbody>
+              <tr><td>Partner</td><td>0–9,999</td><td>0%</td><td>0%</td></tr>
+              <tr><td>Advanced Partner</td><td>10,000–24,999</td><td>2%</td><td>0%</td></tr>
+              <tr><td>Elite Partner</td><td>25,000–49,999</td><td>5%</td><td>3%</td></tr>
+              <tr><td>Premier Partner</td><td>50,000–99,999</td><td>7%</td><td>5%</td></tr>
+              <tr><td>Legendary Partner</td><td>100,000+</td><td>10%</td><td>10%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="ai-tier-note">100 points = $1 in eligible future-order credit. Sign in to your organization portal to view your current rewards status.</p>
+      </div>
+    </section>
 
     <!-- =====================================================
          ORGANIZATION ACCOUNT
