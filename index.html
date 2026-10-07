@@ -1037,7 +1037,108 @@
       }
     }
 
+
+    /* =========================================================
+       SECURE CUSTOMER LOGIN
+       ========================================================= */
+    .login-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(9, 13, 20, 0.78);
+      backdrop-filter: blur(6px);
+    }
+    .login-modal.show { display: flex; }
+    .login-card {
+      width: min(100%, 470px);
+      position: relative;
+      padding: 38px;
+      background: var(--white);
+      border-radius: 18px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.28);
+    }
+    .login-close {
+      position: absolute;
+      top: 15px;
+      right: 17px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 25px;
+      cursor: pointer;
+    }
+    .login-kicker {
+      margin-bottom: 8px;
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+    .login-card h2 {
+      margin-bottom: 10px;
+      color: var(--navy);
+      font-size: 30px;
+      line-height: 1.1;
+    }
+    .login-card p {
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .login-field {
+      width: 100%;
+      height: 52px;
+      margin-bottom: 12px;
+      padding: 0 15px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      font-size: 16px;
+    }
+    .login-field:focus { border-color: var(--teal); }
+    .login-action {
+      width: 100%;
+      min-height: 52px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .5px;
+      cursor: pointer;
+    }
+    .login-action:disabled { opacity: .6; cursor: wait; }
+    .login-secondary {
+      width: 100%;
+      margin-top: 13px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .login-message {
+      min-height: 20px;
+      margin-top: 14px;
+      color: #b42318;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .login-code-note {
+      margin: -3px 0 13px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 
@@ -1102,7 +1203,7 @@
           REWARDS
         </a>
 
-        <a href="#account">
+        <a href="./organization.html" class="account-login-link">
           MY ACCOUNT
         </a>
 
@@ -1114,8 +1215,8 @@
       <div class="header-account">
 
         <a
-          href="#account"
-          class="header-account"
+          href="./organization.html"
+          class="header-account account-login-link"
         >
 
           <div class="account-icon">
@@ -1187,8 +1288,8 @@
             </a>
 
             <a
-              href="#account"
-              class="button button-outline"
+              href="./organization.html"
+              class="button button-outline account-login-link"
             >
               MY ORGANIZATION
             </a>
@@ -1342,8 +1443,8 @@
           </p>
 
           <a
-            href="#account"
-            class="button button-dark"
+            href="./organization.html"
+            class="button button-dark account-login-link"
           >
             VIEW YOUR REWARDS
           </a>
@@ -1456,8 +1557,8 @@
         </p>
 
         <a
-          href="#"
-          class="button button-teal"
+          href="./organization.html"
+          class="button button-teal account-login-link"
         >
           SIGN IN / MY ACCOUNT
         </a>
@@ -1731,6 +1832,31 @@
   </footer>
 
 
+
+  <div class="login-modal" id="customerLoginModal" aria-hidden="true">
+    <div class="login-card" role="dialog" aria-modal="true" aria-labelledby="customerLoginTitle">
+      <button class="login-close" id="customerLoginClose" type="button" aria-label="Close">×</button>
+      <div class="login-kicker">AI APPAREL GROUP</div>
+      <h2 id="customerLoginTitle">My Organization</h2>
+      <p id="customerLoginIntro">Sign in with the email address assigned to your organization.</p>
+
+      <div id="customerEmailStep">
+        <input class="login-field" id="customerLoginEmail" type="email" autocomplete="email" placeholder="Email address">
+        <button class="login-action" id="customerSendCode" type="button">SEND SECURE SIGN-IN CODE</button>
+      </div>
+
+      <div id="customerCodeStep" style="display:none;">
+        <input class="login-field" id="customerLoginCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="00000000">
+        <div class="login-code-note">Enter the newest 8-digit code sent to your email.</div>
+        <button class="login-action" id="customerVerifyCode" type="button">SIGN IN</button>
+        <button class="login-secondary" id="customerDifferentEmail" type="button">USE A DIFFERENT EMAIL</button>
+      </div>
+
+      <div class="login-message" id="customerLoginMessage" aria-live="polite"></div>
+    </div>
+  </div>
+
+
   <!-- =======================================================
        JAVASCRIPT
        ======================================================= -->
@@ -1746,36 +1872,154 @@
 
 
     /*
-     * =====================================================
-     * FUTURE ACCOUNT SYSTEM
-     * =====================================================
-     *
-     * We will connect the account button to the
-     * AI Apparel organization/account system later.
-     *
-     * Planned flow:
-     *
-     * CUSTOMER
-     *    ↓
-     * LOGIN
-     *    ↓
-     * ORGANIZATION TAG
-     *    ↓
-     * ORGANIZATION DASHBOARD
-     *
-     * Dashboard:
-     *
-     * - Apparel Store
-     * - Personal Promo Store
-     * - Partner Rewards
-     * - Orders
-     *
-     * Rewards will be calculated from the organization's
-     * actual point balance rather than being hard-coded
-     * into the homepage.
-     *
-     * =====================================================
+     * Secure customer account login.
+     * Supabase identifies the signed-in user; organization.html
+     * authorizes membership and loads the correct organization.
      */
+    const SUPABASE_URL = "https://qpavspvpdebtbbffdcmo.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const loginModal = document.getElementById("customerLoginModal");
+    const emailStep = document.getElementById("customerEmailStep");
+    const codeStep = document.getElementById("customerCodeStep");
+    const loginEmail = document.getElementById("customerLoginEmail");
+    const loginCode = document.getElementById("customerLoginCode");
+    const sendCodeButton = document.getElementById("customerSendCode");
+    const verifyCodeButton = document.getElementById("customerVerifyCode");
+    const differentEmailButton = document.getElementById("customerDifferentEmail");
+    const loginMessage = document.getElementById("customerLoginMessage");
+    let pendingLoginEmail = "";
+
+    function showLogin() {
+      loginMessage.textContent = "";
+      loginModal.classList.add("show");
+      loginModal.setAttribute("aria-hidden", "false");
+      setTimeout(() => loginEmail.focus(), 50);
+    }
+
+    function hideLogin() {
+      loginModal.classList.remove("show");
+      loginModal.setAttribute("aria-hidden", "true");
+    }
+
+    async function goToOrganizationIfSignedIn() {
+      const { data } = await supabaseClient.auth.getSession();
+      if (data && data.session && data.session.access_token) {
+        window.location.assign("./organization.html");
+        return true;
+      }
+      return false;
+    }
+
+    document.querySelectorAll(".account-login-link").forEach(link => {
+      link.addEventListener("click", async event => {
+        event.preventDefault();
+        const signedIn = await goToOrganizationIfSignedIn();
+        if (!signedIn) showLogin();
+      });
+    });
+
+    document.getElementById("customerLoginClose").addEventListener("click", hideLogin);
+    loginModal.addEventListener("click", event => {
+      if (event.target === loginModal) hideLogin();
+    });
+
+    sendCodeButton.addEventListener("click", async () => {
+      const email = loginEmail.value.trim().toLowerCase();
+      loginMessage.textContent = "";
+      if (!email || !email.includes("@")) {
+        loginMessage.textContent = "Enter a valid email address.";
+        return;
+      }
+
+      sendCodeButton.disabled = true;
+      sendCodeButton.textContent = "SENDING CODE...";
+
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false }
+      });
+
+      sendCodeButton.disabled = false;
+      sendCodeButton.textContent = "SEND SECURE SIGN-IN CODE";
+
+      if (error) {
+        if ((error.message || "").toLowerCase().includes("security purposes")) {
+          loginMessage.textContent = "Please wait about one minute before requesting another code.";
+        } else {
+          loginMessage.textContent = error.message || "We could not send a sign-in code.";
+        }
+        return;
+      }
+
+      pendingLoginEmail = email;
+      emailStep.style.display = "none";
+      codeStep.style.display = "block";
+      loginMessage.style.color = "#0f766e";
+      loginMessage.textContent = "Code sent. Check your email and enter the newest code.";
+      loginCode.focus();
+    });
+
+    verifyCodeButton.addEventListener("click", async () => {
+      const token = loginCode.value.replace(/\D/g, "");
+      loginMessage.style.color = "#b42318";
+      loginMessage.textContent = "";
+
+      if (!pendingLoginEmail) {
+        loginMessage.textContent = "Enter your email address again.";
+        emailStep.style.display = "block";
+        codeStep.style.display = "none";
+        return;
+      }
+      if (token.length !== 8) {
+        loginMessage.textContent = "Enter the complete 8-digit sign-in code.";
+        return;
+      }
+
+      verifyCodeButton.disabled = true;
+      verifyCodeButton.textContent = "SIGNING IN...";
+
+      const { data, error } = await supabaseClient.auth.verifyOtp({
+        email: pendingLoginEmail,
+        token,
+        type: "email"
+      });
+
+      if (error || !data || !data.session) {
+        verifyCodeButton.disabled = false;
+        verifyCodeButton.textContent = "SIGN IN";
+        const msg = (error && error.message ? error.message : "").toLowerCase();
+        if (msg.includes("expired") || msg.includes("invalid")) {
+          loginMessage.textContent = "That code is expired or invalid. Use the newest code, or request a new one.";
+        } else {
+          loginMessage.textContent = (error && error.message) || "We could not sign you in.";
+        }
+        return;
+      }
+
+      window.location.assign("./organization.html");
+    });
+
+    differentEmailButton.addEventListener("click", () => {
+      pendingLoginEmail = "";
+      loginCode.value = "";
+      loginMessage.textContent = "";
+      loginMessage.style.color = "#b42318";
+      codeStep.style.display = "none";
+      emailStep.style.display = "block";
+      loginEmail.focus();
+    });
+
+    loginCode.addEventListener("keydown", event => {
+      if (event.key === "Enter") verifyCodeButton.click();
+    });
+    loginEmail.addEventListener("keydown", event => {
+      if (event.key === "Enter") sendCodeButton.click();
+    });
 
   </script>
 
