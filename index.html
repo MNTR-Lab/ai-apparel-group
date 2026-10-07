@@ -24,13 +24,13 @@
     }
 
     :root {
-      --navy: #111827;
-      --navy-light: #1f2937;
-      --teal: #14b8a6;
-      --cyan: #06b6d4;
+      --navy: #000000;
+      --navy-light: #006FBA;
+      --teal: #006FBA;
+      --cyan: #FF06EB;
       --light: #f3f4f6;
       --white: #ffffff;
-      --text: #111827;
+      --text: #000000;
       --muted: #6b7280;
       --border: #e5e7eb;
       --max-width: 1400px;
@@ -473,12 +473,12 @@
 
     .apparel-card {
       background:
-        linear-gradient(135deg, #374151, #111827);
+        linear-gradient(135deg, #006FBA, #000000);
     }
 
     .promo-card {
       background:
-        linear-gradient(135deg, #0f766e, #111827);
+        linear-gradient(135deg, #006FBA, #000000);
     }
 
     .solution-content {
@@ -787,7 +787,7 @@
        ========================================================= */
 
     .footer {
-      background: #090d14;
+      background: #000000;
       color: var(--white);
     }
 
@@ -848,7 +848,7 @@
       margin: 0 auto;
       padding: 22px 32px;
 
-      border-top: 1px solid #1f2937;
+      border-top: 1px solid #006FBA;
 
       color: #6b7280;
 
@@ -1959,7 +1959,7 @@
       pendingLoginEmail = email;
       emailStep.style.display = "none";
       codeStep.style.display = "block";
-      loginMessage.style.color = "#0f766e";
+      loginMessage.style.color = "#006FBA";
       loginMessage.textContent = "Code sent. Check your email and enter the newest code.";
       loginCode.focus();
     });
