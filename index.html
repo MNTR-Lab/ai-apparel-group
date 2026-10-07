@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>AI Apparel Group | Apparel, Promo & Brand Solutions</title>
+  <title>AI Apparel Group | Client & Partner Portal</title>
 
   <meta
     name="description"
-    content="AI Apparel Group provides custom apparel, promotional products, company stores and brand solutions for businesses, teams and organizations."
+    content="AI Apparel Group Client & Partner Portal for organization accounts, quotes, invoices, orders, promotional products, company stores and AI Partner Rewards."
   >
 
   <style>
@@ -1204,6 +1204,33 @@ body{background:var(--ai-white);color:#111827;}
 .customer-login-card{border-radius:18px!important;}
 @media(max-width:760px){.hero{min-height:auto;padding:60px 20px}.hero h1{letter-spacing:-2px}.hero-buttons{flex-direction:column;align-items:stretch}.hero-buttons .button{width:100%}.solutions{grid-template-columns:1fr}.solution-card{min-height:330px}.rewards-inner{grid-template-columns:1fr;gap:35px}.organization-features{grid-template-columns:1fr 1fr}.desktop-nav{display:none}}
 </style>
+
+<style id="portal-first-refresh">
+/* Portal-first layout: client/rewards gateway, not a marketing homepage */
+.portal-shell{background:#f4f6f8;min-height:calc(100vh - 130px);padding-bottom:70px}
+.portal-hero{background:#000;color:#fff;padding:68px 24px 62px;text-align:center}
+.portal-hero-inner{max-width:900px;margin:0 auto}
+.portal-kicker{font-size:12px;font-weight:800;letter-spacing:2.6px;color:#66b7ea;margin-bottom:14px}
+.portal-hero h1{font-size:clamp(38px,5vw,60px);line-height:1.02;letter-spacing:-1.8px;margin:0 0 18px}
+.portal-hero p{max-width:670px;margin:0 auto;color:#d1d5db;font-size:17px;line-height:1.7}
+.portal-primary-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:28px}
+.portal-primary-actions .button{min-width:220px}
+.portal-login-btn{background:#006FBA;color:#fff;border:2px solid #006FBA}
+.portal-login-btn:hover{background:#005b99;border-color:#005b99}
+.portal-rewards-btn{background:transparent;color:#fff;border:1px solid #6b7280}
+.portal-rewards-btn:hover{border-color:#FF06EB}
+.portal-content{max-width:1120px;margin:-28px auto 0;padding:0 24px;position:relative;z-index:2}
+.portal-welcome-card{background:#fff;border-radius:20px;box-shadow:0 18px 45px rgba(0,0,0,.12);padding:30px 34px;display:flex;align-items:center;justify-content:space-between;gap:25px}
+.portal-welcome-card h2{font-size:24px;margin:0 0 6px}.portal-welcome-card p{color:#6b7280;margin:0;line-height:1.6}
+.portal-mini-login{white-space:nowrap;background:#000;color:#fff;border-radius:999px;padding:13px 22px;font-size:12px;font-weight:800;letter-spacing:.4px}
+.portal-section{padding-top:52px}.portal-section-head{text-align:center;max-width:720px;margin:0 auto 26px}.portal-section-label{color:#006FBA;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}.portal-section-head h2{font-size:clamp(28px,3.4vw,38px);line-height:1.1;margin:0 0 10px}.portal-section-head p{color:#6b7280;line-height:1.7;margin:0}
+.portal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.portal-card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:25px;min-height:230px;display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(15,23,42,.05);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.portal-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(15,23,42,.09);border-color:#b7d9ef}.portal-card-icon{width:45px;height:45px;border-radius:13px;background:#eaf5fc;color:#006FBA;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;margin-bottom:20px}.portal-card h3{font-size:18px;margin:0 0 8px}.portal-card p{color:#6b7280;font-size:14px;line-height:1.6;margin:0 0 18px}.portal-card-link{margin-top:auto;color:#006FBA;font-size:12px;font-weight:900;letter-spacing:.3px}.portal-card-link span{color:#FF06EB;margin-left:4px}
+.portal-rewards-panel{background:#fff;border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr;box-shadow:0 10px 30px rgba(15,23,42,.07)}.portal-rewards-copy{padding:38px}.portal-rewards-copy h2{font-size:32px;line-height:1.08;margin:8px 0 14px}.portal-rewards-copy p{color:#6b7280;line-height:1.7}.portal-rewards-points{background:#000;color:#fff;padding:38px;display:grid;gap:15px}.portal-reward-row{display:grid;grid-template-columns:80px 1fr;gap:15px;align-items:center;padding-bottom:15px;border-bottom:1px solid #333}.portal-reward-row:last-child{border-bottom:0;padding-bottom:0}.portal-reward-number{font-size:25px;font-weight:900;color:#66b7ea}.portal-reward-row strong{display:block;font-size:14px;margin-bottom:2px}.portal-reward-row span{color:#aeb4bd;font-size:13px}.portal-rewards-note{font-size:12px!important;margin-top:16px!important}
+.portal-tier-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:22px}.portal-tier{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:14px 10px;text-align:center}.portal-tier strong{display:block;font-size:12px}.portal-tier span{display:block;color:#6b7280;font-size:10px;margin-top:3px}.portal-tier.legendary{border-color:#FF06EB}
+.portal-help{margin-top:52px;background:#000;color:#fff;border-radius:20px;padding:34px;display:flex;align-items:center;justify-content:space-between;gap:25px}.portal-help h2{font-size:23px;margin:0 0 5px}.portal-help p{color:#b8bec7;margin:0}.portal-help a{background:#fff;color:#000;border-radius:999px;padding:13px 22px;font-size:12px;font-weight:900;white-space:nowrap}
+@media(max-width:900px){.portal-grid{grid-template-columns:repeat(2,1fr)}.portal-rewards-panel{grid-template-columns:1fr}.portal-tier-strip{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.top-bar{font-size:9px}.header-inner{height:76px;padding:0 18px;grid-template-columns:1fr auto}.brand-logo img{height:48px}.header-account .account-text{display:none}.portal-hero{padding:50px 20px 52px}.portal-content{padding:0 16px}.portal-welcome-card{padding:24px;display:block}.portal-mini-login{display:inline-block;margin-top:18px}.portal-grid{grid-template-columns:1fr}.portal-card{min-height:0}.portal-rewards-copy,.portal-rewards-points{padding:28px 24px}.portal-tier-strip{grid-template-columns:1fr 1fr}.portal-help{display:block;padding:28px 24px}.portal-help a{display:inline-block;margin-top:18px}}
+</style>
 </head>
 
 
@@ -1312,500 +1339,91 @@ body{background:var(--ai-white);color:#111827;}
        HERO
        ======================================================= -->
 
-  <main>
-
-    <section class="hero">
-
-      <div class="hero-inner">
-
-        <div class="hero-content">
-
-          <div class="hero-eyebrow">
-            AI APPAREL GROUP
-          </div>
-
-          <h1>
-            YOUR BRAND.<br>
-            BUILT BETTER.
-          </h1>
-
-          <p class="hero-description">
-            One partner for custom apparel, promotional products,
-            company stores and brand solutions.
-          </p>
-
-          <div class="hero-buttons">
-
-            <a
-              href="#apparel"
-              class="button button-teal"
-            >
-              EXPLORE APPAREL
-            </a>
-
-            <a
-              href="https://promo.aiapparelgroup.com/"
-              target="_blank"
-              rel="noopener"
-              class="button button-white"
-            >
-              SHOP PROMOTIONAL PRODUCTS
-            </a>
-
-            <a
-              href="./organization.html"
-              class="button button-outline account-login-link"
-            >
-              MY ORGANIZATION
-            </a>
-
-          </div>
-
+  <main class="portal-shell">
+    <section class="portal-hero">
+      <div class="portal-hero-inner">
+        <div class="portal-kicker">AI APPAREL GROUP</div>
+        <h1>CLIENT &amp; PARTNER PORTAL</h1>
+        <p>Your organization's AI Apparel relationship in one place — account activity, quotes, invoices, orders, Promotional access, Company Stores and AI Partner Rewards.</p>
+        <div class="portal-primary-actions">
+          <a href="./organization.html" class="button portal-login-btn account-login-link">SIGN IN TO YOUR ORGANIZATION</a>
+          <a href="#partner-rewards" class="button portal-rewards-btn">LEARN ABOUT PARTNER REWARDS</a>
         </div>
-
       </div>
-
     </section>
 
-
-    <!-- =====================================================
-         INTRODUCTION
-         ===================================================== -->
-
-    <section class="intro">
-
-      <div class="section-label">
-        EVERYTHING YOUR BRAND NEEDS
-      </div>
-
-      <h2>
-        More Than an Apparel Company.
-      </h2>
-
-      <p>
-        AI Apparel Group brings apparel, promotional products,
-        Company Stores and partner rewards together under
-        one relationship — making it easier to build, manage and
-        grow your brand.
-      </p>
-
-    </section>
-
-
-    <!-- =====================================================
-         APPAREL + PROMOTIONAL PRODUCTS
-         ===================================================== -->
-
-    <section
-      class="solutions"
-      id="apparel"
-    >
-
-
-      <!-- APPAREL -->
-
-      <article class="solution-card apparel-card">
-
-        <div class="solution-content">
-
-          <div class="solution-number">
-            01 / APPAREL
-          </div>
-
-          <h3>
-            Custom Apparel
-          </h3>
-
-          <p>
-            Branded apparel for businesses, teams and organizations.
-            From everyday gear to custom programs, we help bring your
-            brand to life.
-          </p>
-
-          <div>
-
-            <a
-              href="#"
-              class="button button-white"
-            >
-              EXPLORE APPAREL
-            </a>
-
-          </div>
-
+    <div class="portal-content">
+      <section class="portal-welcome-card" aria-label="Organization account access">
+        <div>
+          <h2>Already an AI Apparel client or rewards member?</h2>
+          <p>Sign in with your authorized email to open the portal connected to your organization.</p>
         </div>
+        <a href="./organization.html" class="portal-mini-login account-login-link">MY ORGANIZATION →</a>
+      </section>
 
-      </article>
-
-
-      <!-- PROMOTIONAL PRODUCTS -->
-
-      <article class="solution-card promo-card">
-
-        <div class="solution-content">
-
-          <div class="solution-number">
-            02 / PROMOTIONAL PRODUCTS
-          </div>
-
-          <h3>
-            Put Your Brand Everywhere.
-          </h3>
-
-          <p>
-            Explore thousands of promotional products for events,
-            employees, customers, teams and organizations.
-          </p>
-
-          <div>
-
-            <a
-              href="https://promo.aiapparelgroup.com/"
-              target="_blank"
-              rel="noopener"
-              class="button button-white"
-            >
-              SHOP PROMO
-            </a>
-
-          </div>
-
+      <section class="portal-section">
+        <div class="portal-section-head">
+          <div class="portal-section-label">YOUR PORTAL</div>
+          <h2>Everything Connected to Your Organization</h2>
+          <p>Use your organization portal to manage the parts of your AI Apparel relationship that matter to you.</p>
         </div>
-
-      </article>
-
-    </section>
-
-
-    <!-- =====================================================
-         PARTNER REWARDS
-         ===================================================== -->
-
-    <section
-      class="rewards-section"
-      id="rewards"
-    >
-
-      <div class="rewards-inner">
-
-
-        <!-- LEFT -->
-
-        <div class="rewards-copy">
-
-          <div class="section-label">
-            AI PARTNER REWARDS
-          </div>
-
-          <h2>
-            Your Purchases Should Work for You.
-          </h2>
-
-          <p>
-            AI Partner Rewards turns your organization's purchasing
-            power into points, credits and tier-based savings across
-            your AI Apparel relationship.
-          </p>
-
-          <a
-            href="./organization.html"
-            class="button button-dark account-login-link"
-          >
-            VIEW YOUR REWARDS
+        <div class="portal-grid">
+          <a href="./organization.html" class="portal-card account-login-link">
+            <div class="portal-card-icon">A</div>
+            <h3>Organization Account</h3>
+            <p>View current quotes, open invoices, order activity and information connected to your organization.</p>
+            <div class="portal-card-link">OPEN MY ACCOUNT <span>→</span></div>
           </a>
-
+          <a href="./organization.html" class="portal-card account-login-link">
+            <div class="portal-card-icon">★</div>
+            <h3>AI Partner Rewards</h3>
+            <p>See your current points, partner tier, available rewards and progress toward your next level.</p>
+            <div class="portal-card-link">VIEW MY REWARDS <span>→</span></div>
+          </a>
+          <a href="https://promo.aiapparelgroup.com/" target="_blank" rel="noopener" class="portal-card">
+            <div class="portal-card-icon">P</div>
+            <h3>Promotional</h3>
+            <p>Browse promotional products and continue into Promotional when you are ready to work on a project.</p>
+            <div class="portal-card-link">OPEN PROMOTIONAL <span>↗</span></div>
+          </a>
+          <a href="./organization.html" class="portal-card account-login-link">
+            <div class="portal-card-icon">S</div>
+            <h3>Company Store</h3>
+            <p>Access your organization's branded Company Store from your account when a store is connected.</p>
+            <div class="portal-card-link">ACCESS MY STORE <span>→</span></div>
+          </a>
         </div>
+      </section>
 
-
-        <!-- RIGHT -->
-
-        <div class="rewards-card">
-
-          <div class="rewards-card-title">
-            How AI Partner Rewards Works
-          </div>
-
-
-          <div class="reward-stat">
-
-            <div class="reward-stat-number">
-              1 PT
+      <section class="portal-section" id="partner-rewards">
+        <div class="portal-rewards-panel">
+          <div class="portal-rewards-copy">
+            <div class="portal-section-label">AI PARTNER REWARDS</div>
+            <h2>Your Partnership Has Value.</h2>
+            <p>AI Partner Rewards recognizes your organization's qualifying purchases with points, future-order credit and tier-based savings. Your organization portal shows your actual balance and current partner level after you sign in.</p>
+            <div class="portal-tier-strip">
+              <div class="portal-tier"><strong>Partner</strong><span>0–9,999 pts</span></div>
+              <div class="portal-tier"><strong>Advanced</strong><span>10k–24,999</span></div>
+              <div class="portal-tier"><strong>Elite</strong><span>25k–49,999</span></div>
+              <div class="portal-tier"><strong>Premier</strong><span>50k–99,999</span></div>
+              <div class="portal-tier legendary"><strong>Legendary</strong><span>100k+ pts</span></div>
             </div>
-
-            <div class="reward-stat-text">
-
-              <strong>
-                For Every $1
-              </strong>
-
-              <span>
-                Apparel & promotional product purchases
-              </span>
-
-            </div>
-
+            <a href="./organization.html" class="button portal-login-btn account-login-link" style="margin-top:24px;display:inline-flex;">VIEW MY REWARDS STATUS</a>
           </div>
-
-
-          <div class="reward-stat">
-
-            <div class="reward-stat-number">
-              2 PTS
-            </div>
-
-            <div class="reward-stat-text">
-
-              <strong>
-                For Every $1
-              </strong>
-
-              <span>
-                Purchases through Company Stores
-              </span>
-
-            </div>
-
+          <div class="portal-rewards-points">
+            <div class="portal-reward-row"><div class="portal-reward-number">1 PT</div><div><strong>FOR EVERY $1</strong><span>Qualifying apparel, Promotional, cut &amp; sew and services.</span></div></div>
+            <div class="portal-reward-row"><div class="portal-reward-number">2 PTS</div><div><strong>FOR EVERY $1</strong><span>Qualifying purchases through Company Stores.</span></div></div>
+            <div class="portal-reward-row"><div class="portal-reward-number">$1</div><div><strong>FOR EVERY 100 POINTS</strong><span>Eligible future-order credit.</span></div></div>
+            <p class="portal-rewards-note">Partner tier benefits increase as qualifying annual purchases grow.</p>
           </div>
-
-
-          <div class="reward-stat">
-
-            <div class="reward-stat-number">
-              $1
-            </div>
-
-            <div class="reward-stat-text">
-
-              <strong>
-                For Every 100 Points
-              </strong>
-
-              <span>
-                Redeem points for future order credit
-              </span>
-
-            </div>
-
-          </div>
-
         </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         AI PARTNER REWARDS TIERS
-         ===================================================== -->
-    <section class="ai-tier-overview" aria-labelledby="partner-tier-title">
-      <div class="ai-tier-wrap">
-        <div class="section-label" style="text-align:center;">AI PARTNER REWARDS</div>
-        <h2 id="partner-tier-title">The More You Partner, the More You Save.</h2>
-        <p class="ai-tier-intro">Earn points on qualifying purchases, move through partner levels, and unlock tier-based discounts as your relationship with AI Apparel Group grows.</p>
-        <div class="ai-tier-table-wrap">
-          <table class="ai-tier-table">
-            <thead><tr><th>Tier</th><th>Points</th><th>Apparel Discount</th><th>Promotional Discount</th></tr></thead>
-            <tbody>
-              <tr><td>Partner</td><td>0–9,999</td><td>0%</td><td>0%</td></tr>
-              <tr><td>Advanced Partner</td><td>10,000–24,999</td><td>2%</td><td>0%</td></tr>
-              <tr><td>Elite Partner</td><td>25,000–49,999</td><td>5%</td><td>3%</td></tr>
-              <tr><td>Premier Partner</td><td>50,000–99,999</td><td>7%</td><td>5%</td></tr>
-              <tr><td>Legendary Partner</td><td>100,000+</td><td>10%</td><td>10%</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="ai-tier-note">100 points = $1 in eligible future-order credit. Sign in to your organization portal to view your current rewards status.</p>
-      </div>
-    </section>
-
-    <!-- =====================================================
-         ORGANIZATION ACCOUNT
-         ===================================================== -->
-
-    <section
-      class="organization-section"
-      id="account"
-    >
-
-      <div class="organization-inner">
-
-        <div class="section-label">
-          YOUR AI APPAREL ACCOUNT
-        </div>
-
-        <h2>
-          Everything for Your Organization.
-          One Place.
-        </h2>
-
-        <p>
-          Access your organization's company store, promotional
-          products, AI Partner Rewards and order information through
-          your AI Apparel account.
-        </p>
-
-        <a
-          href="./organization.html"
-          class="button button-teal account-login-link"
-        >
-          SIGN IN / MY ACCOUNT
-        </a>
-
-
-        <div class="organization-features">
-
-          <div class="organization-feature">
-            APPAREL STORE
-          </div>
-
-          <div class="organization-feature">
-            PROMO STORE
-          </div>
-
-          <div class="organization-feature">
-            REWARDS
-          </div>
-
-          <div class="organization-feature">
-            ORDERS
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         WHY AI APPAREL
-         ===================================================== -->
-
-    <section class="why-section">
-
-      <div class="why-header">
-
-        <div class="section-label">
-          WHY AI APPAREL GROUP
-        </div>
-
-        <h2>
-          One Relationship.
-          More Possibilities.
-        </h2>
-
-      </div>
-
-
-      <div class="why-grid">
-
-
-        <div class="why-card">
-
-          <div class="why-number">
-            01
-          </div>
-
-          <h3>
-            Apparel
-          </h3>
-
-          <p>
-            Custom apparel solutions designed around your
-            organization and brand.
-          </p>
-
-        </div>
-
-
-        <div class="why-card">
-
-          <div class="why-number">
-            02
-          </div>
-
-          <h3>
-            Promotional Products
-          </h3>
-
-          <p>
-            Thousands of branded products through one
-            trusted partner.
-          </p>
-
-        </div>
-
-
-        <div class="why-card">
-
-          <div class="why-number">
-            03
-          </div>
-
-          <h3>
-            Company Stores
-          </h3>
-
-          <p>
-            Dedicated online stores built specifically for
-            your employees, members, fans or customers.
-          </p>
-
-        </div>
-
-
-        <div class="why-card">
-
-          <div class="why-number">
-            04
-          </div>
-
-          <h3>
-            Partner Rewards
-          </h3>
-
-          <p>
-            Earn points and unlock additional value as your
-            relationship with AI Apparel grows.
-          </p>
-
-        </div>
-
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         CALL TO ACTION
-         ===================================================== -->
-
-    <section class="cta">
-
-      <div class="cta-inner">
-
-        <h2>
-          Ready to Build Your Brand?
-        </h2>
-
-        <p>
-          Let's build an apparel, promotional product or
-          company store program designed around your organization.
-        </p>
-
-        <a
-          href="https://www.aiapparelgroup.com/pages/contact"
-          class="button button-dark"
-        >
-          CONTACT AI APPAREL GROUP
-        </a>
-
-      </div>
-
-    </section>
-
+      </section>
+
+      <section class="portal-help">
+        <div><h2>Need help with your portal?</h2><p>Contact AI Apparel Group if you need help accessing your organization or have a question about your account.</p></div>
+        <a href="https://aiapparelgroup.com/pages/contact" target="_blank" rel="noopener">CONTACT AI APPAREL GROUP ↗</a>
+      </section>
+    </div>
   </main>
 
 
