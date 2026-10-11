@@ -1,14 +1,14 @@
-X<!doctype html>
+<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>AI Apparel Group | CRM Staging</title>
 <style>
-:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#192536;background:#f4f6f9;--blue:#006fba;--pink:#ff06eb}
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#192536;background:#f4f6f9;--blue:#006fba;--pink:#cc338b}
 *{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer}.shell{display:flex;min-height:100vh}
 aside{width:250px;flex-shrink:0;background:#101b2d;color:white;padding:26px 16px;display:flex;flex-direction:column}
-.brand{padding:8px 10px 24px;font-size:21px;font-weight:850;line-height:1.2}.brand small{display:block;color:#9fb4ca;font-size:11px;letter-spacing:1.5px;margin-top:8px}
+.brand{padding:8px 10px 24px;font-size:21px;font-weight:850;line-height:1.2}.brand img{display:block;width:100%;max-width:185px;max-height:100px;object-fit:contain;object-position:left center;margin-bottom:10px}.brand .brand-name{font-size:14px;letter-spacing:.5px}.brand small{display:block;color:#9fb4ca;font-size:11px;letter-spacing:1.5px;margin-top:8px}
 nav{display:grid;gap:5px}.nav{background:none;border:0;color:#c4d0e0;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px}
-.nav:hover,.nav.active{background:#263d5b;color:white}.foot{margin-top:auto;color:#93a6bf;font-size:12px;padding:14px}
+.nav:hover,.nav.active{background:#263d5b;color:white;border-left:3px solid var(--pink)}.foot{margin-top:auto;color:#93a6bf;font-size:12px;padding:14px}
 main{flex:1;min-width:0}.top{background:white;border-bottom:1px solid #e2e8f0;padding:19px 30px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .top h1{font-size:20px;margin:0}.pill{background:#fff4dc;color:#865600;border:1px solid #f2dba4;border-radius:30px;padding:7px 12px;font-size:12px;font-weight:750}
 .content{padding:28px 30px;max-width:1450px;margin:auto}.lead{color:#6d7d92;margin:4px 0 22px;font-size:14px}
@@ -26,7 +26,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 @media(max-width:700px){.shell{display:block}aside{width:auto;padding:12px}.brand{padding:8px}.foot{display:none}nav{display:flex;overflow-x:auto}.nav{white-space:nowrap}.top{padding:15px}.content{padding:17px}.grid{grid-template-columns:1fr 1fr}.card{padding:14px}}
 </style></head>
 <body><div class="shell">
-<aside><div class="brand">AI APPAREL GROUP<small>OPERATIONS CRM</small></div>
+<aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group logo"><div class="brand-name">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
 <button class="nav active" data-page="dashboard">◫ &nbsp; Dashboard</button>
 <button class="nav" data-page="clients">♙ &nbsp; Clients</button>
@@ -35,7 +35,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <button class="nav" data-page="production">⚙ &nbsp; Production</button>
 <button class="nav" data-page="employees">♧ &nbsp; Employees & Tasks</button>
 <button class="nav" data-page="rewards">★ &nbsp; Rewards Integration</button>
-</nav><div class="foot">AI Apparel Group<br>CRM staging · Step 2</div></aside>
+</nav><div class="foot"><div style="border-top:1px solid #33455f;padding-top:15px"><span style="font-size:11px;letter-spacing:.7px;color:#aebed0">POWERED BY</span><br><strong style="color:white;font-size:15px">Blueprint Collective</strong></div></div></aside>
 <main><div class="top"><h1 id="page-title">Dashboard</h1><span class="pill" id="connection-status">SIGN IN REQUIRED</span></div>
 <div class="content">
 <div class="panel" id="auth-panel" style="margin-bottom:18px">
@@ -65,7 +65,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="panel"><h3>Existing Rewards Portal</h3><p class="info">We will connect organization records to the CRM without modifying the current rewards calculations or Shopify order import.</p>
 <div class="quick"><a class="action" href="https://portal.aiapparelgroup.com" target="_blank" rel="noopener noreferrer">Open Existing Rewards Portal ↗</a></div></div>
 <div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
-</div></main></div>
+<div style="text-align:center;color:#75879b;font-size:12px;margin:28px 0 8px">Powered by <strong style="color:#006fba">Blueprint Collective</strong></div></div></main></div>
 <script>
 const names={dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration"};
 document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
