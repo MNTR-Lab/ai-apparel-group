@@ -1,4 +1,4 @@
-<!doctype html>
+X<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>AI Apparel Group | CRM Staging</title>
@@ -15,12 +15,12 @@ main{flex:1;min-width:0}.top{background:white;border-bottom:1px solid #e2e8f0;pa
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.card,.panel{background:white;border:1px solid #e2e7ee;border-radius:13px;padding:20px;box-shadow:0 3px 12px #18283a08}
 .card label{font-size:12px;color:#66798d}.card strong{display:block;font-size:26px;margin:12px 0}.card small{font-size:12px;color:#8493a4}
 .columns{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:17px}.panel h3{margin:0 0 15px;font-size:16px}
-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}th{font-size:11px;text-transform:uppercase;color:#728198;background:#f7f9fc}th,td{padding:13px 11px;border-bottom:1px solid #edf0f4}
+input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}th{font-size:11px;text-transform:uppercase;color:#728198;background:#f7f9fc}th,td{padding:13px 11px;border-bottom:1px solid #edf0f4}
 .state{font-size:11px;border-radius:30px;padding:5px 9px;background:#e8f3ff;color:#24639c}.state.green{background:#e5f6ec;color:#247149}
 .action{background:var(--blue);color:white;border:0;border-radius:8px;padding:10px 14px;text-decoration:none;display:inline-block;font-size:13px;font-weight:700}
 .action.secondary{background:white;color:var(--blue);border:1px solid #c7d7e5}
 .notice{margin-top:17px;background:#e9f3ff;border:1px solid #c9e1f8;border-radius:11px;padding:15px;font-size:13px;line-height:1.6}
-section[hidden]{display:none!important}.empty{padding:30px;text-align:center;color:#75879b;border:1px dashed #d3dce7;border-radius:10px;background:#fafbfd;font-size:14px}
+[hidden]{display:none!important}.empty{padding:30px;text-align:center;color:#75879b;border:1px dashed #d3dce7;border-radius:10px;background:#fafbfd;font-size:14px}
 .quick{display:flex;gap:10px;flex-wrap:wrap}.info{line-height:1.6;color:#607186;font-size:14px}
 @media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.columns{grid-template-columns:1fr}}
 @media(max-width:700px){.shell{display:block}aside{width:auto;padding:12px}.brand{padding:8px}.foot{display:none}nav{display:flex;overflow-x:auto}.nav{white-space:nowrap}.top{padding:15px}.content{padding:17px}.grid{grid-template-columns:1fr 1fr}.card{padding:14px}}
@@ -36,14 +36,27 @@ section[hidden]{display:none!important}.empty{padding:30px;text-align:center;col
 <button class="nav" data-page="employees">♧ &nbsp; Employees & Tasks</button>
 <button class="nav" data-page="rewards">★ &nbsp; Rewards Integration</button>
 </nav><div class="foot">AI Apparel Group<br>CRM staging · Step 2</div></aside>
-<main><div class="top"><h1 id="page-title">Dashboard</h1><span class="pill">STAGING · NO LIVE DATA</span></div>
+<main><div class="top"><h1 id="page-title">Dashboard</h1><span class="pill" id="connection-status">SIGN IN REQUIRED</span></div>
 <div class="content">
+<div class="panel" id="auth-panel" style="margin-bottom:18px">
+<h3>AI Apparel CRM Admin Sign-In</h3>
+<p class="info">Use the existing AI Apparel administrator email. We will send a one-time sign-in code.</p>
+<form id="login-form" style="display:flex;gap:8px;flex-wrap:wrap"><input id="login-email" type="email" required placeholder="Admin email" style="padding:10px;min-width:250px"><button class="action" type="submit">Send Sign-In Code</button></form>
+<form id="verify-form" hidden style="gap:8px;flex-wrap:wrap;margin-top:10px"><input id="login-code" type="text" required placeholder="Enter email code" style="padding:10px;min-width:220px"><button class="action" type="submit">Verify Code</button></form>
+<div id="auth-message" class="info" role="status"></div>
+<button id="logout" class="action secondary" hidden type="button">Sign Out</button>
+</div>
 <section id="dashboard"><h2>Operations Overview</h2><p class="lead">Blueprint-style CRM structure customized for AI Apparel Group.</p>
-<div class="grid"><div class="card"><label>Active Clients</label><strong>—</strong><small>Connect AI Apparel database</small></div><div class="card"><label>Open Quotes</label><strong>—</strong><small>Connect quote records</small></div><div class="card"><label>Active Jobs</label><strong>—</strong><small>Connect job records</small></div><div class="card"><label>Production Tasks</label><strong>—</strong><small>Connect employee workflows</small></div></div>
+<div class="grid"><div class="card"><label>Active Clients</label><strong id="stat-clients">—</strong><small>AI Apparel CRM clients</small></div><div class="card"><label>Open Quotes</label><strong id="stat-quotes">—</strong><small>CRM quotes</small></div><div class="card"><label>Active Jobs</label><strong id="stat-jobs">—</strong><small>CRM jobs</small></div><div class="card"><label>Production Tasks</label><strong id="stat-tasks">—</strong><small>CRM tasks</small></div></div>
 <div class="columns"><div class="panel"><h3>Recent Jobs</h3><div class="empty">No live job data is connected yet.</div></div><div class="panel"><h3>Connected Systems Plan</h3><table><tr><td>Blueprint CRM shell</td><td><span class="state green">UI staged</span></td></tr><tr><td>AI Apparel client data</td><td><span class="state">Pending</span></td></tr><tr><td>Shopify order integration</td><td><span class="state">Keep existing</span></td></tr><tr><td>Rewards Portal</td><td><span class="state">Keep existing</span></td></tr></table></div></div>
-<div class="notice"><strong>Staging safety:</strong> This page is an interface preview only. Client records, quotes, employee authentication, production actions, Shopify orders and rewards balances are not connected. No data can be created or changed here.</div>
+<div class="notice"><strong>Connection status:</strong> CRM clients and dashboard totals are now backed by the separate AI Apparel CRM schema. Existing Shopify and Rewards integrations are unchanged. Quotes, jobs, employee assignments and production actions are not enabled yet.</div>
 </section>
-<section id="clients" hidden><h2>Client Management</h2><p class="lead">Client profiles, contacts, linked quotes and jobs.</p><div class="panel"><div class="empty">Client data connection and permissions are the next backend step.</div></div></section>
+<section id="clients" hidden><h2>Client Management</h2><p class="lead">Client profiles, contacts, linked quotes and jobs.</p><div class="panel"><div id="clients-list" class="empty">Sign in to load clients.</div><div style="margin-top:16px"><button class="action" id="show-client-form" type="button">+ Add Client</button><form id="client-form" hidden style="margin-top:15px;gap:10px;max-width:450px">
+<input required maxlength="200" name="name" placeholder="Client / company name" style="padding:10px">
+<input name="contact_name" placeholder="Contact name" style="padding:10px">
+<input type="email" name="email" placeholder="Email" style="padding:10px">
+<input name="phone" placeholder="Phone" style="padding:10px">
+<button class="action" type="submit">Save Client</button></form></div></div></section>
 <section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">New quotes will be managed by this CRM after the quote backend and customer approval flow are verified.</p><div class="panel"><div class="empty">Quote creation is intentionally disabled until AI Apparel's own database and authentication are configured.</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Track client jobs from approved quote through completion.</p><div class="panel"><div class="empty">Job records will appear here after migration mapping.</div></div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Blueprint's production stages and automatic completion workflow will be adapted for AI Apparel.</p><div class="panel"><div class="empty">Production stage updates are disabled in staging.</div></div></section>
@@ -61,4 +74,40 @@ document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("ac
 Object.keys(names).forEach(id=>document.getElementById(id).hidden=id!==page);
 document.getElementById("page-title").textContent=names[page];
 }));
-</script></body></html>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const CRM_SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co";
+const CRM_PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+const db=window.supabase?.createClient(CRM_SUPABASE_URL,CRM_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);
+const status=msg=>{$("auth-message").textContent=msg};
+const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function api(action,payload={}){if(!db)throw Error("Unable to load authentication library");const {data,error}=await db.rpc("ai_apparel_crm_api",{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data}
+async function refresh(){
+try{
+const [d,clients]=await Promise.all([api("dashboard"),api("clients")]);
+for(const k of ["clients","quotes","jobs","tasks"])$("stat-"+k).textContent=d[k];
+$("clients-list").className="";
+$("clients-list").innerHTML=clients.length?'<table><thead><tr><th>Client</th><th>Contact</th><th>Email</th><th>Status</th></tr></thead><tbody>'+clients.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.contact_name)}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.status)}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No CRM clients have been created yet.</div>';
+$("connection-status").textContent="CRM CONNECTED";
+$("login-form").hidden=true;$("verify-form").hidden=true;$("logout").hidden=false;
+status("Signed in as an authorized AI Apparel administrator.");
+}catch(e){$("connection-status").textContent="ACCESS RESTRICTED";status(e.message)}
+}
+$("login-form").addEventListener("submit",async e=>{
+e.preventDefault();try{const email=$("login-email").value.trim();const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false}});if(error)throw error;$("verify-form").hidden=false;$("verify-form").style.display="flex";status("Check your email for the sign-in code.");}catch(e){status(e.message)}
+});
+$("verify-form").addEventListener("submit",async e=>{
+e.preventDefault();try{const {error}=await db.auth.verifyOtp({email:$("login-email").value.trim(),token:$("login-code").value.trim(),type:"email"});if(error)throw error;await refresh()}catch(e){status(e.message)}
+});
+$("show-client-form").addEventListener("click",()=>{$("client-form").hidden=!$("client-form").hidden;$("client-form").style.display=$("client-form").hidden?"none":"grid"});
+$("client-form").addEventListener("submit",async e=>{
+e.preventDefault();const button=e.currentTarget.querySelector("button[type=submit]");button.disabled=true;
+try{const p=Object.fromEntries(new FormData(e.currentTarget));await api("create_client",p);e.currentTarget.reset();e.currentTarget.hidden=true;await refresh();status("Client created successfully.")}catch(err){status(err.message)}finally{button.disabled=false}
+});
+$("logout").addEventListener("click",async()=>{await db.auth.signOut();location.reload()});
+if(db)db.auth.getSession().then(({data})=>{if(data.session)refresh();else status("Sign in to access AI Apparel CRM.")});
+else status("Authentication library failed to load.");
+</script>
+</body></html>
