@@ -1,2 +1,64 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>AI Apparel Group | CRM Development</title><style>:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#152235;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}.layout{min-height:100vh;display:flex}aside{background:#111b2b;color:#fff;width:250px;padding:30px 20px}aside h1{font-size:21px;line-height:1.2;margin:0}aside p{font-size:12px;color:#b9c5d6}nav{margin-top:36px;display:grid;gap:12px}nav span{padding:12px;border-radius:8px;color:#d8e3f2;background:#1b2d46}main{flex:1;padding:38px;max-width:1100px}header{display:flex;justify-content:space-between;align-items:center;gap:16px}h2{margin:0;font-size:26px}.tag{border:1px solid #e2b75b;background:#fff7e6;color:#855a0d;padding:8px 12px;border-radius:50px;font-size:12px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px}.card{background:white;border:1px solid #e1e6ef;border-radius:14px;padding:22px;box-shadow:0 2px 10px #14243b08}.card h3{margin:0 0 10px;font-size:16px}.card p{color:#63728a;font-size:14px;line-height:1.6}.card a{color:#006fba}.note{margin-top:24px;background:#eaf4ff;border:1px solid #bedcf7;padding:18px;border-radius:12px;font-size:14px;line-height:1.6}@media(max-width:800px){.layout{display:block}aside{width:auto}nav{grid-template-columns:repeat(2,1fr)}main{padding:22px}.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}}</style></head><body><div class="layout"><aside><h1>AI APPAREL GROUP</h1><p>Internal CRM · Development workspace</p><nav><span>Dashboard</span><span>Clients</span><span>Quotes</span><span>Jobs & Production</span><span>Employees</span><span>Rewards Integration</span></nav></aside><main><header><div><h2>AI Apparel Group CRM</h2><p>Blueprint-powered operations · Initial staging shell</p></div><span class="tag">DEVELOPMENT ONLY</span></header><section class="grid"><div class="card"><h3>Clients & Quotes</h3><p>Client records, quote creation and approval will be connected after the isolated CRM backend is configured.</p></div><div class="card"><h3>Jobs & Production</h3><p>Production stages, employee tasks and notifications will reuse the tested Blueprint workflows.</p></div><div class="card"><h3>Rewards Portal</h3><p>The existing rewards system stays in place. <a href="https://portal.aiapparelgroup.com" target="_blank" rel="noopener noreferrer">Open the existing portal</a>.</p></div></section><div class="note"><strong>Safe staging page:</strong> No customer records, orders, API keys or live Blueprint data are loaded here. The existing AI Apparel website, Shopify integration and Rewards Portal are unchanged. This page is a placeholder for the full CRM conversion, not a functioning CRM yet.</div></main></div></body></html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AI Apparel Group | CRM Staging</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#192536;background:#f4f6f9;--blue:#006fba;--pink:#ff06eb}
+*{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer}.shell{display:flex;min-height:100vh}
+aside{width:250px;flex-shrink:0;background:#101b2d;color:white;padding:26px 16px;display:flex;flex-direction:column}
+.brand{padding:8px 10px 24px;font-size:21px;font-weight:850;line-height:1.2}.brand small{display:block;color:#9fb4ca;font-size:11px;letter-spacing:1.5px;margin-top:8px}
+nav{display:grid;gap:5px}.nav{background:none;border:0;color:#c4d0e0;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px}
+.nav:hover,.nav.active{background:#263d5b;color:white}.foot{margin-top:auto;color:#93a6bf;font-size:12px;padding:14px}
+main{flex:1;min-width:0}.top{background:white;border-bottom:1px solid #e2e8f0;padding:19px 30px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top h1{font-size:20px;margin:0}.pill{background:#fff4dc;color:#865600;border:1px solid #f2dba4;border-radius:30px;padding:7px 12px;font-size:12px;font-weight:750}
+.content{padding:28px 30px;max-width:1450px;margin:auto}.lead{color:#6d7d92;margin:4px 0 22px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.card,.panel{background:white;border:1px solid #e2e7ee;border-radius:13px;padding:20px;box-shadow:0 3px 12px #18283a08}
+.card label{font-size:12px;color:#66798d}.card strong{display:block;font-size:26px;margin:12px 0}.card small{font-size:12px;color:#8493a4}
+.columns{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:17px}.panel h3{margin:0 0 15px;font-size:16px}
+table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}th{font-size:11px;text-transform:uppercase;color:#728198;background:#f7f9fc}th,td{padding:13px 11px;border-bottom:1px solid #edf0f4}
+.state{font-size:11px;border-radius:30px;padding:5px 9px;background:#e8f3ff;color:#24639c}.state.green{background:#e5f6ec;color:#247149}
+.action{background:var(--blue);color:white;border:0;border-radius:8px;padding:10px 14px;text-decoration:none;display:inline-block;font-size:13px;font-weight:700}
+.action.secondary{background:white;color:var(--blue);border:1px solid #c7d7e5}
+.notice{margin-top:17px;background:#e9f3ff;border:1px solid #c9e1f8;border-radius:11px;padding:15px;font-size:13px;line-height:1.6}
+section[hidden]{display:none!important}.empty{padding:30px;text-align:center;color:#75879b;border:1px dashed #d3dce7;border-radius:10px;background:#fafbfd;font-size:14px}
+.quick{display:flex;gap:10px;flex-wrap:wrap}.info{line-height:1.6;color:#607186;font-size:14px}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.columns{grid-template-columns:1fr}}
+@media(max-width:700px){.shell{display:block}aside{width:auto;padding:12px}.brand{padding:8px}.foot{display:none}nav{display:flex;overflow-x:auto}.nav{white-space:nowrap}.top{padding:15px}.content{padding:17px}.grid{grid-template-columns:1fr 1fr}.card{padding:14px}}
+</style></head>
+<body><div class="shell">
+<aside><div class="brand">AI APPAREL GROUP<small>OPERATIONS CRM</small></div>
+<nav aria-label="CRM navigation">
+<button class="nav active" data-page="dashboard">◫ &nbsp; Dashboard</button>
+<button class="nav" data-page="clients">♙ &nbsp; Clients</button>
+<button class="nav" data-page="quotes">▤ &nbsp; Quotes & Estimates</button>
+<button class="nav" data-page="jobs">▣ &nbsp; Jobs & Projects</button>
+<button class="nav" data-page="production">⚙ &nbsp; Production</button>
+<button class="nav" data-page="employees">♧ &nbsp; Employees & Tasks</button>
+<button class="nav" data-page="rewards">★ &nbsp; Rewards Integration</button>
+</nav><div class="foot">AI Apparel Group<br>CRM staging · Step 2</div></aside>
+<main><div class="top"><h1 id="page-title">Dashboard</h1><span class="pill">STAGING · NO LIVE DATA</span></div>
+<div class="content">
+<section id="dashboard"><h2>Operations Overview</h2><p class="lead">Blueprint-style CRM structure customized for AI Apparel Group.</p>
+<div class="grid"><div class="card"><label>Active Clients</label><strong>—</strong><small>Connect AI Apparel database</small></div><div class="card"><label>Open Quotes</label><strong>—</strong><small>Connect quote records</small></div><div class="card"><label>Active Jobs</label><strong>—</strong><small>Connect job records</small></div><div class="card"><label>Production Tasks</label><strong>—</strong><small>Connect employee workflows</small></div></div>
+<div class="columns"><div class="panel"><h3>Recent Jobs</h3><div class="empty">No live job data is connected yet.</div></div><div class="panel"><h3>Connected Systems Plan</h3><table><tr><td>Blueprint CRM shell</td><td><span class="state green">UI staged</span></td></tr><tr><td>AI Apparel client data</td><td><span class="state">Pending</span></td></tr><tr><td>Shopify order integration</td><td><span class="state">Keep existing</span></td></tr><tr><td>Rewards Portal</td><td><span class="state">Keep existing</span></td></tr></table></div></div>
+<div class="notice"><strong>Staging safety:</strong> This page is an interface preview only. Client records, quotes, employee authentication, production actions, Shopify orders and rewards balances are not connected. No data can be created or changed here.</div>
+</section>
+<section id="clients" hidden><h2>Client Management</h2><p class="lead">Client profiles, contacts, linked quotes and jobs.</p><div class="panel"><div class="empty">Client data connection and permissions are the next backend step.</div></div></section>
+<section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">New quotes will be managed by this CRM after the quote backend and customer approval flow are verified.</p><div class="panel"><div class="empty">Quote creation is intentionally disabled until AI Apparel's own database and authentication are configured.</div></div></section>
+<section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Track client jobs from approved quote through completion.</p><div class="panel"><div class="empty">Job records will appear here after migration mapping.</div></div></section>
+<section id="production" hidden><h2>Production Management</h2><p class="lead">Blueprint's production stages and automatic completion workflow will be adapted for AI Apparel.</p><div class="panel"><div class="empty">Production stage updates are disabled in staging.</div></div></section>
+<section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Assignments, notifications, task completion and access controls.</p><div class="panel"><div class="empty">Employee accounts and role-based permissions are not configured yet.</div></div></section>
+<section id="rewards" hidden><h2>Organization Rewards</h2><p class="lead">The existing Rewards Portal remains the source of truth for organization balances and points.</p>
+<div class="panel"><h3>Existing Rewards Portal</h3><p class="info">We will connect organization records to the CRM without modifying the current rewards calculations or Shopify order import.</p>
+<div class="quick"><a class="action" href="https://portal.aiapparelgroup.com" target="_blank" rel="noopener noreferrer">Open Existing Rewards Portal ↗</a></div></div>
+<div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
+</div></main></div>
+<script>
+const names={dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration"};
+document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
+const page=button.dataset.page;
+document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
+Object.keys(names).forEach(id=>document.getElementById(id).hidden=id!==page);
+document.getElementById("page-title").textContent=names[page];
+}));
+</script></body></html>
