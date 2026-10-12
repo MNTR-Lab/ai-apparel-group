@@ -173,7 +173,7 @@ body:has(#app.employee-shell[style*="display: flex"]) #message:empty{display:non
       <div id="employee-jobs" class="employee-page" hidden><div class="panel"><h3>Jobs &amp; Projects</h3><p class="info">Select a job to view its specifications, approved artwork, production instructions, assigned stages, and related tasks.</p><div id="job-list"></div></div></div>
       <div id="employee-tasks" class="employee-page" hidden><div class="panel"><h3>My Tasks</h3><p class="info">Tasks assigned to you by management. Completed work can be reviewed in the Archived section.</p><div id="employee-task-list"></div><details style="margin-top:18px"><summary>Archived Tasks</summary><div id="employee-task-archive"></div></details></div></div>
       <div id="employee-notifications" class="employee-page" hidden><div class="panel"><h3>Notifications</h3><p class="info">New assignments and important updates appear here.</p><div id="employee-notification-list"></div></div></div>
-      <div id="employee-production" class="employee-page" hidden><div class="panel"><h3>Production Management</h3><p class="info">Manage your assigned production stages. Updates are shared with management.</p><div id="assignments" class="employee-assignment-list"></div></div></div>
+      <div id="employee-production" class="employee-page" hidden><div class="panel"><h3>Production Management</h3><p class="info">Manage your assigned production stages. Updates are shared with management.</p><div id="assignments" class="employee-assignment-list"></div><details class="employee-production-archive" style="margin-top:20px"><summary style="cursor:pointer;font-weight:700;color:#173b5a;padding:12px 0">Archived Production (<span id="production-archive-count">0</span>)</summary><p class="info">Completed production stages are retained here for reference.</p><div id="archived-assignments" class="employee-assignment-list"></div></details></div></div>
     </div>
   </div>
 </section></main>
@@ -198,17 +198,22 @@ async function render(){
  $("employee-welcome").textContent="Welcome, "+data.employee.name+". Here's your assigned work.";
  const rows=data.assignments||[];
  window.employeeAssignments=rows;
- $("metric-jobs").textContent=new Set(rows.map(x=>x.job_number||x.job)).size;
+ $("metric-jobs").textContent=new Set(rows.filter(x=>x.status!=="Completed").map(x=>x.job_number||x.job)).size;
  $("metric-active").textContent=rows.filter(x=>x.status==="In Progress").length;
 
 
  const grouped=new Map();
  for(const a of rows){const key=a.job_number||a.job;if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(a);}
- const workRows=rows.slice(0,5).map(a=>`<div class="employee-work-row"><div><strong>${esc(a.job)}</strong><small>${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</small></div><span class="state">${esc(a.status||"Not Started")}</span></div>`).join("");
+ const workRows=rows.filter(a=>a.status!=="Completed").slice(0,5).map(a=>`<div class="employee-work-row"><div><strong>${esc(a.job)}</strong><small>${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</small></div><span class="state">${esc(a.status||"Not Started")}</span></div>`).join("");
  $("dashboard-work").innerHTML=workRows||'<div class="employee-empty">No production stages assigned yet.</div>';
  $("job-list").innerHTML=grouped.size?[...grouped.values()].map((group,index)=>`<article class="employee-job-card"><div class="employee-job-heading"><div><strong>${esc(group[0].job)}</strong><small>${esc(group[0].job_number||"")} · ${group.length} assigned stage${group.length===1?"":"s"}</small></div><button class="action secondary" type="button" data-open-job="${index}" aria-expanded="false">View Job Details</button></div><div class="employee-job-expanded" id="employee-job-expanded-${index}" hidden></div></article>`).join(""):'<div class="employee-empty">No jobs assigned yet.</div>';
  window.employeeJobGroups=[...grouped.values()];
- $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="employee-empty">No work is assigned to you yet.</div>';
+ const activeProduction=rows.filter(a=>a.status!=="Completed");
+ const archivedProduction=rows.filter(a=>a.status==="Completed");
+ const assignmentCard=a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`;
+ $("assignments").innerHTML=activeProduction.length?activeProduction.map(assignmentCard).join(""):'<div class="employee-empty">No active production assignments.</div>';
+ $("archived-assignments").innerHTML=archivedProduction.length?archivedProduction.map(assignmentCard).join(""):'<div class="employee-empty">No completed production assignments yet.</div>';
+ $("production-archive-count").textContent=archivedProduction.length;
 
  await loadEmployeeTasks();
 }
@@ -357,7 +362,7 @@ $("login-form").addEventListener("submit",async e=>{e.preventDefault();const b=e
 $("password-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const {error}=await db.auth.updateUser({password:new FormData(e.target).get("password"),data:{employee_password_initialized:true}});b.disabled=false;if(error)msg(error.message,true);else{passwordFlow=false;msg("Password saved. Your employee account is ready.");await render()}});
 $("reset-link").addEventListener("click",async()=>{const email=$("login-form").elements.email.value;if(!email){msg("Enter your email first.",true);return}const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname+"?flow=invite"});msg(error?error.message:"If your account exists, a password reset email will arrive shortly.",!!error)});
 $("signout").addEventListener("click",async()=>{await db.auth.signOut();passwordFlow=false;msg("Signed out.");await render()});
-document.addEventListener("submit",async e=>{const f=e.target;if(!f.matches("[data-assignment]"))return;e.preventDefault();const b=f.querySelector("button");b.disabled=true;const {error}=await db.rpc("ai_apparel_crm_employee_stage_update",{p_assignment_id:f.dataset.assignment,p_status:f.elements.status.value,p_notes:f.elements.notes.value});b.disabled=false;if(error)msg(error.message,true);else{msg("Production stage updated.");await render()}});
+document.addEventListener("submit",async e=>{const f=e.target;if(!f.matches("[data-assignment]"))return;e.preventDefault();const b=f.querySelector("button");b.disabled=true;const {error}=await db.rpc("ai_apparel_crm_employee_stage_update",{p_assignment_id:f.dataset.assignment,p_status:f.elements.status.value,p_notes:f.elements.notes.value});b.disabled=false;if(error)msg(error.message,true);else{const completed=f.elements.status.value==="Completed";await render();msg(completed?"Production stage completed and moved to Archived Production.":"Production stage updated.")}});
 db.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){passwordFlow=true;setTimeout(render,0)}else if(event==="SIGNED_IN"){setTimeout(render,0)}});
 (async()=>{const {data:{session}}=await db.auth.getSession();if(session&&(new URLSearchParams(location.search).get("flow")==="invite"||location.hash.includes("type=invite")||location.search.includes("type=invite"))){passwordFlow=true}await render()})();
 </script></body></html>
