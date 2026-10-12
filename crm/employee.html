@@ -1,0 +1,36 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Apparel Group — Employee Portal</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+:root{font-family:Inter,Arial,sans-serif;color:#142c43;background:#f2f6fa}*{box-sizing:border-box}body{margin:0}.header{background:#102b46;color:white;padding:18px max(22px,calc((100vw - 1060px)/2));display:flex;justify-content:space-between;align-items:center}.header strong{font-size:20px}.header button{background:transparent;border:1px solid #91a9bf;color:white;border-radius:8px;padding:9px 13px;cursor:pointer}.wrap{max-width:1060px;margin:30px auto;padding:0 18px}.card{background:white;border:1px solid #dce5ed;border-radius:14px;padding:23px;margin-bottom:18px;box-shadow:0 5px 22px #152f4610}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px}label{display:grid;gap:6px;font-size:13px;font-weight:600;margin-bottom:14px}input,select,textarea{width:100%;padding:11px;border:1px solid #cad6e2;border-radius:8px;background:white;color:#18334a;font:inherit}textarea{resize:vertical}button.primary{background:#0872b7;border:0;color:white;padding:11px 18px;border-radius:8px;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.muted{color:#667d90;font-size:13px}.pill{display:inline-block;padding:5px 10px;border-radius:20px;background:#e7f0f9;color:#125b8d;font-size:12px;font-weight:700}.error{color:#a52323}#message{margin-bottom:14px}#login{max-width:470px;margin:45px auto}#app,#password-setup,#signout{display:none}h1{font-size:25px}h2{font-size:19px;margin-top:0}.assignment h3{margin-bottom:5px}@media(max-width:600px){.header{padding:15px}.wrap{margin-top:16px}}
+</style></head><body><header class="header"><strong>AI APPAREL GROUP <span style="font-weight:400;font-size:14px">/ Employee Portal</span></strong><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
+<section class="card" id="login"><h1>Employee Sign In</h1><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Sign In</button></form><p><button type="button" id="reset-link">Send password reset email</button></p></section>
+<section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
+<section id="app"><div class="card"><h1 id="greeting">My Production Assignments</h1><p class="muted">Only work assigned to your employee account appears here.</p><div id="summary"></div></div><div id="assignments" class="grid"></div></section></main>
+<script>
+const URL="https://qpavspvpdebtbbffdcmo.supabase.co",KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+const db=window.supabase.createClient(URL,KEY,{auth:{detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const msg=(m,bad=false)=>{$("message").textContent=m;$("message").className=bad?"error":""};
+const inviteFlowAtLoad=location.href.includes("type=invite")||location.href.includes("type=recovery");
+let passwordFlow=inviteFlowAtLoad;
+async function render(){
+ const {data:{session}}=await db.auth.getSession();
+ $("signout").style.display=session?"block":"none";
+ $("login").style.display=session?"none":"block";
+ $("password-setup").style.display=session&&passwordFlow?"block":"none";
+ $("app").style.display=session&&!passwordFlow?"block":"none";
+ if(!session||passwordFlow)return;
+ const {data,error}=await db.rpc("ai_apparel_crm_employee_portal");
+ if(error){$("app").style.display="none";msg("Employee access is not active for this account. Contact your administrator.",true);return}
+ $("greeting").textContent="Welcome, "+data.employee.name;
+ const rows=data.assignments||[];
+ $("summary").innerHTML=`<span class="pill">${rows.length} assigned production stages</span>`;
+ $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="card"><p class="muted">No work is assigned to you yet.</p></div>';
+}
+$("login-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const f=new FormData(e.target);const {error}=await db.auth.signInWithPassword({email:f.get("email"),password:f.get("password")});b.disabled=false;if(error)msg(error.message,true);else{msg("");await render()}});
+$("password-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const {error}=await db.auth.updateUser({password:new FormData(e.target).get("password")});b.disabled=false;if(error)msg(error.message,true);else{passwordFlow=false;msg("Password saved. Your employee account is ready.");await render()}});
+$("reset-link").addEventListener("click",async()=>{const email=$("login-form").elements.email.value;if(!email){msg("Enter your email first.",true);return}const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});msg(error?error.message:"If your account exists, a password reset email will arrive shortly.",!!error)});
+$("signout").addEventListener("click",async()=>{await db.auth.signOut();passwordFlow=false;msg("Signed out.");await render()});
+document.addEventListener("submit",async e=>{const f=e.target;if(!f.matches("[data-assignment]"))return;e.preventDefault();const b=f.querySelector("button");b.disabled=true;const {error}=await db.rpc("ai_apparel_crm_employee_stage_update",{p_assignment_id:f.dataset.assignment,p_status:f.elements.status.value,p_notes:f.elements.notes.value});b.disabled=false;if(error)msg(error.message,true);else{msg("Production stage updated.");await render()}});
+db.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){passwordFlow=true;setTimeout(render,0)}else if(event==="SIGNED_IN"){setTimeout(render,0)}});
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session&&(location.hash.includes("type=invite")||location.search.includes("type=invite"))){passwordFlow=true}await render()})();
+</script></body></html>
