@@ -90,12 +90,22 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-order-tag{align-self:start;padding:5px 9px;border-radius:20px;background:#eaf3fc;color:#006fba;font-size:11px;font-weight:700}
 .crm-order-count{font-size:12px;color:#657a8d;font-weight:500}@media(max-width:600px){.crm-profile-grid{grid-template-columns:1fr}.crm-modal-panel{padding:18px}}
 
+
+.crm-business-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:13px}
+.crm-business-card{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid #dbe6f0;border-radius:13px;background:white;text-align:left;color:#1c3148;cursor:pointer;box-shadow:0 2px 8px #112b4410}
+.crm-business-card:hover{border-color:#006fba;background:#f5fbff;transform:translateY(-1px)}
+.crm-business-avatar{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:44px;height:44px;background:#e9f4fc;border-radius:12px;color:#006fba;font-weight:800}
+.crm-business-card strong,.crm-business-card small{display:block}.crm-business-card small{font-size:12px;color:#65788c;margin-top:5px}.crm-business-arrow{margin-left:auto;color:#006fba;font-size:21px}
+.crm-business-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}.crm-business-summary>div{padding:15px;border:1px solid #e3eaf1;border-radius:12px;background:#f6f9fc}.crm-business-summary strong,.crm-business-summary small{display:block}.crm-business-summary strong{font-size:20px}.crm-business-summary small{color:#65788c;font-size:12px;margin-top:4px}
+.crm-business-detail-list{display:grid;gap:8px;margin-bottom:22px}.crm-business-detail-list>div{padding:12px 14px;border:1px solid #e3eaf1;border-radius:10px}.crm-business-detail-list strong,.crm-business-detail-list small{display:block}.crm-business-detail-list small{color:#65788c;margin-top:5px;overflow-wrap:anywhere}
+@media(max-width:600px){.crm-business-summary{grid-template-columns:1fr}}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
 <button class="nav active" data-page="dashboard">◫ &nbsp; Dashboard</button>
 <button class="nav" data-page="clients">♙ &nbsp; Clients</button>
+<button class="nav" data-page="businesses">▦ &nbsp; Business Accounts</button>
 <button class="nav" data-page="quotes">▤ &nbsp; Quotes & Estimates</button>
 <button class="nav" data-page="jobs">▣ &nbsp; Jobs & Projects</button>
 <button class="nav" data-page="production">⚙ &nbsp; Production</button>
@@ -130,6 +140,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <input type="email" name="email" placeholder="Email" style="padding:10px">
 <input name="phone" placeholder="Phone" style="padding:10px">
 <button class="action" type="submit">Save Client</button></form></div></div></section>
+<section id="businesses" hidden><h2>Business Accounts</h2><p class="lead">Organization profiles, verified customers, and approved Shopify order associations.</p><div class="panel"><div id="business-account-list" class="crm-business-cards"><p class="info">Sign in to load organizations.</p></div></div></section>
 <section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">New quotes will be managed by this CRM after the quote backend and customer approval flow are verified.</p><div class="panel"><div class="empty">Quote creation is intentionally disabled until AI Apparel's own database and authentication are configured.</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Track client jobs from approved quote through completion.</p><div class="panel"><div class="empty">Job records will appear here after migration mapping.</div></div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Blueprint's production stages and automatic completion workflow will be adapted for AI Apparel.</p><div class="panel"><div class="empty">Production stage updates are disabled in staging.</div></div></section>
@@ -142,7 +153,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
 </div></main></div>
 <script>
-const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration"};
+const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts"};
 document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
 const page=button.dataset.page;
 document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
@@ -328,6 +339,28 @@ $("client-form").addEventListener("submit",async e=>{
 e.preventDefault();const button=e.currentTarget.querySelector("button[type=submit]");button.disabled=true;
 try{const p=Object.fromEntries(new FormData(e.currentTarget));await api("create_client",p);e.currentTarget.reset();e.currentTarget.hidden=true;await refresh();status("Client created successfully.")}catch(err){status(err.message)}finally{button.disabled=false}
 });
+async function loadBusinessAccounts(){
+ if(!businessOptions.length)await loadBusinesses();
+ $("business-account-list").innerHTML=businessOptions.length?businessOptions.map(b=>`<button type="button" class="crm-business-card" data-business-profile="${escapeHtml(b.id)}"><span class="crm-business-avatar">${escapeHtml(b.name.slice(0,2).toUpperCase())}</span><span><strong>${escapeHtml(b.name)}</strong><small>View organization profile, customers & orders</small></span><span class="crm-business-arrow">→</span></button>`).join(""):'<p class="info">No organizations found.</p>';
+}
+$("business-account-list").addEventListener("click",async e=>{
+ const btn=e.target.closest("[data-business-profile]");if(!btn)return;
+ const modal=$("crm-profile-modal"),content=$("crm-profile-content");
+ modal.hidden=false;$("crm-profile-title").textContent="Business Account";
+ content.innerHTML='<p class="info">Loading organization…</p>';
+ try{
+  const {data,error}=await db.rpc("ai_apparel_crm_business_detail",{p_business_id:btn.dataset.businessProfile});
+  if(error)throw Error(error.message);
+  if(modal.hidden)return;
+  $("crm-profile-title").textContent=data.name;
+  const customers=data.customers||[],orders=data.orders||[];
+  content.innerHTML=`<div class="crm-business-summary"><div><strong>${customers.length}</strong><small>Linked customers</small></div><div><strong>${orders.length}</strong><small>Approved Shopify orders</small></div><div><strong>${escapeHtml(data.status||"Active")}</strong><small>Account status</small></div></div><h3>Linked customers</h3>`+
+  (customers.length?`<div class="crm-business-detail-list">${customers.map(c=>`<div><strong>${escapeHtml(c.name||"Unnamed customer")}</strong><small>${escapeHtml(c.email||"No email")} ${c.verified?" · Verified association":""}</small></div>`).join("")}</div>`:'<p class="info">No customers linked to this organization yet.</p>')+
+  `<h3>Approved Shopify order associations</h3>`+
+  (orders.length?`<div class="crm-business-detail-list">${orders.map(o=>`<div><strong>${escapeHtml(o.order_name||("Shopify order "+String(o.order_id||"").split("/").pop()))}</strong><small>${escapeHtml(o.order_date?new Date(o.order_date).toLocaleDateString():"Date not available")}${Array.isArray(o.product_titles)&&o.product_titles.length?" · "+escapeHtml(o.product_titles.join(", ")):""}</small></div>`).join("")}</div>`:'<p class="info">No approved Shopify orders associated with this organization.</p>');
+ }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
+});
+document.querySelector('button[data-page="businesses"]').addEventListener("click",()=>loadBusinessAccounts().catch(e=>status(e.message)));
 $("logout").addEventListener("click",async()=>{await db.auth.signOut();location.reload()});
 if(db)db.auth.getSession().then(({data})=>{if(data.session)refresh();else status("Sign in to access AI Apparel CRM.")});
 else status("Authentication library failed to load.");
