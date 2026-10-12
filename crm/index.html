@@ -672,9 +672,9 @@ q('ai-quote-add-item').onclick=()=>addItem();
 ['ai-quote-discount','ai-quote-shipping','ai-quote-tax'].forEach(id=>q(id).addEventListener('input',totals));
 q('ai-quote-customer-search').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>customers(q('ai-quote-customer-search').value.trim()).catch(e=>status(e.message)),300)});
 q('ai-quote-form').addEventListener('submit',async e=>{
- e.preventDefault();const button=e.currentTarget.querySelector('button[type=submit]');button.disabled=true;
+ e.preventDefault();const form=e.currentTarget;const button=form.querySelector('button[type=submit]');button.disabled=true;
  try{
-  const payload=Object.fromEntries(new FormData(e.currentTarget));payload.items=items();const proofFiles=[...q('ai-quote-artwork').files];validateProofFiles(proofFiles);
+  const payload=Object.fromEntries(new FormData(form));payload.items=items();const proofFiles=[...q('ai-quote-artwork').files];validateProofFiles(proofFiles);
   if(!payload.items.length)throw Error('Add at least one line item.');
   if(payload.items.some(i=>!i.description||!Number.isFinite(i.quantity)||i.quantity<=0||!Number.isFinite(i.unit_price)||i.unit_price<0))throw Error('Each item needs a description, positive quantity and valid price.');
   const subtotal=payload.items.reduce((a,b)=>a+Math.round(b.quantity*b.unit_price*100)/100,0);
@@ -682,7 +682,7 @@ q('ai-quote-form').addEventListener('submit',async e=>{
   const {data:created,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'create',p_payload:payload});
   if(error)throw Error(error.message);
   if(proofFiles.length){try{await uploadProofs(created.id,proofFiles)}catch(uploadError){await list();throw Error('Quote '+created.quote_number+' was saved, but '+uploadError.message+'. You can attach artwork from Saved Quotes.')}}
-  e.currentTarget.reset();q('ai-quote-artwork-names').textContent='No artwork selected';q('ai-quote-items').innerHTML='';addItem();await load();status('Itemized quote saved as Draft.');
+  form.reset();q('ai-quote-artwork-names').textContent='No artwork selected';q('ai-quote-items').innerHTML='';addItem();await load();status('Itemized quote saved as Draft.');
  }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
 });
 q('ai-quote-artwork').addEventListener('change',e=>{const files=[...e.target.files];q('ai-quote-artwork-names').textContent=files.length?files.map(f=>f.name).join(' · '):'No artwork selected';});
