@@ -90,15 +90,46 @@ const status=msg=>{$("auth-message").textContent=msg};
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function api(action,payload={}){if(!db)throw Error("Unable to load authentication library");const {data,error}=await db.rpc("ai_apparel_crm_api",{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data}
 let customerOffset=0;
+let businessOptions=[];
+async function loadBusinesses(){
+ const {data,error}=await db.rpc("ai_apparel_crm_businesses");
+ if(error)throw Error(error.message);
+ businessOptions=data||[];
+}
+async function setCustomerBusiness(customerId,businessId,link){
+ const {error}=await db.rpc("ai_apparel_crm_link_customer",{p_customer_id:customerId,p_business_id:businessId,p_link:link});
+ if(error)throw Error(error.message);
+ await loadCustomers();
+ status(link?"Business linked to customer.":"Business association removed.");
+}
 async function loadCustomers(){
+if(!businessOptions.length)await loadBusinesses();
 const {data,error}=await db.rpc("ai_apparel_crm_customers",{p_search:$("customer-search").value.trim(),p_limit:50,p_offset:customerOffset});
 if(error)throw Error(error.message);
 const rows=data.items||[],total=data.total||0;
 $("customer-count").textContent=`${total.toLocaleString()} imported customers • Showing ${rows.length?customerOffset+1:0}–${customerOffset+rows.length}`;
-$("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Business</th></tr></thead><tbody>'+rows.map(c=>`<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${escapeHtml((c.businesses||[]).map(b=>b.name).join(", ")||"Not linked")}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
+const options=businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
+$("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Linked businesses</th><th>Manage association</th></tr></thead><tbody>'+rows.map(c=>{
+const links=(c.businesses||[]).map(b=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:4px 7px;border-radius:6px;background:#e9f3fa">${escapeHtml(b.name)} <button type="button" data-unlink="${escapeHtml(c.id)}" data-business="${escapeHtml(b.id)}" title="Remove association" style="border:0;background:transparent;color:#a12b45;font-weight:bold">×</button></span>`).join("")||"Not linked";
+return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><select data-customer="${escapeHtml(c.id)}" style="max-width:170px;padding:7px"><option value="">Select business</option>${options}</select> <button type="button" data-add-business="${escapeHtml(c.id)}" class="action" style="padding:7px 10px">Link</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
 $("previous-customers").disabled=customerOffset===0;
 $("next-customers").disabled=customerOffset+rows.length>=total;
 }
+$("shopify-customers").addEventListener("click",async e=>{
+const add=e.target.closest("[data-add-business]");
+const remove=e.target.closest("[data-unlink]");
+if(!add&&!remove)return;
+try{
+ if(add){
+  const id=add.dataset.addBusiness;
+  const select=Array.from($("shopify-customers").querySelectorAll("select[data-customer]")).find(x=>x.dataset.customer===id);
+  if(!select?.value){status("Select a business first.");return;}
+  await setCustomerBusiness(id,select.value,true);
+ }else if(remove && confirm("Remove this customer's business association? This will not change any orders or rewards.")){
+  await setCustomerBusiness(remove.dataset.unlink,remove.dataset.business,false);
+ }
+}catch(err){status(err.message)}
+});
 $("search-customers").addEventListener("click",async()=>{customerOffset=0;try{await loadCustomers()}catch(e){status(e.message)}});
 $("customer-search").addEventListener("keydown",e=>{if(e.key==="Enter")$("search-customers").click()});
 $("previous-customers").addEventListener("click",async()=>{customerOffset=Math.max(0,customerOffset-50);try{await loadCustomers()}catch(e){status(e.message)}});
