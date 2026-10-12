@@ -74,6 +74,21 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 #clients .business-picker-option{display:block;width:100%;padding:11px 10px;border:0;border-radius:8px;background:transparent;color:#25394e;text-align:left;font-size:13px;cursor:pointer}
 #clients .business-picker-option:hover,#clients .business-picker-option:focus{background:#eaf5fc;color:#006fba}
 #clients #shopify-customers td{overflow:visible}
+
+#clients .crm-profile-link{border:0;background:none;padding:4px 0;color:#006fba;font:inherit;font-weight:700;cursor:pointer;text-align:left}
+#clients .crm-profile-link:hover{text-decoration:underline}
+.crm-modal[hidden]{display:none!important}.crm-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.crm-modal-backdrop{position:absolute;inset:0;background:#0a2037a8;backdrop-filter:blur(3px)}
+.crm-modal-panel{position:relative;width:min(760px,100%);max-height:88vh;overflow:auto;border-radius:18px;background:white;padding:28px;box-shadow:0 24px 80px #0004;color:#20334a}
+.crm-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px;border-bottom:1px solid #e3eaf1;padding-bottom:16px}
+.crm-modal-header h2{margin:5px 0 0}.crm-eyebrow{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#006fba}
+.crm-modal-close{border:0;background:#edf4fa;border-radius:10px;width:36px;height:36px;font-size:24px;cursor:pointer;color:#345}
+.crm-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:24px}
+.crm-profile-grid>div{background:#f5f8fc;border:1px solid #e5edf4;border-radius:11px;padding:13px;overflow-wrap:anywhere}
+.crm-profile-grid small{display:block;color:#6a7b8d;margin-bottom:7px}.crm-profile-grid strong{font-size:13px}
+.crm-order-list{display:grid;gap:9px}.crm-order-item{display:flex;justify-content:space-between;gap:14px;padding:14px;border:1px solid #e3eaf1;border-radius:11px}
+.crm-order-tag{align-self:start;padding:5px 9px;border-radius:20px;background:#eaf3fc;color:#006fba;font-size:11px;font-weight:700}
+.crm-order-count{font-size:12px;color:#657a8d;font-weight:500}@media(max-width:600px){.crm-profile-grid{grid-template-columns:1fr}.crm-modal-panel{padding:18px}}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -207,11 +222,12 @@ if(!businessOptions.length)await loadBusinesses();
 const {data,error}=await db.rpc("ai_apparel_crm_customers",{p_search:$("customer-search").value.trim(),p_limit:50,p_offset:customerOffset});
 if(error)throw Error(error.message);
 const rows=data.items||[],total=data.total||0;
+window.crmVisibleCustomers=rows;
 $("customer-count").textContent=`${total.toLocaleString()} imported customers • Showing ${rows.length?customerOffset+1:0}–${customerOffset+rows.length}`;
 const options=businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
 $("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Linked businesses</th><th>Manage association</th><th>Order history</th></tr></thead><tbody>'+rows.map(c=>{
 const links=(c.businesses||[]).map(b=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:4px 7px;border-radius:6px;background:#e9f3fa">${escapeHtml(b.name)} <button type="button" data-unlink="${escapeHtml(c.id)}" data-business="${escapeHtml(b.id)}" title="Remove association" style="border:0;background:transparent;color:#a12b45;font-weight:bold">×</button></span>`).join("")||"Not linked";
-return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><div class="business-association"><div class="business-select-wrap"><div class="business-picker" data-picker="${escapeHtml(c.id)}"><button type="button" class="business-picker-trigger" data-open-picker="${escapeHtml(c.id)}" aria-expanded="false"><span class="business-picker-label">Select business</span><span class="business-chevron">⌄</span></button><div class="business-picker-menu" hidden><input class="business-picker-search" type="search" placeholder="Search businesses…" aria-label="Search businesses"><div class="business-picker-options">${businessOptions.map(b=>`<button type="button" class="business-picker-option" data-pick-business="${escapeHtml(b.id)}" data-business-name="${escapeHtml(b.name)}">${escapeHtml(b.name)}</button>`).join("")}</div></div><select hidden data-customer="${escapeHtml(c.id)}"><option value="">Select business</option>${options}</select></div></div><button type="button" data-add-business="${escapeHtml(c.id)}" class="action business-link-btn">Link</button></div></td><td><button type="button" class="customer-orders-btn" data-view-orders="${escapeHtml(c.id)}">View Orders</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
+return `<tr><td><button type="button" class="crm-profile-link" data-open-profile="${escapeHtml(c.id)}">${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</button></td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><div class="business-association"><div class="business-select-wrap"><div class="business-picker" data-picker="${escapeHtml(c.id)}"><button type="button" class="business-picker-trigger" data-open-picker="${escapeHtml(c.id)}" aria-expanded="false"><span class="business-picker-label">Select business</span><span class="business-chevron">⌄</span></button><div class="business-picker-menu" hidden><input class="business-picker-search" type="search" placeholder="Search businesses…" aria-label="Search businesses"><div class="business-picker-options">${businessOptions.map(b=>`<button type="button" class="business-picker-option" data-pick-business="${escapeHtml(b.id)}" data-business-name="${escapeHtml(b.name)}">${escapeHtml(b.name)}</button>`).join("")}</div></div><select hidden data-customer="${escapeHtml(c.id)}"><option value="">Select business</option>${options}</select></div></div><button type="button" data-add-business="${escapeHtml(c.id)}" class="action business-link-btn">Link</button></div></td><td><button type="button" class="customer-orders-btn" data-open-profile="${escapeHtml(c.id)}">View Profile</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
 $("previous-customers").disabled=customerOffset===0;
 $("next-customers").disabled=customerOffset+rows.length>=total;
 }
@@ -243,14 +259,23 @@ document.addEventListener("click",e=>{
  document.querySelectorAll(".business-picker-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
 });
 $("shopify-customers").addEventListener("click",async e=>{
-const view=e.target.closest("[data-view-orders]");
+const view=e.target.closest("[data-open-profile]");
 if(view){
+ const customer=(window.crmVisibleCustomers||[]).find(c=>c.id===view.dataset.openProfile);
+ if(!customer)return;
+ const modal=$("crm-profile-modal"),content=$("crm-profile-content");
+ modal.hidden=false;
+ const fullName=[customer.first_name,customer.last_name].filter(Boolean).join(" ")||"Unnamed customer";
+ $("crm-profile-title").textContent=fullName;
+ const contact=`<div class="crm-profile-grid"><div><small>Email</small><strong>${escapeHtml(customer.email||"Not provided")}</strong></div><div><small>Phone</small><strong>${escapeHtml(customer.phone||"Not provided")}</strong></div><div><small>Source</small><strong>${escapeHtml(customer.source||"Unknown")}</strong></div><div><small>Business associations</small><strong>${escapeHtml((customer.businesses||[]).map(b=>b.name).join(", ")||"Not linked")}</strong></div></div>`;
+ content.innerHTML=contact+'<h3>Order history</h3><p class="info">Loading orders…</p>';
  try{
- const {data,error}=await db.rpc("ai_apparel_crm_customer_orders",{p_customer_id:view.dataset.viewOrders});
- if(error)throw Error(error.message);
- const details=(data||[]).map(o=>`${o.order_name||o.order_id} — ${o.business||"No approved business association"}${o.product_titles?.length?" — "+o.product_titles.join(", "):""}`).join("\\n");
- alert(details||"No Shopify orders found for this customer.");
- }catch(err){status(err.message)}
+  const {data,error}=await db.rpc("ai_apparel_crm_customer_orders",{p_customer_id:customer.id});
+  if(error)throw Error(error.message);
+  if(modal.hidden)return;
+  const orders=Array.isArray(data)?data:[];
+  content.innerHTML=contact+`<h3>Order history <span class="crm-order-count">${orders.length}</span></h3>`+(orders.length?`<div class="crm-order-list">${orders.map(o=>`<div class="crm-order-item"><div><strong>${escapeHtml(o.order_name||("Shopify order "+String(o.order_id||"").split("/").pop()))}</strong><div class="info">${escapeHtml(o.business||"No approved business association")}</div>${Array.isArray(o.product_titles)&&o.product_titles.length?`<div class="info">${escapeHtml(o.product_titles.join(", "))}</div>`:""}</div><span class="crm-order-tag">${o.business?"Linked":"Unlinked"}</span></div>`).join("")}</div>`:'<p class="info">No Shopify orders found for this customer.</p>');
+ }catch(err){content.innerHTML=contact+`<h3>Order history</h3><p class="info">${escapeHtml(err.message)}</p>`}
  return;
 }
 
@@ -306,4 +331,4 @@ $("logout").addEventListener("click",async()=>{await db.auth.signOut();location.
 if(db)db.auth.getSession().then(({data})=>{if(data.session)refresh();else status("Sign in to access AI Apparel CRM.")});
 else status("Authentication library failed to load.");
 </script>
-</body></html>
+<div id="crm-profile-modal" class="crm-modal" hidden role="dialog" aria-modal="true" aria-labelledby="crm-profile-title"><div class="crm-modal-backdrop" data-close-profile></div><div class="crm-modal-panel"><div class="crm-modal-header"><div><div class="crm-eyebrow">CUSTOMER PROFILE</div><h2 id="crm-profile-title">Customer</h2></div><button type="button" class="crm-modal-close" data-close-profile aria-label="Close customer profile">×</button></div><div id="crm-profile-content"></div></div></div><script>document.addEventListener("click",e=>{if(e.target.closest("[data-close-profile]"))document.getElementById("crm-profile-modal").hidden=true});document.addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("crm-profile-modal").hidden=true});</script></body></html>
