@@ -141,6 +141,20 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .ai-quote-fold-content{padding:0 16px 16px}
 .ai-quote-fold.ai-quote-archive-section{margin-top:12px;padding-top:0;border-top:1px solid #e3e9f2}
 </style>
+<style>
+.crm-job-quote-detail{border-top:1px solid #e0e7ef;margin-top:22px;padding-top:16px}
+.crm-job-quote-detail h3{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.crm-job-quote-tag{font-size:12px;padding:5px 10px;border-radius:999px;background:#eaf2fc;color:#275e94}
+.crm-job-quote-table{overflow-x:auto;margin:15px 0}
+.crm-job-quote-table table{width:100%}
+.crm-job-quote-totals{display:flex;gap:9px 18px;flex-wrap:wrap;justify-content:flex-end;font-size:13px}
+.crm-job-quote-totals strong{font-size:15px}
+.crm-job-quote-notes{margin:18px 0;padding:13px;background:#f5f8fc;border-radius:10px}
+.crm-job-quote-notes p{white-space:pre-wrap;margin-bottom:0}
+.crm-job-quote-art{margin-top:18px}
+.crm-job-proof-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #e7ebf0;overflow-wrap:anywhere}
+.crm-job-proof-row a{white-space:nowrap;text-decoration:underline}
+</style>
 </head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -468,8 +482,35 @@ async function openProductionJob(jobId){
   if(error)throw Error(error.message);
   if(modal.hidden)return;
   $("crm-profile-title").textContent=data.title;
+  let linkedQuoteHtml='';
+  const {data:quotes,error:quotesError}=await db.rpc("ai_apparel_crm_quotes",{p_action:"list",p_payload:{}});
+  if(quotesError)throw Error("Unable to load linked quote: "+quotesError.message);
+  const linkedQuote=(quotes||[]).find(q=>String(q.job_id)===String(jobId));
+  if(linkedQuote){
+   const currency=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
+   const rows=(linkedQuote.items||[]).map(item=>`<tr><td>${escapeHtml(item.description||"")}${item.variant_title?`<div class="info">${escapeHtml(item.variant_title)}</div>`:""}${item.sku?`<div class="info">SKU: ${escapeHtml(item.sku)}</div>`:""}</td><td>${escapeHtml(item.quantity)}</td><td>${currency(item.unit_price)}</td><td>${currency(Number(item.quantity)*Number(item.unit_price))}</td></tr>`).join("");
+   linkedQuoteHtml=`<section class="crm-job-quote-detail"><h3>Approved Quote <span class="crm-job-quote-tag">${escapeHtml(linkedQuote.quote_number)}</span></h3><div class="crm-profile-grid"><div><small>Quote title</small><strong>${escapeHtml(linkedQuote.title||"")}</strong></div><div><small>Approval status</small><strong>${escapeHtml(linkedQuote.status||"")}</strong></div><div><small>Estimate total</small><strong>${currency(linkedQuote.total)}</strong></div><div><small>Line items</small><strong>${(linkedQuote.items||[]).length}</strong></div></div><div class="crm-job-quote-table"><table><thead><tr><th>Product / Specifications</th><th>Qty</th><th>Unit</th><th>Amount</th></tr></thead><tbody>${rows||'<tr><td colspan="4">No line items</td></tr>'}</tbody></table></div><div class="crm-job-quote-totals"><span>Subtotal: ${currency(linkedQuote.subtotal)}</span><span>Discount: ${currency(linkedQuote.discount_amount)}</span><span>Shipping: ${currency(linkedQuote.shipping_amount)}</span><span>Tax: ${currency(linkedQuote.tax_amount)}</span><strong>Total: ${currency(linkedQuote.total)}</strong></div>${linkedQuote.notes?`<div class="crm-job-quote-notes"><strong>Quote notes / production instructions</strong><p>${escapeHtml(linkedQuote.notes)}</p></div>`:""}<div class="crm-job-quote-art"><strong>Artwork &amp; Proofs</strong><div id="crm-job-quote-proofs">Loading artwork…</div></div></section>`;
+  }
   const statuses=["New","In Production","Production Complete","Completed","Closed","On Hold","Cancelled"];
-  content.innerHTML=`<div class="crm-profile-grid"><div><small>Job number</small><strong>${escapeHtml(data.job_number||"Not assigned")}</strong></div><div><small>Customer</small><strong>${escapeHtml(data.customer_name||"Not assigned")}</strong></div><div><small>Business account</small><strong>${escapeHtml(data.business_name||"Not assigned")}</strong></div><div><small>Shopify order</small><strong>${escapeHtml(data.shopify_order_id?String(data.shopify_order_id).split("/").pop():"Not linked")}</strong></div><div><small>Due date</small><strong>${escapeHtml(data.due_date||"Not scheduled")}</strong></div><div><small>Created</small><strong>${escapeHtml(data.created_at?new Date(data.created_at).toLocaleDateString():"Unknown")}</strong></div></div><form id="crm-job-status-form" data-job-id="${escapeHtml(data.id)}"><label class="crm-status-label">Job status<select name="status" required>${statuses.map(st=>`<option value="${st}" ${data.status===st?"selected":""}>${st}</option>`).join("")}</select></label><button type="submit" class="action">Save Status</button></form><p class="info">Changing status updates this CRM job only; it does not automatically update Shopify, rewards, or production tasks.</p>`;
+  content.innerHTML=`<div class="crm-profile-grid"><div><small>Job number</small><strong>${escapeHtml(data.job_number||"Not assigned")}</strong></div><div><small>Customer</small><strong>${escapeHtml(data.customer_name||"Not assigned")}</strong></div><div><small>Business account</small><strong>${escapeHtml(data.business_name||"Not assigned")}</strong></div><div><small>Shopify order</small><strong>${escapeHtml(data.shopify_order_id?String(data.shopify_order_id).split("/").pop():"Not linked")}</strong></div><div><small>Due date</small><strong>${escapeHtml(data.due_date||"Not scheduled")}</strong></div><div><small>Created</small><strong>${escapeHtml(data.created_at?new Date(data.created_at).toLocaleDateString():"Unknown")}</strong></div></div><form id="crm-job-status-form" data-job-id="${escapeHtml(data.id)}"><label class="crm-status-label">Job status<select name="status" required>${statuses.map(st=>`<option value="${st}" ${data.status===st?"selected":""}>${st}</option>`).join("")}</select></label><button type="submit" class="action">Save Status</button></form><p class="info">Changing status updates this CRM job only; it does not automatically update Shopify, rewards, or production tasks.</p>${linkedQuoteHtml}`;
+  if(linkedQuote){
+   const proofTarget=document.getElementById("crm-job-quote-proofs");
+   const {data:proofs,error:proofError}=await db.rpc("ai_apparel_crm_quote_proofs",{p_quote_id:linkedQuote.id});
+   if(proofError){proofTarget.textContent="Unable to load artwork: "+proofError.message;}
+   else if(!proofs?.length){proofTarget.textContent="No artwork uploaded for this quote.";}
+   else{
+    proofTarget.textContent="";
+    for(const proof of proofs){
+     const row=document.createElement("div");row.className="crm-job-proof-row";
+     const label=document.createElement("span");label.textContent=proof.filename||"Artwork proof";
+     const link=document.createElement("a");link.textContent="View / Download";link.target="_blank";link.rel="noopener noreferrer";
+     const {data:signed,error:signedError}=await db.storage.from("ai-apparel-quote-proofs").createSignedUrl(proof.path,300);
+     if(signedError){link.textContent="Unable to open";link.removeAttribute("href");}
+     else link.href=signed.signedUrl;
+     row.append(label,link);proofTarget.appendChild(row);
+    }
+   }
+  }
  }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-open-job]");if(b)openProductionJob(b.dataset.openJob)});
