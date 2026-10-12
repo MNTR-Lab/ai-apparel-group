@@ -153,9 +153,28 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <input name="phone" placeholder="Phone" style="padding:10px">
 <button class="action" type="submit">Save Client</button></form></div></div></section>
 <section id="businesses" hidden><h2>Business Accounts</h2><p class="lead">Organization profiles, verified customers, and approved Shopify order associations.</p><div class="panel"><div id="business-account-list" class="crm-business-cards"><p class="info">Sign in to load organizations.</p></div></div></section>
-<section id="quotes" hidden>
+<style>
+/* Modern quote builder styles, isolated from the rest of the CRM */
+.ai-modern-quotes .ai-quote-panel{border:1px solid #e4e9f0;border-radius:18px;box-shadow:0 8px 28px rgba(25,37,54,.055);padding:24px;margin-bottom:22px;background:#fff}
+.ai-modern-quotes .ai-quote-panel h3{font-size:19px;letter-spacing:-.35px;margin:0 0 18px}
+.ai-modern-quotes .crm-job-form{display:grid;gap:15px}
+.ai-modern-quotes .crm-job-form label{font-size:13px;font-weight:700;color:#394a60}
+.ai-modern-quotes .crm-job-form input,.ai-modern-quotes .crm-job-form select,.ai-modern-quotes .crm-job-form textarea{border:1px solid #dce3ed;border-radius:10px;padding:12px;background:#fff;width:100%;margin-top:6px;outline-offset:2px}
+.ai-modern-quotes .ai-quote-row{border:1px solid #e3e9f2!important;border-radius:14px!important;background:#f8faff!important}
+.ai-modern-quotes #ai-quote-totals{background:#edf5ff;border:1px solid #d7e9ff;padding:17px;border-radius:12px;color:#123e70}
+.ai-modern-quotes .ai-proof-upload{display:flex;flex-wrap:wrap;gap:13px;align-items:center;padding:20px;border:2px dashed #a9c8e8;border-radius:16px;background:#f4f9ff}
+.ai-modern-quotes .ai-proof-upload>div:nth-child(2){flex:1 1 240px}.ai-modern-quotes .ai-proof-upload strong{font-size:16px;color:#173d6c}
+.ai-modern-quotes .ai-proof-upload p{font-size:12px;font-weight:400;color:#60758d;margin:5px 0}
+.ai-modern-quotes .ai-proof-symbol{display:grid;place-items:center;width:43px;height:43px;border-radius:12px;background:#dbeeff;color:#1563a7;font-size:24px}
+.ai-modern-quotes .ai-proof-picker{background:#1769b3;color:#fff!important;border-radius:10px;padding:12px 16px;cursor:pointer;white-space:nowrap}
+.ai-modern-quotes .ai-proof-picker input{display:none}.ai-modern-quotes .ai-proof-names{width:100%;font-size:12px;color:#546d87;overflow-wrap:anywhere}
+.ai-modern-quotes .ai-proof-actions{margin-top:9px;display:flex;gap:8px;flex-wrap:wrap}.ai-modern-quotes .ai-proof-actions button,.ai-modern-quotes .ai-add-proof{font-size:12px!important;padding:7px 10px;border:1px solid #c6d9eb;border-radius:8px;background:#f4f9ff;color:#175f9c;cursor:pointer}
+.ai-modern-quotes .ai-proof-list{width:100%;font-size:12px}
+@media(max-width:640px){.ai-modern-quotes .ai-quote-panel{padding:15px}.ai-modern-quotes .ai-proof-upload{padding:13px}}
+</style>
+<section id="quotes" class="ai-modern-quotes" hidden>
 <h2>Quotes & Estimates</h2><p class="lead">Build itemized customer quotes and convert approved quotes into production jobs.</p>
-<div class="panel"><h3>New Customer Quote</h3>
+<div class="panel ai-quote-panel"><h3>New Customer Quote</h3>
 <form id="ai-quote-form" class="crm-job-form">
 <label>Quote title<input name="title" required maxlength="200" placeholder="e.g. Company polos and embroidered hats"></label>
 <label>Customer search<input id="ai-quote-customer-search" type="search" placeholder="Search name or email"></label>
@@ -172,8 +191,9 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 </div>
 <div id="ai-quote-totals" style="font-size:18px;font-weight:700;margin:15px 0">Total: $0.00</div>
 <label>Quote notes / specifications<textarea name="notes" rows="3" placeholder="Artwork, turnaround time, delivery instructions, etc."></textarea></label>
+<div class="ai-proof-upload"><div class="ai-proof-symbol">✦</div><div><strong>Artwork & Proofs</strong><p>Attach design artwork or a customer proof to this estimate. PNG, JPG, WebP or PDF — 15 MB max per file.</p></div><label class="ai-proof-picker">Choose files<input id="ai-quote-artwork" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple></label><div id="ai-quote-artwork-names" class="ai-proof-names">No artwork selected</div></div>
 <button class="action" type="submit">Save Draft Quote</button>
-</form></div><div class="panel"><h3>Saved Quotes</h3><div id="ai-quotes-list">Loading…</div></div></section>
+</form></div><div class="panel ai-quote-panel"><h3>Saved Quotes</h3><div id="ai-quotes-list">Loading…</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<input type="search" id="crm-job-customer-search" placeholder="Search customer name or email…" autocomplete="off"><select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select><small id="crm-job-customer-help" style="font-weight:400;color:#65788c">Type a name or email to find a customer.</small></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Track real jobs through production stages, assignments, due dates, and notes.</p><div class="panel"><h3>Production Overview</h3><div id="crm-production-overview" class="crm-business-summary">Loading…</div></div><div id="crm-production-jobs"></div></section>
 <section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Invite employees by email and manage their access to assigned production work.</p><div class="panel"><h3>Invite Employee</h3><form id="crm-employee-invite" class="crm-employee-invite"><label>Full name<input name="name" required maxlength="150" placeholder="Employee name"></label><label>Email address<input name="email" type="email" required placeholder="employee@example.com"></label><label>Role<select name="role"><option value="employee">Employee</option><option value="manager">Manager</option></select></label><button type="submit" class="action">Send Invitation</button></form><p class="info">The employee receives an email to activate their account. They can access only their assigned production stages. No password is shared with administrators.</p></div><div class="panel"><div class="crm-business-summary" id="crm-employee-metrics">Loading…</div></div><div class="panel"><h3>Employee Directory</h3><div id="crm-employee-directory">Loading employee records…</div></div><div class="panel"><h3>Production Assignments</h3><div id="crm-employee-assignments">Loading assignments…</div></div></section>
@@ -573,6 +593,31 @@ const q=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const money=n=>Number(n||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
 let searchTimer,searchToken=0;
+const allowedTypes=new Set(['image/png','image/jpeg','image/webp','application/pdf']);
+function validateProofFiles(files){for(const f of files){if(!allowedTypes.has(f.type))throw Error('Unsupported proof file: '+f.name);if(f.size>15*1024*1024)throw Error('Proof file exceeds 15 MB: '+f.name);}}
+async function uploadProofs(quoteId,files){
+ validateProofFiles(files);
+ for(const f of files){
+  const ext=f.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')||'file';
+  const path=quoteId+'/'+crypto.randomUUID()+'.'+ext;
+  const {error:uploadError}=await db.storage.from('ai-apparel-quote-proofs').upload(path,f,{contentType:f.type,upsert:false});
+  if(uploadError)throw Error('Artwork upload failed for '+f.name+': '+uploadError.message);
+  const {error:linkError}=await db.rpc('ai_apparel_crm_quote_proofs',{p_quote_id:quoteId,p_path:path,p_filename:f.name,p_mime:f.type});
+  if(linkError)throw Error('Artwork uploaded but could not be linked: '+linkError.message);
+ }
+}
+async function viewProofs(quoteId,target){
+ const {data,error}=await db.rpc('ai_apparel_crm_quote_proofs',{p_quote_id:quoteId});
+ if(error)throw Error(error.message);
+ target.innerHTML='';
+ if(!data.length){target.textContent='No artwork uploaded yet.';return;}
+ for(const proof of data){
+  const {data:link,error:linkError}=await db.storage.from('ai-apparel-quote-proofs').createSignedUrl(proof.path,300);
+  const a=document.createElement('a');a.textContent=proof.filename;a.style.cssText='display:block;margin:7px 0;text-decoration:underline';
+  if(linkError){a.textContent=proof.filename+' (unable to open)';}else{a.href=link.signedUrl;a.target='_blank';a.rel='noopener noreferrer';}
+  target.appendChild(a);
+ }
+}
 function addItem(v={}){
  const row=document.createElement('div');row.className='ai-quote-row';
  row.style.cssText='padding:12px;margin:12px 0;border:1px solid #d6dce4;border-radius:10px;background:#fafbfd';
@@ -616,7 +661,7 @@ async function list(){
  if(error){q('ai-quotes-list').textContent=error.message;return;}
  if(!data?.length){q('ai-quotes-list').innerHTML='<p class="info">No quotes created yet.</p>';return;}
  q('ai-quotes-list').innerHTML='<div style="overflow-x:auto"><table><thead><tr><th>Quote</th><th>Customer / Business</th><th>Amount</th><th>Status</th><th>Production Job</th></tr></thead><tbody>'+
- data.map(x=>'<tr><td><strong>'+esc(x.quote_number)+'</strong><div>'+esc(x.title)+'</div><details><summary>View '+(x.items||[]).length+' line items</summary><div>'+((x.items||[]).map(i=>'<div>'+esc(i.description)+' '+esc(i.variant_title||'')+' — '+esc(i.quantity)+' × '+money(i.unit_price)+'</div>').join('')||'No items')+'</div><p>'+esc(x.notes||'')+'</p></details></td><td>'+esc(x.customer_name||'—')+'<div>'+esc(x.business_name||'')+'</div></td><td>'+money(x.total)+'</td><td><select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id?'disabled':'')+'>'+['Draft','Sent','Changes Requested','Approved','Declined'].map(st=>'<option '+(x.status===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></td><td>'+esc(x.job_number||'—')+'</td></tr>').join('')+'</tbody></table></div>';
+ data.map(x=>'<tr><td><strong>'+esc(x.quote_number)+'</strong><div>'+esc(x.title)+'</div><details><summary>View '+(x.items||[]).length+' line items</summary><div>'+((x.items||[]).map(i=>'<div>'+esc(i.description)+' '+esc(i.variant_title||'')+' — '+esc(i.quantity)+' × '+money(i.unit_price)+'</div>').join('')||'No items')+'</div><p>'+esc(x.notes||'')+'</p></details><div class="ai-proof-actions"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label><div class="ai-proof-list" data-id="'+esc(x.id)+'"></div></div></td><td>'+esc(x.customer_name||'—')+'<div>'+esc(x.business_name||'')+'</div></td><td>'+money(x.total)+'</td><td><select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id?'disabled':'')+'>'+['Draft','Sent','Changes Requested','Approved','Declined'].map(st=>'<option '+(x.status===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></td><td>'+esc(x.job_number||'—')+'</td></tr>').join('')+'</tbody></table></div>';
 }
 async function load(){
  try{if(!businessOptions.length)await loadBusinesses();q('ai-quote-business').innerHTML='<option value="">No business selected</option>'+businessOptions.map(b=>'<option value="'+esc(b.id)+'">'+esc(b.name)+'</option>').join('');}catch(e){status('Business accounts: '+e.message)}
@@ -629,15 +674,26 @@ q('ai-quote-customer-search').addEventListener('input',()=>{clearTimeout(searchT
 q('ai-quote-form').addEventListener('submit',async e=>{
  e.preventDefault();const button=e.currentTarget.querySelector('button[type=submit]');button.disabled=true;
  try{
-  const payload=Object.fromEntries(new FormData(e.currentTarget));payload.items=items();
+  const payload=Object.fromEntries(new FormData(e.currentTarget));payload.items=items();const proofFiles=[...q('ai-quote-artwork').files];validateProofFiles(proofFiles);
   if(!payload.items.length)throw Error('Add at least one line item.');
   if(payload.items.some(i=>!i.description||!Number.isFinite(i.quantity)||i.quantity<=0||!Number.isFinite(i.unit_price)||i.unit_price<0))throw Error('Each item needs a description, positive quantity and valid price.');
   const subtotal=payload.items.reduce((a,b)=>a+Math.round(b.quantity*b.unit_price*100)/100,0);
   if(Number(payload.discount_amount)>subtotal)throw Error('Discount exceeds subtotal.');
-  const {error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'create',p_payload:payload});
+  const {data:created,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'create',p_payload:payload});
   if(error)throw Error(error.message);
-  e.currentTarget.reset();q('ai-quote-items').innerHTML='';addItem();await load();status('Itemized quote saved as Draft.');
+  if(proofFiles.length){try{await uploadProofs(created.id,proofFiles)}catch(uploadError){await list();throw Error('Quote '+created.quote_number+' was saved, but '+uploadError.message+'. You can attach artwork from Saved Quotes.')}}
+  e.currentTarget.reset();q('ai-quote-artwork-names').textContent='No artwork selected';q('ai-quote-items').innerHTML='';addItem();await load();status('Itemized quote saved as Draft.');
  }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
+});
+q('ai-quote-artwork').addEventListener('change',e=>{const files=[...e.target.files];q('ai-quote-artwork-names').textContent=files.length?files.map(f=>f.name).join(' · '):'No artwork selected';});
+q('ai-quotes-list').addEventListener('click',async e=>{
+ const btn=e.target.closest('.ai-view-proofs');if(!btn)return;
+ const target=[...q('ai-quotes-list').querySelectorAll('.ai-proof-list')].find(el=>el.dataset.id===btn.dataset.id);
+ try{target.textContent='Loading artwork…';await viewProofs(btn.dataset.id,target)}catch(err){target.textContent=err.message;status(err.message)}
+});
+q('ai-quotes-list').addEventListener('change',async e=>{
+ const input=e.target.closest('.ai-attach-proof');if(!input)return;
+ try{const files=[...input.files];if(!files.length)return;validateProofFiles(files);input.disabled=true;await uploadProofs(input.dataset.id,files);const target=[...q('ai-quotes-list').querySelectorAll('.ai-proof-list')].find(el=>el.dataset.id===input.dataset.id);await viewProofs(input.dataset.id,target);status('Artwork attached to quote.')}catch(err){status(err.message);alert(err.message)}finally{input.disabled=false;input.value=''}
 });
 q('ai-quotes-list').addEventListener('change',async e=>{
  const sel=e.target.closest('.ai-quote-status');if(!sel)return;
