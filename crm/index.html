@@ -1,867 +1,100 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>AI Apparel Group | CRM</title>
-<style>
-:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#192536;background:#f4f6f9;--blue:#006fba;--pink:#cc338b}
-*{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer}.shell{display:flex;min-height:100vh}
-aside{width:250px;flex-shrink:0;background:#000000;color:white;padding:26px 16px;display:flex;flex-direction:column}
-.brand{padding:8px 10px 24px;font-size:21px;font-weight:850;line-height:1.2}.brand img{display:block;width:100%;max-width:185px;max-height:100px;object-fit:contain;object-position:left center;margin-bottom:10px}.brand .brand-name{font-size:14px;letter-spacing:.5px}.brand small{display:block;color:#FFFFFF;font-size:11px;letter-spacing:1.5px;margin-top:8px}
-nav{display:grid;gap:5px}.nav{background:none;border:0;color:#FFFFFF;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px}
-.nav:hover,.nav.active{background:rgba(255,255,255,.16);color:#FFFFFF;border-left:3px solid #FFFFFF}.foot{margin-top:auto;color:#FFFFFF;font-size:12px;padding:14px}
-main{flex:1;min-width:0}.top{background:white;border-bottom:1px solid #e2e8f0;padding:19px 30px;display:flex;justify-content:space-between;align-items:center;gap:10px}
-.top h1{font-size:20px;margin:0}.pill{background:#fff4dc;color:#865600;border:1px solid #f2dba4;border-radius:30px;padding:7px 12px;font-size:12px;font-weight:750}
-.content{padding:28px 30px;max-width:1450px;margin:auto}.lead{color:#6d7d92;margin:4px 0 22px;font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.card,.panel{background:white;border:1px solid #e2e7ee;border-radius:13px;padding:20px;box-shadow:0 3px 12px #18283a08}
-.card label{font-size:12px;color:#66798d}.card strong{display:block;font-size:26px;margin:12px 0}.card small{font-size:12px;color:#8493a4}
-.columns{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:17px}.panel h3{margin:0 0 15px;font-size:16px}
-input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}th{font-size:11px;text-transform:uppercase;color:#728198;background:#f7f9fc}th,td{padding:13px 11px;border-bottom:1px solid #edf0f4}
-.state{font-size:11px;border-radius:30px;padding:5px 9px;background:#e8f3ff;color:#24639c}.state.green{background:#e5f6ec;color:#247149}
-.action{background:var(--blue);color:white;border:0;border-radius:8px;padding:10px 14px;text-decoration:none;display:inline-block;font-size:13px;font-weight:700}
-.action.secondary{background:white;color:var(--blue);border:1px solid #c7d7e5}
-.notice{margin-top:17px;background:#e9f3ff;border:1px solid #c9e1f8;border-radius:11px;padding:15px;font-size:13px;line-height:1.6}
-[hidden]{display:none!important}.empty{padding:30px;text-align:center;color:#75879b;border:1px dashed #d3dce7;border-radius:10px;background:#fafbfd;font-size:14px}
-.quick{display:flex;gap:10px;flex-wrap:wrap}.info{line-height:1.6;color:#607186;font-size:14px}
-@media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.columns{grid-template-columns:1fr}}
-@media(max-width:700px){.shell{display:block}aside{width:auto;padding:12px}.brand{padding:8px}.foot{display:none}nav{display:flex;overflow-x:auto}.nav{white-space:nowrap}.top{padding:15px}.content{padding:17px}.grid{grid-template-columns:1fr 1fr}.card{padding:14px}}
-
-/* Order-review actions: scoped to this page only */
-#orderreviews .review-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:180px}
-#orderreviews .review-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:35px;padding:8px 13px;border-radius:8px;font-size:12px;font-weight:750;line-height:1.15;letter-spacing:.01em;transition:background .15s,border-color .15s,box-shadow .15s}
-#orderreviews .review-btn.approve{color:#fff;background:var(--blue);border:1px solid var(--blue)}
-#orderreviews .review-btn.approve:hover{background:#005a97;border-color:#005a97}
-#orderreviews .review-btn.reject{color:#a42657;background:#fff;border:1px solid #e5b9cb}
-#orderreviews .review-btn.reject:hover{background:#fff0f5;border-color:#cc338b}
-#orderreviews .review-btn:focus-visible{outline:3px solid #88c9fa;outline-offset:2px}
-#orderreviews .review-btn:disabled{opacity:.55;cursor:wait}
-#orderreviews .review-done{font-size:12px;font-weight:700;color:#597188}
-#orderreviews td{vertical-align:middle}
-#orderreviews .bulk-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:12px 0}
-#orderreviews .bulk-toolbar label{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:650}
-#orderreviews .bulk-toolbar input,#orderreviews .review-select{width:17px;height:17px;accent-color:var(--blue);cursor:pointer}
-#orderreviews .bulk-toolbar .review-btn{font-size:13px}
-#orderreviews .bulk-count{font-size:13px;color:#61758a}
-#orderreviews .review-btn:disabled{cursor:not-allowed;opacity:.5}
-
-/* Modern customer business controls — functional native select, no new dependencies */
-#clients .business-association{display:flex;align-items:center;gap:9px;min-width:270px}
-#clients .business-select-wrap{position:relative;flex:1;min-width:175px;max-width:240px}
-#clients .business-select-wrap::after{content:"";position:absolute;right:15px;top:50%;width:8px;height:8px;border-right:2px solid #55708b;border-bottom:2px solid #55708b;transform:translateY(-70%) rotate(45deg);pointer-events:none}
-#clients .business-select{appearance:none;-webkit-appearance:none;width:100%;min-height:40px;padding:9px 36px 9px 13px;background:#fff;border:1px solid #cbd8e6;border-radius:10px;color:#23364b;font-size:13px;font-weight:600;box-shadow:0 1px 3px #18334a0a;cursor:pointer;transition:border-color .16s,box-shadow .16s}
-#clients .business-select:hover{border-color:#7caed4;background:#fbfdff}
-#clients .business-select:focus-visible{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px #006fba22}
-#clients .business-select:has(option:checked[value=""]){color:#66788c}
-#clients .business-select option{color:#23364b;background:#fff;font-weight:500}
-#clients .business-link-btn{min-height:40px;border-radius:10px;padding:9px 15px;box-shadow:0 2px 5px #006fba1c}
-#clients .business-link-btn:hover{background:#005d9d}
-#clients .customer-orders-btn{min-height:40px;border:1px solid #cbd8e6;border-radius:10px;background:#fff;color:#185d93;padding:9px 13px;font-size:12px;font-weight:750;white-space:nowrap}
-#clients .customer-orders-btn:hover{border-color:#7caed4;background:#eff7ff}
-#clients .customer-orders-btn:focus-visible,#clients .business-link-btn:focus-visible{outline:3px solid #a5d5f5;outline-offset:2px}
-#clients #shopify-customers td{vertical-align:middle}
-
-/* Custom searchable business picker; does not rely on native OS select styling */
-#clients .business-select-wrap{overflow:visible;max-width:none;min-width:205px}
-#clients .business-select-wrap::after{display:none}
-#clients .business-picker{position:relative;width:225px;max-width:100%}
-#clients .business-picker-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:42px;padding:9px 13px;background:#fff;border:1px solid #c5d4e3;border-radius:11px;color:#263b53;font:600 13px inherit;cursor:pointer;text-align:left;box-shadow:0 1px 2px #1b355010}
-#clients .business-picker-trigger:hover{border-color:#006fba;background:#f7fbff}
-#clients .business-picker-trigger[aria-expanded="true"]{border-color:#006fba;box-shadow:0 0 0 3px #006fba22}
-#clients .business-chevron{font-size:21px;line-height:12px;color:#006fba}
-#clients .business-picker-menu{position:absolute;top:calc(100% + 5px);left:0;z-index:1000;width:max(245px,100%);padding:9px;border:1px solid #d5e1ee;border-radius:12px;background:white;box-shadow:0 12px 35px #142d4c30}
-#clients .business-picker-menu[hidden],#clients .business-picker-option[hidden]{display:none!important}
-#clients .business-picker-search{width:100%;box-sizing:border-box;padding:10px 11px;margin-bottom:7px;border:1px solid #d5e1ee;border-radius:8px;font-size:13px}
-#clients .business-picker-options{max-height:240px;overflow-y:auto}
-#clients .business-picker-option{display:block;width:100%;padding:11px 10px;border:0;border-radius:8px;background:transparent;color:#25394e;text-align:left;font-size:13px;cursor:pointer}
-#clients .business-picker-option:hover,#clients .business-picker-option:focus{background:#eaf5fc;color:#006fba}
-#clients #shopify-customers td{overflow:visible}
-
-#clients .crm-profile-link{border:0;background:none;padding:4px 0;color:#006fba;font:inherit;font-weight:700;cursor:pointer;text-align:left}
-#clients .crm-profile-link:hover{text-decoration:underline}
-.crm-modal[hidden]{display:none!important}.crm-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
-.crm-modal-backdrop{position:absolute;inset:0;background:#0a2037a8;backdrop-filter:blur(3px)}
-.crm-modal-panel{position:relative;width:min(760px,100%);max-height:88vh;overflow:auto;border-radius:18px;background:white;padding:28px;box-shadow:0 24px 80px #0004;color:#20334a}
-.crm-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px;border-bottom:1px solid #e3eaf1;padding-bottom:16px}
-.crm-modal-header h2{margin:5px 0 0}.crm-eyebrow{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#006fba}
-.crm-modal-close{border:0;background:#edf4fa;border-radius:10px;width:36px;height:36px;font-size:24px;cursor:pointer;color:#345}
-.crm-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:24px}
-.crm-profile-grid>div{background:#f5f8fc;border:1px solid #e5edf4;border-radius:11px;padding:13px;overflow-wrap:anywhere}
-.crm-profile-grid small{display:block;color:#6a7b8d;margin-bottom:7px}.crm-profile-grid strong{font-size:13px}
-.crm-order-list{display:grid;gap:9px}.crm-order-item{display:flex;justify-content:space-between;gap:14px;padding:14px;border:1px solid #e3eaf1;border-radius:11px}
-.crm-order-tag{align-self:start;padding:5px 9px;border-radius:20px;background:#eaf3fc;color:#006fba;font-size:11px;font-weight:700}
-.crm-order-count{font-size:12px;color:#657a8d;font-weight:500}@media(max-width:600px){.crm-profile-grid{grid-template-columns:1fr}.crm-modal-panel{padding:18px}}
-
-
-.crm-business-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:13px}
-.crm-business-card{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid #dbe6f0;border-radius:13px;background:white;text-align:left;color:#1c3148;cursor:pointer;box-shadow:0 2px 8px #112b4410}
-.crm-business-card:hover{border-color:#006fba;background:#f5fbff;transform:translateY(-1px)}
-.crm-business-avatar{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:44px;height:44px;background:#e9f4fc;border-radius:12px;color:#006fba;font-weight:800}
-.crm-business-card strong,.crm-business-card small{display:block}.crm-business-card small{font-size:12px;color:#65788c;margin-top:5px}.crm-business-arrow{margin-left:auto;color:#006fba;font-size:21px}
-.crm-business-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}.crm-business-summary>div{padding:15px;border:1px solid #e3eaf1;border-radius:12px;background:#f6f9fc}.crm-business-summary strong,.crm-business-summary small{display:block}.crm-business-summary strong{font-size:20px}.crm-business-summary small{color:#65788c;font-size:12px;margin-top:4px}
-.crm-business-detail-list{display:grid;gap:8px;margin-bottom:22px}.crm-business-detail-list>div{padding:12px 14px;border:1px solid #e3eaf1;border-radius:10px}.crm-business-detail-list strong,.crm-business-detail-list small{display:block}.crm-business-detail-list small{color:#65788c;margin-top:5px;overflow-wrap:anywhere}
-@media(max-width:600px){.crm-business-summary{grid-template-columns:1fr}}
-
-.crm-job-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:end}
-.crm-job-form label{display:grid;gap:7px;font-size:13px;font-weight:700;color:#334b63}
-.crm-job-form input,.crm-job-form select{width:100%;box-sizing:border-box;min-height:42px;padding:10px;border:1px solid #cedbe8;border-radius:9px;background:white;color:#24374c;font:inherit}
-.crm-job-form .action{justify-self:start;min-height:42px}@media(max-width:650px){.crm-job-form{grid-template-columns:1fr}}
-
-.crm-job-link{background:none;border:0;padding:0;color:#006fba;font:inherit;font-weight:700;cursor:pointer;text-align:left}.crm-job-link:hover{text-decoration:underline}
-.crm-job-summary{display:flex;justify-content:space-between}.crm-status-label{display:grid;gap:8px;font-size:13px;font-weight:700;color:#334b63;margin-bottom:12px}
-.crm-status-label select{max-width:320px;min-height:42px;padding:10px;border:1px solid #cddbe9;border-radius:9px;background:white}
-.crm-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}.crm-prod-form{display:grid;gap:9px;padding:12px;border:1px solid #d6e1ec;border-radius:10px;margin-top:12px}.crm-prod-form label{display:grid;gap:5px;font-size:13px;font-weight:600}.crm-prod-form select,.crm-prod-form input,.crm-prod-form textarea{padding:9px;border:1px solid #c9d7e4;border-radius:7px;background:white;color:#173247;width:100%;box-sizing:border-box}.crm-prod-form button{background:#086eb1;color:white;border:0;border-radius:7px;padding:10px;cursor:pointer}#crm-production-overview{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media(max-width:850px){#crm-production-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:480px){#crm-production-overview{grid-template-columns:1fr}}
-.crm-employee-invite{display:grid;grid-template-columns:1fr 1fr 150px auto;gap:12px;align-items:end}.crm-employee-invite label{display:grid;gap:6px;font-size:13px;font-weight:600}.crm-employee-invite input,.crm-employee-invite select{padding:10px;border:1px solid #cdd9e5;border-radius:8px;background:white;color:#18334b;min-width:0}.crm-employee-toggle{margin-top:8px;border:1px solid #cdd9e5;border-radius:7px;background:white;color:#19476b;padding:7px 12px;cursor:pointer}.crm-employee-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.crm-employee-actions .crm-employee-toggle{margin-top:0}.crm-employee-resend{border:1px solid #0872b7;border-radius:7px;background:#0872b7;color:white;padding:7px 12px;font-weight:650;cursor:pointer}.crm-employee-resend:disabled{opacity:.6;cursor:wait}@media(max-width:900px){.crm-employee-invite{grid-template-columns:1fr 1fr}}@media(max-width:520px){.crm-employee-invite{grid-template-columns:1fr}}
-/* Saved quotes — responsive estimate cards */
-.ai-saved-quotes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:18px;margin-top:14px}
-.ai-sq-card{background:#fff;border:1px solid #e2e8f0;border-radius:17px;box-shadow:0 7px 24px rgba(19,42,73,.055);padding:21px;min-width:0;transition:box-shadow .2s,transform .2s}
-.ai-sq-card:hover{box-shadow:0 11px 32px rgba(19,42,73,.11);transform:translateY(-1px)}
-.ai-sq-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.ai-sq-top h4{margin:7px 0;font-size:18px;line-height:1.3;color:#142d49;overflow-wrap:anywhere}
-.ai-sq-number{font-size:12px;font-weight:800;letter-spacing:.055em;color:#2874a9}.ai-sq-date{color:#8898a9;font-weight:500;letter-spacing:0;margin-left:8px}
-.ai-sq-customer{color:#64748b;font-size:13px}.ai-sq-badge{display:inline-block;flex-shrink:0;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;background:#f1f5f9;color:#475569}.ai-sq-badge.approved{background:#dcfce7;color:#166534}.ai-sq-badge.declined{background:#fee2e2;color:#991b1b}.ai-sq-badge.sent{background:#dbeafe;color:#1d4ed8}
-.ai-sq-middle{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#f7f9fc;border-radius:12px;padding:15px;margin:19px 0}.ai-sq-middle>div{display:flex;flex-direction:column;gap:5px;min-width:0}.ai-sq-caption{font-size:10px;font-weight:800;letter-spacing:.08em;color:#8191a3}.ai-sq-price{font-size:23px;color:#122d48}.ai-sq-job{font-size:13px;color:#334155;overflow-wrap:anywhere}
-.ai-sq-details{border-bottom:1px solid #edf1f5;padding-bottom:13px;margin-bottom:13px}.ai-sq-details summary{cursor:pointer;color:#275d88;font-size:13px;font-weight:700;list-style:none}.ai-sq-details summary::-webkit-details-marker{display:none}.ai-sq-details summary span{float:right}.ai-sq-lines{padding-top:12px}.ai-sq-line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:12px;color:#475569}.ai-sq-notes{font-size:12px;color:#64748b;white-space:pre-wrap}
-.ai-sq-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}.ai-sq-artwork{display:flex;gap:7px;flex-wrap:wrap}.ai-sq-artwork button,.ai-sq-artwork .ai-add-proof{display:inline-flex;align-items:center;padding:9px 11px;border-radius:9px;border:1px solid #cbdceb;background:#f8fbff;color:#185d8f;font-weight:750;font-size:12px;cursor:pointer}.ai-sq-status-label{display:grid;gap:5px;color:#64748b;font-size:11px;font-weight:700}.ai-sq-status-label select{min-width:155px;border:1px solid #cbd5e1;border-radius:9px;padding:8px;background:#fff;color:#1e293b}.ai-sq-status-label select:disabled{opacity:.65}.ai-sq-card .ai-proof-list{margin-top:10px;overflow-wrap:anywhere}
-@media(max-width:540px){.ai-sq-card{padding:15px}.ai-sq-price{font-size:20px}.ai-sq-top{flex-wrap:wrap}}
-</style><style>
-.ai-quote-archive-section{margin-top:28px;padding-top:24px;border-top:1px solid #dfe6ef}
-.ai-quote-archive-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-.ai-quote-archive-heading h3{margin:0;color:#17324f;font-size:19px}
-.ai-quote-archive-heading span{padding:6px 11px;border-radius:999px;background:#e9f2fc;color:#315c89;font-weight:700;font-size:12px}
-</style>
-<style>
-.ai-quote-fold{border:1px solid #e3e9f2;border-radius:13px;background:#fff;margin-bottom:15px;overflow:hidden}
-.ai-quote-fold-title{display:flex;align-items:center;gap:11px;cursor:pointer;padding:16px 18px;list-style:none;color:#17324f;font-size:17px}
-.ai-quote-fold-title::-webkit-details-marker{display:none}
-.ai-quote-fold-title:hover{background:#f5f8fc}
-.ai-quote-fold-chevron{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#eaf2fc;color:#2664a5;font-size:23px;line-height:1;transition:transform .15s ease}
-.ai-quote-fold[open]>.ai-quote-fold-title .ai-quote-fold-chevron{transform:rotate(90deg)}
-.ai-quote-fold-count{margin-left:auto;font-size:12px;font-weight:700;color:#4e6884;background:#edf3f9;border-radius:999px;padding:5px 10px}
-.ai-quote-fold-content{padding:0 16px 16px}
-.ai-quote-fold.ai-quote-archive-section{margin-top:12px;padding-top:0;border-top:1px solid #e3e9f2}
-</style>
-<style>
-.crm-job-quote-detail{border-top:1px solid #e0e7ef;margin-top:22px;padding-top:16px}
-.crm-job-quote-detail h3{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
-.crm-job-quote-tag{font-size:12px;padding:5px 10px;border-radius:999px;background:#eaf2fc;color:#275e94}
-.crm-job-quote-table{overflow-x:auto;margin:15px 0}
-.crm-job-quote-table table{width:100%}
-.crm-job-quote-totals{display:flex;gap:9px 18px;flex-wrap:wrap;justify-content:flex-end;font-size:13px}
-.crm-job-quote-totals strong{font-size:15px}
-.crm-job-quote-notes{margin:18px 0;padding:13px;background:#f5f8fc;border-radius:10px}
-.crm-job-quote-notes p{white-space:pre-wrap;margin-bottom:0}
-.crm-job-quote-art{margin-top:18px}
-.crm-job-proof-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #e7ebf0;overflow-wrap:anywhere}
-.crm-job-proof-row a{white-space:nowrap;text-decoration:underline}
-</style>
-<style>
-.crm-prod-requirements{border:1px solid #dce6f1;border-radius:12px;margin:16px 0 20px;background:#fff;overflow:hidden}
-.crm-prod-requirements>summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;padding:15px 16px;color:#1b395c}
-.crm-prod-requirements>summary::-webkit-details-marker{display:none}
-.crm-prod-requirements>summary:hover{background:#f6f9fd}
-.crm-prod-chevron{display:inline-flex;align-items:center;justify-content:center;background:#e9f1fb;color:#27609c;width:24px;height:24px;border-radius:6px;font-size:24px;transition:transform .15s}
-.crm-prod-requirements[open] .crm-prod-chevron{transform:rotate(90deg)}
-.crm-prod-quote-badge{margin-left:auto;background:#e8f4ee;color:#24714e;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700}
-.crm-prod-req-body{padding:2px 16px 17px}
-.crm-prod-req-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
-.crm-prod-req-metrics>div{background:#f5f8fc;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:5px}
-.crm-prod-req-metrics small{color:#62758b;font-size:11px}
-.crm-prod-req-table{overflow-x:auto;margin:12px 0}
-.crm-prod-req-table table{width:100%}
-.crm-prod-req-table td small{display:block;color:#62758b}
-.crm-prod-req-notes{background:#f5f8fc;border-radius:8px;padding:12px;margin:12px 0}
-.crm-prod-req-notes p{white-space:pre-wrap;margin:6px 0 0}
-.crm-prod-req-art{margin-top:15px}
-.crm-prod-proof-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e3eaf2;overflow-wrap:anywhere}
-.crm-prod-proof-row a{white-space:nowrap;text-decoration:underline}
-</style>
-<style>
-.crm-prod-progress{border:1px solid #e2e9f1;border-radius:12px;padding:14px 16px;background:#f9fbfe;margin:14px 0}
-.crm-prod-progress-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px}
-.crm-prod-progress-top>span{color:#4e647e;font-weight:600}
-.crm-prod-progress-track{height:10px;background:#e3eaf3;border-radius:999px;overflow:hidden;margin:12px 0}
-.crm-prod-progress-fill{height:100%;background:#268d80;border-radius:999px;transition:width .25s ease}
-.crm-prod-progress-stats{display:flex;gap:8px 18px;flex-wrap:wrap;color:#526b84;font-size:12px}
-</style>
-<style>.crm-prod-progress-help{display:block;margin-top:10px;color:#64748b;font-size:11px}</style></head>
-<body><div class="shell">
-<aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
-<nav aria-label="CRM navigation">
-<button class="nav active" data-page="dashboard">◫ &nbsp; Dashboard</button>
-<button class="nav" data-page="clients">♙ &nbsp; Clients</button>
-<button class="nav" data-page="businesses">▦ &nbsp; Business Accounts</button>
-<button class="nav" data-page="quotes">▤ &nbsp; Quotes & Estimates</button>
-<button class="nav" data-page="jobs">▣ &nbsp; Jobs & Projects</button>
-<button class="nav" data-page="production">⚙ &nbsp; Production</button>
-<button class="nav" data-page="employees">♧ &nbsp; Employees & Tasks</button>
-<button class="nav" data-page="matching">◇ &nbsp; Business Matching</button>
-<button class="nav" data-page="orderreviews">☷ &nbsp; Order Match Review</button>
-<button class="nav" data-page="rewards">★ &nbsp; Rewards Integration</button>
-</nav><div class="foot"><div style="border-top:1px solid rgba(255,255,255,.25);padding-top:15px"><span style="font-size:11px;letter-spacing:.7px;color:#FFFFFF">POWERED BY:</span><img src="https://cdn.shopify.com/s/files/1/0719/1966/5231/files/Blueprint_Collective-white.png?v=1791560539" alt="Blueprint Collective" style="width:100%;max-width:190px;height:auto;max-height:85px;object-fit:contain;object-position:left center;margin-top:10px"></div></div></aside>
-<main><div class="top"><h1 id="page-title">Dashboard</h1><span class="pill" id="connection-status">SIGN IN REQUIRED</span></div>
-<div class="content">
-<div class="panel" id="auth-panel" style="margin-bottom:18px">
-<h3>AI Apparel CRM Admin Sign-In</h3>
-<p class="info">Sign in with your administrator email and password. No magic links required.</p>
-<form id="login-form" style="display:grid;gap:10px;max-width:380px">
-<label for="login-email">Email address</label>
-<input id="login-email" type="email" required autocomplete="username" value="bikard@mntrlab.com" style="padding:10px">
-<label for="login-password">Password</label>
-<input id="login-password" type="password" required autocomplete="current-password" minlength="8" placeholder="Enter your password" style="padding:10px">
-<button class="action" type="submit">Sign In</button>
-</form>
-<div id="auth-message" class="info" role="status"></div>
-<button id="logout" class="action secondary" hidden type="button">Sign Out</button>
-</div>
-<section id="dashboard"><h2>Operations Overview</h2><p class="lead">Blueprint-style CRM structure customized for AI Apparel Group.</p>
-<div class="grid"><div class="card"><label>Active Clients</label><strong id="stat-clients">—</strong><small>AI Apparel CRM clients</small></div><div class="card"><label>Open Quotes</label><strong id="stat-quotes">—</strong><small>CRM quotes</small></div><div class="card"><label>Active Jobs</label><strong id="stat-jobs">—</strong><small>CRM jobs</small></div><div class="card"><label>Production Tasks</label><strong id="stat-tasks">—</strong><small>CRM tasks</small></div></div>
-<div class="columns"><div class="panel"><h3>Recent Jobs</h3><div class="empty">No live job data is connected yet.</div></div><div class="panel"><h3>Connected Systems Plan</h3><table><tr><td>Blueprint CRM shell</td><td><span class="state green">UI staged</span></td></tr><tr><td>AI Apparel client data</td><td><span class="state">Pending</span></td></tr><tr><td>Shopify order integration</td><td><span class="state">Keep existing</span></td></tr><tr><td>Rewards Portal</td><td><span class="state">Keep existing</span></td></tr></table></div></div>
-<div class="notice"><strong>Connection status:</strong> CRM clients and dashboard totals are now backed by the separate AI Apparel CRM schema. Existing Shopify and Rewards integrations are unchanged. Quotes, jobs, employee assignments and production actions are not enabled yet.</div>
-</section>
-<section id="clients" hidden><h2>Client Management</h2><p class="lead">Client profiles, contacts, linked quotes and jobs.</p><div class="panel"><div class="quick" style="margin-bottom:14px"><input id="customer-search" placeholder="Search online customers" style="padding:10px;flex:1;min-width:200px"><button class="action" id="search-customers" type="button">Search</button></div><div id="customer-count" class="info">Sign in to load customers.</div><div id="shopify-customers" style="overflow-x:auto;margin-top:12px"></div><div class="quick" style="margin:12px 0 24px"><button class="action secondary" id="previous-customers" type="button">Previous</button><button class="action secondary" id="next-customers" type="button">Next</button></div><h3>Manually added CRM clients</h3><div id="clients-list" class="empty">Sign in to load clients.</div><div style="margin-top:16px"><button class="action" id="show-client-form" type="button">+ Add Client</button><form id="client-form" hidden style="margin-top:15px;gap:10px;max-width:450px">
-<input required maxlength="200" name="name" placeholder="Client / company name" style="padding:10px">
-<input name="contact_name" placeholder="Contact name" style="padding:10px">
-<input type="email" name="email" placeholder="Email" style="padding:10px">
-<input name="phone" placeholder="Phone" style="padding:10px">
-<button class="action" type="submit">Save Client</button></form></div></div></section>
-<section id="businesses" hidden><h2>Business Accounts</h2><p class="lead">Organization profiles, verified customers, and approved Shopify order associations.</p><div class="panel"><div id="business-account-list" class="crm-business-cards"><p class="info">Sign in to load organizations.</p></div></div></section>
-<style>
-/* Modern quote builder styles, isolated from the rest of the CRM */
-.ai-modern-quotes .ai-quote-panel{border:1px solid #e4e9f0;border-radius:18px;box-shadow:0 8px 28px rgba(25,37,54,.055);padding:24px;margin-bottom:22px;background:#fff}
-.ai-modern-quotes .ai-quote-panel h3{font-size:19px;letter-spacing:-.35px;margin:0 0 18px}
-.ai-modern-quotes .crm-job-form{display:grid;gap:15px}
-.ai-modern-quotes .crm-job-form label{font-size:13px;font-weight:700;color:#394a60}
-.ai-modern-quotes .crm-job-form input,.ai-modern-quotes .crm-job-form select,.ai-modern-quotes .crm-job-form textarea{border:1px solid #dce3ed;border-radius:10px;padding:12px;background:#fff;width:100%;margin-top:6px;outline-offset:2px}
-.ai-modern-quotes .ai-quote-row{border:1px solid #e3e9f2!important;border-radius:14px!important;background:#f8faff!important}
-.ai-modern-quotes #ai-quote-totals{background:#edf5ff;border:1px solid #d7e9ff;padding:17px;border-radius:12px;color:#123e70}
-.ai-modern-quotes .ai-proof-upload{display:flex;flex-wrap:wrap;gap:13px;align-items:center;padding:20px;border:2px dashed #a9c8e8;border-radius:16px;background:#f4f9ff}
-.ai-modern-quotes .ai-proof-upload>div:nth-child(2){flex:1 1 240px}.ai-modern-quotes .ai-proof-upload strong{font-size:16px;color:#173d6c}
-.ai-modern-quotes .ai-proof-upload p{font-size:12px;font-weight:400;color:#60758d;margin:5px 0}
-.ai-modern-quotes .ai-proof-symbol{display:grid;place-items:center;width:43px;height:43px;border-radius:12px;background:#dbeeff;color:#1563a7;font-size:24px}
-.ai-modern-quotes .ai-proof-picker{background:#1769b3;color:#fff!important;border-radius:10px;padding:12px 16px;cursor:pointer;white-space:nowrap}
-.ai-modern-quotes .ai-proof-picker input{display:none}.ai-modern-quotes .ai-proof-names{width:100%;font-size:12px;color:#546d87;overflow-wrap:anywhere}
-.ai-modern-quotes .ai-proof-actions{margin-top:9px;display:flex;gap:8px;flex-wrap:wrap}.ai-modern-quotes .ai-proof-actions button,.ai-modern-quotes .ai-add-proof{font-size:12px!important;padding:7px 10px;border:1px solid #c6d9eb;border-radius:8px;background:#f4f9ff;color:#175f9c;cursor:pointer}
-.ai-modern-quotes .ai-proof-list{width:100%;font-size:12px}
-@media(max-width:640px){.ai-modern-quotes .ai-quote-panel{padding:15px}.ai-modern-quotes .ai-proof-upload{padding:13px}}
-</style>
-<section id="quotes" class="ai-modern-quotes" hidden>
-<h2>Quotes & Estimates</h2><p class="lead">Build itemized customer quotes and convert approved quotes into production jobs.</p>
-<div class="panel ai-quote-panel"><h3>New Customer Quote</h3>
-<form id="ai-quote-form" class="crm-job-form">
-<label>Quote title<input name="title" required maxlength="200" placeholder="e.g. Company polos and embroidered hats"></label>
-<label>Customer search<input id="ai-quote-customer-search" type="search" placeholder="Search name or email"></label>
-<label>Customer<select name="customer_id" id="ai-quote-customer"><option value="">No customer selected</option></select></label>
-<label>Business account<select name="business_id" id="ai-quote-business"><option value="">No business selected</option></select></label>
-<h3>Products & Services</h3>
-<p class="info">Enter existing store products with their SKU and variant, or add custom printing, embroidery, uniforms, and other services. Live store catalog lookup is not connected yet.</p>
-<div id="ai-quote-items"></div>
-<button type="button" id="ai-quote-add-item" class="action">+ Add Line Item</button>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:15px">
-<label>Discount ($)<input id="ai-quote-discount" name="discount_amount" type="number" min="0" step=".01" value="0"></label>
-<label>Shipping ($)<input id="ai-quote-shipping" name="shipping_amount" type="number" min="0" step=".01" value="0"></label>
-<label>Tax ($)<input id="ai-quote-tax" name="tax_amount" type="number" min="0" step=".01" value="0"></label>
-</div>
-<div id="ai-quote-totals" style="font-size:18px;font-weight:700;margin:15px 0">Total: $0.00</div>
-<label>Quote notes / specifications<textarea name="notes" rows="3" placeholder="Artwork, turnaround time, delivery instructions, etc."></textarea></label>
-<div class="ai-proof-upload"><div class="ai-proof-symbol">✦</div><div><strong>Artwork & Proofs</strong><p>Attach design artwork or a customer proof to this estimate. PNG, JPG, WebP or PDF — 15 MB max per file.</p></div><label class="ai-proof-picker">Choose files<input id="ai-quote-artwork" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple></label><div id="ai-quote-artwork-names" class="ai-proof-names">No artwork selected</div></div>
-<button class="action" type="submit">Save Draft Quote</button>
-</form></div><div class="panel ai-quote-panel"><div id="ai-quotes-list">Loading…</div></div></section>
-<section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<input type="search" id="crm-job-customer-search" placeholder="Search customer name or email…" autocomplete="off"><select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select><small id="crm-job-customer-help" style="font-weight:400;color:#65788c">Type a name or email to find a customer.</small></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
-<section id="production" hidden><h2>Production Management</h2><p class="lead">Track real jobs through production stages, assignments, due dates, and notes.</p><div class="panel"><h3>Production Overview</h3><div id="crm-production-overview" class="crm-business-summary">Loading…</div></div><div id="crm-production-jobs"></div></section>
-<section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Invite employees by email and manage their access to assigned production work.</p><div class="panel"><h3>Invite Employee</h3><form id="crm-employee-invite" class="crm-employee-invite"><label>Full name<input name="name" required maxlength="150" placeholder="Employee name"></label><label>Email address<input name="email" type="email" required placeholder="employee@example.com"></label><label>Role<select name="role"><option value="employee">Employee</option><option value="manager">Manager</option></select></label><button type="submit" class="action">Send Invitation</button></form><p class="info">The employee receives an email to activate their account. They can access only their assigned production stages. No password is shared with administrators.</p></div><div class="panel"><div class="crm-business-summary" id="crm-employee-metrics">Loading…</div></div><div class="panel"><h3>Employee Directory</h3><div id="crm-employee-directory">Loading employee records…</div></div><div class="panel"><h3>Production Assignments</h3><div id="crm-employee-assignments">Loading assignments…</div></div></section>
-<section id="matching" hidden><h2>Business Matching Rules</h2><p class="lead">Set up product-title phrases that identify an organization. Rules remain in draft until reviewed and activated in a later phase. They do not change rewards or orders.</p><div class="panel"><h3>Add draft matching rule</h3><div class="quick" style="flex-wrap:wrap"><select id="rule-business" style="padding:10px;min-width:190px"><option value="">Select organization</option></select><input id="rule-phrase" placeholder="Product title contains (e.g., Carolina ENT)" style="padding:10px;min-width:240px;flex:1"><button class="action" type="button" id="add-rule">Save draft rule</button></div><p class="info">Use distinctive organization names. Generic words such as "shirt" or "team" can create incorrect matches.</p><div id="rule-list" class="empty">Sign in to load rules.</div></div></section>
-<section id="orderreviews" hidden><h2>Order Match Review</h2><p class="lead">Review suggested organization matches before linking an order. Approval never changes rewards points or balances.</p><div class="panel"><div class="quick"><button class="action" id="refresh-order-reviews" type="button">Refresh reviews</button></div><div id="order-review-list" class="empty">Sign in to load order reviews.</div></div></section>
-<section id="rewards" hidden><h2>Organization Rewards</h2><p class="lead">The existing Rewards Portal remains the source of truth for organization balances and points.</p>
-<div class="panel"><h3>Existing Rewards Portal</h3><p class="info">We will connect organization records to the CRM without modifying the current rewards calculations or Shopify order import.</p>
-<div class="quick"><a class="action" href="https://portal.aiapparelgroup.com" target="_blank" rel="noopener noreferrer">Open Existing Rewards Portal ↗</a></div></div>
-<div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
-</div></main></div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Apparel Group — Employee Portal</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+:root{font-family:Inter,Arial,sans-serif;color:#142c43;background:#f2f6fa}*{box-sizing:border-box}body{margin:0}.header{background:#102b46;color:white;padding:18px max(22px,calc((100vw - 1060px)/2));display:flex;justify-content:space-between;align-items:center}.header strong{font-size:20px}.header button{background:transparent;border:1px solid #91a9bf;color:white;border-radius:8px;padding:9px 13px;cursor:pointer}.wrap{max-width:1060px;margin:30px auto;padding:0 18px}.card{background:white;border:1px solid #dce5ed;border-radius:14px;padding:23px;margin-bottom:18px;box-shadow:0 5px 22px #152f4610}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px}label{display:grid;gap:6px;font-size:13px;font-weight:600;margin-bottom:14px}input,select,textarea{width:100%;padding:11px;border:1px solid #cad6e2;border-radius:8px;background:white;color:#18334a;font:inherit}textarea{resize:vertical}button.primary{background:#0872b7;border:0;color:white;padding:11px 18px;border-radius:8px;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.muted{color:#667d90;font-size:13px}.pill{display:inline-block;padding:5px 10px;border-radius:20px;background:#e7f0f9;color:#125b8d;font-size:12px;font-weight:700}.error{color:#a52323}#message{margin-bottom:14px}#login{max-width:470px;margin:45px auto}#app,#password-setup,#signout{display:none}h1{font-size:25px}h2{font-size:19px;margin-top:0}.assignment h3{margin-bottom:5px}@media(max-width:600px){.header{padding:15px}.wrap{margin-top:16px}}
+/* AI Apparel Group established black, blue and white brand system */
+:root{--ai-blue:#006fba;--ai-black:#05080d;--ai-pink:#cc338b;color:#192536;background:#f4f6f9}
+body{background:linear-gradient(115deg,#f3f6fa 0%,#f7f9fc 54%,#e9f3fc 100%);min-height:100vh}
+.header{background:#000;color:#fff;min-height:90px;border-bottom:3px solid var(--ai-blue);padding:14px max(24px,calc((100vw - 1100px)/2))}
+.portal-brand{display:flex;align-items:center;gap:18px;font-weight:800;font-size:15px;letter-spacing:.035em}
+.portal-brand img{width:88px;height:58px;object-fit:contain}
+.portal-brand small{display:block;font-size:10px;font-weight:650;letter-spacing:.18em;color:#adc4da;margin-top:5px}
+.wrap{max-width:1100px;margin:50px auto}
+#login{max-width:470px;margin:68px auto;padding:36px 38px 34px;border-radius:17px;box-shadow:0 18px 52px #0a2c491c;border:1px solid #dae5ef;border-top:4px solid var(--ai-blue)}
+.login-kicker{font-size:10px;letter-spacing:.14em;color:var(--ai-blue);font-weight:850;margin-bottom:13px}
+#login h1{font-size:30px;letter-spacing:-.035em;margin:0 0 4px}
+.signin-subhead{font-size:15px;font-weight:650;color:#597089;margin:0 0 12px}
+#login .muted{line-height:1.55;margin:0 0 26px}
+#login label{font-size:13px;color:#30475d;gap:9px;margin-bottom:18px}
+#login input{height:47px;background:#fafcfe;border:1px solid #cddce9;padding:12px 14px}
+#login input:focus{outline:3px solid #006fba24;border-color:var(--ai-blue)}
+button.primary{background:var(--ai-blue);border-radius:9px}
+button.primary:hover{background:#005a97}
+.login-submit{width:100%;height:47px;margin-top:3px}
+.reset-row{text-align:center;margin:20px 0 0}
+#reset-link{border:0;background:none;color:var(--ai-blue);font-size:13px;font-weight:700;cursor:pointer}
+#password-setup{max-width:480px;margin:50px auto;border-top:4px solid var(--ai-blue)}
+#app>.card:first-child{border-top:4px solid var(--ai-blue)}
+.pill{background:#e8f3ff;color:#155d90}
+.header button{border-color:#5b7b97}
+@media(max-width:600px){.header{min-height:75px}.portal-brand img{width:65px;height:45px}.wrap{margin:18px auto}#login{margin:30px auto;padding:25px 22px}}
+.employee-job-details{background:#f5f9fd;border:1px solid #d6e5f1;border-radius:10px;padding:16px;margin:12px 0 16px}
+.employee-job-details h4{margin:12px 0 7px;color:#173b5a}
+.employee-spec,.employee-proof{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #dce8f3;flex-wrap:wrap}
+.employee-spec{flex-direction:column;gap:4px}
+.employee-spec span{color:#5b7287;font-size:13px}
+.employee-instructions{white-space:pre-wrap;overflow-wrap:anywhere}
+.employee-proof a{color:#006fba;font-weight:700}
+.assignment>button[data-view-assignment]{margin:8px 0 10px}
+</style></head><body><header class="header"><div class="portal-brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group logo"><span>AI APPAREL GROUP <small>EMPLOYEE PORTAL</small></span></div><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
+<section class="card" id="login"><div class="login-kicker">AI APPAREL GROUP · TEAM ACCESS</div><h1>Welcome back</h1><h2 class="signin-subhead">Employee Sign In</h2><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary login-submit" type="submit">Sign In →</button></form><p class="reset-row"><button type="button" id="reset-link">Forgot password? Send reset email</button></p></section>
+<section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
+<section id="app"><div class="card"><h1 id="greeting">My Production Assignments</h1><p class="muted">Only work assigned to your employee account appears here.</p><div id="summary"></div></div><div id="assignments" class="grid"></div></section></main>
 <script>
-const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts"};
-document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
-const page=button.dataset.page;
-document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
-Object.keys(names).forEach(id=>document.getElementById(id).hidden=id!==page);
-document.getElementById("page-title").textContent=names[page];
-}));
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-const CRM_SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co";
-const CRM_PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
-const db=window.supabase?.createClient(CRM_SUPABASE_URL,CRM_PUBLISHABLE_KEY);
+const URL="https://qpavspvpdebtbbffdcmo.supabase.co",KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+const db=window.supabase.createClient(URL,KEY,{auth:{detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
-const status=msg=>{$("auth-message").textContent=msg};
-const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-async function api(action,payload={}){if(!db)throw Error("Unable to load authentication library");const {data,error}=await db.rpc("ai_apparel_crm_api",{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data}
-let customerOffset=0;
-let businessOptions=[];
-async function loadBusinesses(){
- const {data,error}=await db.rpc("ai_apparel_crm_businesses");
- if(error)throw Error(error.message);
- businessOptions=data||[];
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const msg=(m,bad=false)=>{$("message").textContent=m;$("message").className=bad?"error":""};
+const inviteFlowAtLoad=new URLSearchParams(location.search).get("flow")==="invite"||new URLSearchParams(location.search).has("code")||location.href.includes("type=invite")||location.href.includes("type=recovery");
+let passwordFlow=inviteFlowAtLoad;
+async function render(){
+ const {data:{session}}=await db.auth.getSession();
+ if(session&&session.user?.user_metadata?.account_type==="ai_apparel_employee"&&session.user?.user_metadata?.employee_password_initialized!==true)passwordFlow=true;
+ $("signout").style.display=session?"block":"none";
+ $("login").style.display=session?"none":"block";
+ $("password-setup").style.display=session&&passwordFlow?"block":"none";
+ $("app").style.display=session&&!passwordFlow?"block":"none";
+ if(!session||passwordFlow)return;
+ const {data,error}=await db.rpc("ai_apparel_crm_employee_portal");
+ if(error){$("app").style.display="none";msg("Employee access is not active for this account. Contact your administrator.",true);return}
+ $("greeting").textContent="Welcome, "+data.employee.name;
+ const rows=data.assignments||[];
+ $("summary").innerHTML=`<span class="pill">${rows.length} assigned production stages</span>`;
+ $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="card"><p class="muted">No work is assigned to you yet.</p></div>';
 }
-async function setCustomerBusiness(customerId,businessId,link){
- const {error}=await db.rpc("ai_apparel_crm_link_customer",{p_customer_id:customerId,p_business_id:businessId,p_link:link});
- if(error)throw Error(error.message);
- await loadCustomers();
- status(link?"Business linked to customer.":"Business association removed.");
-}
-async function loadRules(){
- if(!businessOptions.length)await loadBusinesses();
- $("rule-business").innerHTML='<option value="">Select organization</option>'+businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
- const {data,error}=await db.rpc("ai_apparel_crm_match_rules",{p_action:"list"});
- if(error)throw Error(error.message);
- $("rule-list").innerHTML=data.length?'<table><thead><tr><th>Organization</th><th>Product title phrase</th><th>Status</th><th></th></tr></thead><tbody>'+data.map(r=>`<tr><td>${escapeHtml(r.business)}</td><td>${escapeHtml(r.phrase)}</td><td>${r.active?"Active":"Draft — not matching orders"}</td><td>${r.active?"":`<button type="button" data-delete-rule="${escapeHtml(r.id)}">Delete</button>`}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No matching rules yet.</div>';
-}
-$("add-rule").addEventListener("click",async()=>{
- const b=$("rule-business").value,phrase=$("rule-phrase").value.trim();
- if(!b||!phrase){status("Select a business and enter a product title phrase.");return;}
- try{const {error}=await db.rpc("ai_apparel_crm_match_rules",{p_action:"add",p_business_id:b,p_phrase:phrase});if(error)throw Error(error.message);$("rule-phrase").value="";await loadRules();status("Draft matching rule saved. No orders or rewards were changed.");}catch(e){status(e.message)}
-});
-$("rule-list").addEventListener("click",async e=>{
- const id=e.target.dataset.deleteRule;if(!id)return;
- try{const {error}=await db.rpc("ai_apparel_crm_match_rules",{p_action:"delete",p_rule_id:id});if(error)throw Error(error.message);await loadRules();status("Draft rule deleted.");}catch(e){status(e.message)}
-});
-async function loadOrderReviews(){
-const {data,error}=await db.rpc("ai_apparel_crm_order_reviews",{p_action:"list"});
-if(error)throw Error(error.message);
-const pending=data.filter(r=>r.status==="pending");
-const toolbar=pending.length?`<div class="bulk-toolbar"><label><input type="checkbox" id="select-all-reviews"> Select all pending (${pending.length})</label><span class="bulk-count" id="selected-review-count">0 selected</span><button type="button" class="review-btn approve" id="approve-selected-reviews" disabled>✓ Approve Selected</button></div>`:"";
-$("order-review-list").innerHTML=data.length?toolbar+'<div style="overflow-x:auto"><table><thead><tr><th>Select</th><th>Order</th><th>Products</th><th>Suggested business</th><th>Matched phrase</th><th>Status</th><th>Review</th></tr></thead><tbody>'+data.map(r=>`<tr><td>${r.status==="pending"?`<input type="checkbox" class="review-select" aria-label="Select ${escapeHtml(r.order_name||"order")}" value="${escapeHtml(r.id)}">`:""}</td><td>${escapeHtml(r.order_name||r.id)}</td><td>${escapeHtml((r.product_titles||[]).join(", "))}</td><td>${escapeHtml(r.business)}</td><td>${escapeHtml(r.phrase)}</td><td>${escapeHtml(r.status)}</td><td>${r.status==="pending"?`<div class="review-actions"><button class="review-btn approve" type="button" data-review-action="approve" data-review-id="${escapeHtml(r.id)}">✓ Approve</button><button class="review-btn reject" type="button" data-review-action="reject" data-review-id="${escapeHtml(r.id)}">Reject</button></div>`:`<span class="review-done">${escapeHtml(r.status)}</span>`}</td></tr>`).join("")+'</tbody></table></div>':'<div class="empty">No order suggestions yet. New matches appear after Shopify order import.</div>';
-}
-function updateReviewSelection(){
-const checks=[...document.querySelectorAll("#order-review-list .review-select")];const n=checks.filter(c=>c.checked).length;
-const count=$("selected-review-count"),all=$("select-all-reviews"),button=$("approve-selected-reviews");
-if(count)count.textContent=`${n} selected`;
-if(button)button.disabled=n===0;
-if(all){all.checked=checks.length>0&&n===checks.length;all.indeterminate=n>0&&n<checks.length;}
-}
-$("refresh-order-reviews").addEventListener("click",async()=>{try{await loadOrderReviews()}catch(e){status(e.message)}});
-$("order-review-list").addEventListener("change",e=>{
-if(e.target.id==="select-all-reviews"){document.querySelectorAll("#order-review-list .review-select").forEach(c=>c.checked=e.target.checked)}
-if(e.target.matches(".review-select")||e.target.id==="select-all-reviews")updateReviewSelection();
-});
-$("order-review-list").addEventListener("click",async e=>{
-const bulk=e.target.closest("#approve-selected-reviews");
-if(bulk){const ids=[...document.querySelectorAll("#order-review-list .review-select:checked")].map(c=>c.value);
-if(!ids.length)return;
-if(!confirm(`Approve ${ids.length} selected order match${ids.length===1?"":"es"}? Only the selected orders will be approved. Rewards balances will not change.`))return;
-try{bulk.disabled=true;const {data,error}=await db.rpc("ai_apparel_crm_bulk_approve_reviews",{p_review_ids:ids});if(error)throw Error(error.message);await loadOrderReviews();status(`${data.approved} order match${data.approved===1?"":"es"} approved. Rewards balances were not changed.`);}catch(err){status(err.message);bulk.disabled=false;}return;
-}
-const btn=e.target.closest("[data-review-action]");if(!btn)return;
-if(!confirm(btn.dataset.reviewAction==="approve"?"Approve this business association for this order?":"Reject this suggested match?"))return;
-try{btn.disabled=true;const {error}=await db.rpc("ai_apparel_crm_order_reviews",{p_action:btn.dataset.reviewAction,p_review_id:btn.dataset.reviewId});if(error)throw Error(error.message);await loadOrderReviews();status("Order review saved. Rewards balances were not changed.");}catch(err){status(err.message)}finally{btn.disabled=false}
-});
-async function loadCustomers(){
-if(!businessOptions.length)await loadBusinesses();
-const {data,error}=await db.rpc("ai_apparel_crm_customers",{p_search:$("customer-search").value.trim(),p_limit:50,p_offset:customerOffset});
-if(error)throw Error(error.message);
-const rows=data.items||[],total=data.total||0;
-window.crmVisibleCustomers=rows;
-$("customer-count").textContent=`${total.toLocaleString()} imported customers • Showing ${rows.length?customerOffset+1:0}–${customerOffset+rows.length}`;
-const options=businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
-$("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Linked businesses</th><th>Manage association</th><th>Order history</th></tr></thead><tbody>'+rows.map(c=>{
-const links=(c.businesses||[]).map(b=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:4px 7px;border-radius:6px;background:#e9f3fa">${escapeHtml(b.name)} <button type="button" data-unlink="${escapeHtml(c.id)}" data-business="${escapeHtml(b.id)}" title="Remove association" style="border:0;background:transparent;color:#a12b45;font-weight:bold">×</button></span>`).join("")||"Not linked";
-return `<tr><td><button type="button" class="crm-profile-link" data-open-profile="${escapeHtml(c.id)}">${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</button></td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><div class="business-association"><div class="business-select-wrap"><div class="business-picker" data-picker="${escapeHtml(c.id)}"><button type="button" class="business-picker-trigger" data-open-picker="${escapeHtml(c.id)}" aria-expanded="false"><span class="business-picker-label">Select business</span><span class="business-chevron">⌄</span></button><div class="business-picker-menu" hidden><input class="business-picker-search" type="search" placeholder="Search businesses…" aria-label="Search businesses"><div class="business-picker-options">${businessOptions.map(b=>`<button type="button" class="business-picker-option" data-pick-business="${escapeHtml(b.id)}" data-business-name="${escapeHtml(b.name)}">${escapeHtml(b.name)}</button>`).join("")}</div></div><select hidden data-customer="${escapeHtml(c.id)}"><option value="">Select business</option>${options}</select></div></div><button type="button" data-add-business="${escapeHtml(c.id)}" class="action business-link-btn">Link</button></div></td><td><button type="button" class="customer-orders-btn" data-open-profile="${escapeHtml(c.id)}">View Profile</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
-$("previous-customers").disabled=customerOffset===0;
-$("next-customers").disabled=customerOffset+rows.length>=total;
-}
-$("shopify-customers").addEventListener("click",e=>{
- const trigger=e.target.closest("[data-open-picker]");
- const choice=e.target.closest("[data-pick-business]");
- if(trigger){
-  const picker=trigger.closest(".business-picker"),menu=picker.querySelector(".business-picker-menu"),open=menu.hidden;
-  document.querySelectorAll(".business-picker-menu").forEach(m=>m.hidden=true);
-  document.querySelectorAll(".business-picker-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
-  menu.hidden=!open;trigger.setAttribute("aria-expanded",String(open));
-  if(open){const search=picker.querySelector(".business-picker-search");search.value="";picker.querySelectorAll(".business-picker-option").forEach(b=>b.hidden=false);search.focus()}
- }else if(choice){
-  const picker=choice.closest(".business-picker");
-  picker.querySelector("select[data-customer]").value=choice.dataset.pickBusiness;
-  picker.querySelector(".business-picker-label").textContent=choice.dataset.businessName;
-  picker.querySelector(".business-picker-menu").hidden=true;
-  picker.querySelector(".business-picker-trigger").setAttribute("aria-expanded","false");
- }
-});
-$("shopify-customers").addEventListener("input",e=>{
- if(!e.target.matches(".business-picker-search"))return;
- const term=e.target.value.toLowerCase().trim();
- e.target.closest(".business-picker").querySelectorAll(".business-picker-option").forEach(b=>b.hidden=!b.dataset.businessName.toLowerCase().includes(term));
-});
-document.addEventListener("click",e=>{
- if(e.target.closest(".business-picker"))return;
- document.querySelectorAll(".business-picker-menu").forEach(m=>m.hidden=true);
- document.querySelectorAll(".business-picker-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
-});
-$("shopify-customers").addEventListener("click",async e=>{
-const view=e.target.closest("[data-open-profile]");
-if(view){
- const customer=(window.crmVisibleCustomers||[]).find(c=>c.id===view.dataset.openProfile);
- if(!customer)return;
- const modal=$("crm-profile-modal"),content=$("crm-profile-content");
- modal.hidden=false;
- const fullName=[customer.first_name,customer.last_name].filter(Boolean).join(" ")||"Unnamed customer";
- $("crm-profile-title").textContent=fullName;
- const contact=`<div class="crm-profile-grid"><div><small>Email</small><strong>${escapeHtml(customer.email||"Not provided")}</strong></div><div><small>Phone</small><strong>${escapeHtml(customer.phone||"Not provided")}</strong></div><div><small>Source</small><strong>${escapeHtml(customer.source||"Unknown")}</strong></div><div><small>Business associations</small><strong>${escapeHtml((customer.businesses||[]).map(b=>b.name).join(", ")||"Not linked")}</strong></div></div>`;
- content.innerHTML=contact+'<h3>Order history</h3><p class="info">Loading orders…</p>';
- try{
-  const {data,error}=await db.rpc("ai_apparel_crm_customer_orders",{p_customer_id:customer.id});
-  if(error)throw Error(error.message);
-  if(modal.hidden)return;
-  const orders=Array.isArray(data)?data:[];
-  content.innerHTML=contact+`<h3>Order history <span class="crm-order-count">${orders.length}</span></h3>`+(orders.length?`<div class="crm-order-list">${orders.map(o=>`<div class="crm-order-item"><div><strong>${escapeHtml(o.order_name||("Shopify order "+String(o.order_id||"").split("/").pop()))}</strong><div class="info">${escapeHtml(o.business||"No approved business association")}</div>${Array.isArray(o.product_titles)&&o.product_titles.length?`<div class="info">${escapeHtml(o.product_titles.join(", "))}</div>`:""}</div><span class="crm-order-tag">${o.business?"Linked":"Unlinked"}</span></div>`).join("")}</div>`:'<p class="info">No Shopify orders found for this customer.</p>');
-  await appendRelatedJobs({p_customer_id:customer.id,p_business_id:null});
-
- }catch(err){content.innerHTML=contact+`<h3>Order history</h3><p class="info">${escapeHtml(err.message)}</p>`}
- return;
-}
-
-const add=e.target.closest("[data-add-business]");
-const remove=e.target.closest("[data-unlink]");
-if(!add&&!remove)return;
-try{
- if(add){
-  const id=add.dataset.addBusiness;
-  const select=Array.from($("shopify-customers").querySelectorAll("select[data-customer]")).find(x=>x.dataset.customer===id);
-  if(!select?.value){status("Select a business first.");return;}
-  await setCustomerBusiness(id,select.value,true);
- }else if(remove && confirm("Remove this customer's business association? This will not change any orders or rewards.")){
-  await setCustomerBusiness(remove.dataset.unlink,remove.dataset.business,false);
- }
-}catch(err){status(err.message)}
-});
-$("search-customers").addEventListener("click",async()=>{customerOffset=0;try{await loadCustomers()}catch(e){status(e.message)}});
-$("customer-search").addEventListener("keydown",e=>{if(e.key==="Enter")$("search-customers").click()});
-$("previous-customers").addEventListener("click",async()=>{customerOffset=Math.max(0,customerOffset-50);try{await loadCustomers()}catch(e){status(e.message)}});
-$("next-customers").addEventListener("click",async()=>{customerOffset+=50;try{await loadCustomers()}catch(e){status(e.message)}});
-async function refresh(){
-try{
-const [d,clients]=await Promise.all([api("dashboard"),api("clients")]);
-for(const k of ["clients","quotes","jobs","tasks"])$("stat-"+k).textContent=d[k];
-$("clients-list").className="";
-$("clients-list").innerHTML=clients.length?'<table><thead><tr><th>Client</th><th>Contact</th><th>Email</th><th>Status</th></tr></thead><tbody>'+clients.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.contact_name)}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.status)}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No CRM clients have been created yet.</div>';
-$("connection-status").textContent="CRM CONNECTED";
-$("login-form").hidden=true;$("logout").hidden=false;
-await loadCustomers();await loadRules();await loadOrderReviews();status("Signed in as an authorized AI Apparel administrator.");
-}catch(e){$("connection-status").textContent="ACCESS RESTRICTED";status(e.message)}
-}
-$("login-form").addEventListener("submit",async e=>{
-e.preventDefault();
-const btn=e.currentTarget.querySelector('button[type="submit"]');btn.disabled=true;
-try{
-if(!db)throw Error("Authentication library failed to load.");
-const email=$("login-email").value.trim().toLowerCase();
-const password=$("login-password").value;
-const {error}=await db.auth.signInWithPassword({email,password});
-if(error)throw error;
-$("login-password").value="";
-await refresh();
-}catch(err){status(err.message==="Invalid login credentials"?"Incorrect email or password, or the account has not been created yet.":err.message)}
-finally{btn.disabled=false}
-});
-$("show-client-form").addEventListener("click",()=>{$("client-form").hidden=!$("client-form").hidden;$("client-form").style.display=$("client-form").hidden?"none":"grid"});
-$("client-form").addEventListener("submit",async e=>{
-e.preventDefault();const button=e.currentTarget.querySelector("button[type=submit]");button.disabled=true;
-try{const p=Object.fromEntries(new FormData(e.currentTarget));await api("create_client",p);e.currentTarget.reset();e.currentTarget.hidden=true;await refresh();status("Client created successfully.")}catch(err){status(err.message)}finally{button.disabled=false}
-});
-async function loadBusinessAccounts(){
- if(!businessOptions.length)await loadBusinesses();
- $("business-account-list").innerHTML=businessOptions.length?businessOptions.map(b=>`<button type="button" class="crm-business-card" data-business-profile="${escapeHtml(b.id)}"><span class="crm-business-avatar">${escapeHtml(b.name.slice(0,2).toUpperCase())}</span><span><strong>${escapeHtml(b.name)}</strong><small>View organization profile, customers & orders</small></span><span class="crm-business-arrow">→</span></button>`).join(""):'<p class="info">No organizations found.</p>';
-}
-$("business-account-list").addEventListener("click",async e=>{
- const btn=e.target.closest("[data-business-profile]");if(!btn)return;
- const modal=$("crm-profile-modal"),content=$("crm-profile-content");
- modal.hidden=false;$("crm-profile-title").textContent="Business Account";
- content.innerHTML='<p class="info">Loading organization…</p>';
- try{
-  const {data,error}=await db.rpc("ai_apparel_crm_business_detail",{p_business_id:btn.dataset.businessProfile});
-  if(error)throw Error(error.message);
-  if(modal.hidden)return;
-  $("crm-profile-title").textContent=data.name;
-  const customers=data.customers||[],orders=data.orders||[];
-  content.innerHTML=`<div class="crm-business-summary"><div><strong>${customers.length}</strong><small>Linked customers</small></div><div><strong>${orders.length}</strong><small>Approved Shopify orders</small></div><div><strong>${escapeHtml(data.status||"Active")}</strong><small>Account status</small></div></div><h3>Linked customers</h3>`+
-  (customers.length?`<div class="crm-business-detail-list">${customers.map(c=>`<div><strong>${escapeHtml(c.name||"Unnamed customer")}</strong><small>${escapeHtml(c.email||"No email")} ${c.verified?" · Verified association":""}</small></div>`).join("")}</div>`:'<p class="info">No customers linked to this organization yet.</p>')+
-  `<h3>Approved Shopify order associations</h3>`+
-  (orders.length?`<div class="crm-business-detail-list">${orders.map(o=>`<div><strong>${escapeHtml(o.order_name||("Shopify order "+String(o.order_id||"").split("/").pop()))}</strong><small>${escapeHtml(o.order_date?new Date(o.order_date).toLocaleDateString():"Date not available")}${Array.isArray(o.product_titles)&&o.product_titles.length?" · "+escapeHtml(o.product_titles.join(", ")):""}</small></div>`).join("")}</div>`:'<p class="info">No approved Shopify orders associated with this organization.</p>');
-  await appendRelatedJobs({p_customer_id:null,p_business_id:data.id});
-
- }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
-});
-document.querySelector('button[data-page="businesses"]').addEventListener("click",()=>loadBusinessAccounts().catch(e=>status(e.message)));
-function jobListMarkup(jobs){
- return jobs.length?`<div class="crm-business-detail-list">${jobs.map(j=>`<div class="crm-job-summary"><div><button type="button" class="crm-job-link" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button><small>${escapeHtml(j.job_number||"")} · ${escapeHtml(j.status||"New")}${j.business_name?" · "+escapeHtml(j.business_name):""}</small></div></div>`).join("")}</div>`:'<p class="info">No production jobs associated with this profile yet.</p>';
-}
-async function appendRelatedJobs(payload){
- const content=$("crm-profile-content");
- const {data,error}=await db.rpc("ai_apparel_crm_related_jobs",payload);
- if(error)throw Error(error.message);
- if($("crm-profile-modal").hidden)return;
- const block=document.createElement("div");
- block.innerHTML=`<h3>Production Jobs <span class="crm-order-count">${data.length}</span></h3>`+jobListMarkup(data);
- content.appendChild(block);
-}
-async function openProductionJob(jobId){
- const modal=$("crm-profile-modal"),content=$("crm-profile-content");
- modal.hidden=false;$("crm-profile-title").textContent="Production Job";
- content.innerHTML='<p class="info">Loading job details…</p>';
- try{
-  const {data,error}=await db.rpc("ai_apparel_crm_job_detail",{p_job_id:jobId});
-  if(error)throw Error(error.message);
-  if(modal.hidden)return;
-  $("crm-profile-title").textContent=data.title;
-  let linkedQuoteHtml='';
-  const {data:quotes,error:quotesError}=await db.rpc("ai_apparel_crm_quotes",{p_action:"list",p_payload:{}});
-  if(quotesError)throw Error("Unable to load linked quote: "+quotesError.message);
-  const linkedQuote=(quotes||[]).find(q=>String(q.job_id)===String(jobId));
-  if(linkedQuote){
-   const currency=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
-   const rows=(linkedQuote.items||[]).map(item=>`<tr><td>${escapeHtml(item.description||"")}${item.variant_title?`<div class="info">${escapeHtml(item.variant_title)}</div>`:""}${item.sku?`<div class="info">SKU: ${escapeHtml(item.sku)}</div>`:""}</td><td>${escapeHtml(item.quantity)}</td><td>${currency(item.unit_price)}</td><td>${currency(Number(item.quantity)*Number(item.unit_price))}</td></tr>`).join("");
-   linkedQuoteHtml=`<section class="crm-job-quote-detail"><h3>Approved Quote <span class="crm-job-quote-tag">${escapeHtml(linkedQuote.quote_number)}</span></h3><div class="crm-profile-grid"><div><small>Quote title</small><strong>${escapeHtml(linkedQuote.title||"")}</strong></div><div><small>Approval status</small><strong>${escapeHtml(linkedQuote.status||"")}</strong></div><div><small>Estimate total</small><strong>${currency(linkedQuote.total)}</strong></div><div><small>Line items</small><strong>${(linkedQuote.items||[]).length}</strong></div></div><div class="crm-job-quote-table"><table><thead><tr><th>Product / Specifications</th><th>Qty</th><th>Unit</th><th>Amount</th></tr></thead><tbody>${rows||'<tr><td colspan="4">No line items</td></tr>'}</tbody></table></div><div class="crm-job-quote-totals"><span>Subtotal: ${currency(linkedQuote.subtotal)}</span><span>Discount: ${currency(linkedQuote.discount_amount)}</span><span>Shipping: ${currency(linkedQuote.shipping_amount)}</span><span>Tax: ${currency(linkedQuote.tax_amount)}</span><strong>Total: ${currency(linkedQuote.total)}</strong></div>${linkedQuote.notes?`<div class="crm-job-quote-notes"><strong>Quote notes / production instructions</strong><p>${escapeHtml(linkedQuote.notes)}</p></div>`:""}<div class="crm-job-quote-art"><strong>Artwork &amp; Proofs</strong><div id="crm-job-quote-proofs">Loading artwork…</div></div></section>`;
-  }
-  const statuses=["New","In Production","Production Complete","Completed","Closed","On Hold","Cancelled"];
-  content.innerHTML=`<div class="crm-profile-grid"><div><small>Job number</small><strong>${escapeHtml(data.job_number||"Not assigned")}</strong></div><div><small>Customer</small><strong>${escapeHtml(data.customer_name||"Not assigned")}</strong></div><div><small>Business account</small><strong>${escapeHtml(data.business_name||"Not assigned")}</strong></div><div><small>Shopify order</small><strong>${escapeHtml(data.shopify_order_id?String(data.shopify_order_id).split("/").pop():"Not linked")}</strong></div><div><small>Due date</small><strong>${escapeHtml(data.due_date||"Not scheduled")}</strong></div><div><small>Created</small><strong>${escapeHtml(data.created_at?new Date(data.created_at).toLocaleDateString():"Unknown")}</strong></div></div><form id="crm-job-status-form" data-job-id="${escapeHtml(data.id)}"><label class="crm-status-label">Job status<select name="status" required>${statuses.map(st=>`<option value="${st}" ${data.status===st?"selected":""}>${st}</option>`).join("")}</select></label><button type="submit" class="action">Save Status</button></form><p class="info">Changing status updates this CRM job only; it does not automatically update Shopify, rewards, or production tasks.</p>${linkedQuoteHtml}`;
-  if(linkedQuote){
-   const proofTarget=document.getElementById("crm-job-quote-proofs");
-   const {data:proofs,error:proofError}=await db.rpc("ai_apparel_crm_quote_proofs",{p_quote_id:linkedQuote.id});
-   if(proofError){proofTarget.textContent="Unable to load artwork: "+proofError.message;}
-   else if(!proofs?.length){proofTarget.textContent="No artwork uploaded for this quote.";}
-   else{
-    proofTarget.textContent="";
-    for(const proof of proofs){
-     const row=document.createElement("div");row.className="crm-job-proof-row";
-     const label=document.createElement("span");label.textContent=proof.filename||"Artwork proof";
-     const link=document.createElement("a");link.textContent="View / Download";link.target="_blank";link.rel="noopener noreferrer";
-     const {data:signed,error:signedError}=await db.storage.from("ai-apparel-quote-proofs").createSignedUrl(proof.path,300);
-     if(signedError){link.textContent="Unable to open";link.removeAttribute("href");}
-     else link.href=signed.signedUrl;
-     row.append(label,link);proofTarget.appendChild(row);
-    }
-   }
-  }
- }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
-}
-document.addEventListener("click",e=>{const b=e.target.closest("[data-open-job]");if(b)openProductionJob(b.dataset.openJob)});
-document.addEventListener("submit",async e=>{
- if(e.target.id!=="crm-job-status-form")return;
- e.preventDefault();
- const form=e.target,btn=form.querySelector('button[type="submit"]');btn.disabled=true;
- try{
-  const {error}=await db.rpc("ai_apparel_crm_job_status",{p_job_id:form.dataset.jobId,p_status:form.elements.status.value});
-  if(error)throw Error(error.message);
-  status("Job status saved.");await openProductionJob(form.dataset.jobId);
-  if(!document.getElementById("jobs").hidden)await loadProductionJobs();
- }catch(err){status(err.message);alert(err.message)}finally{btn.disabled=false}
-});
-
-
-async function loadEmployeeDirectory(){
- const {data,error}=await db.rpc("ai_apparel_crm_production",{p_action:"list",p_payload:{}});
- if(error)throw Error(error.message);
- const jobs=data.jobs||[],assigned=[];
- const {data:staff,error:staffError}=await db.rpc("ai_apparel_crm_employee_directory",{p_action:"list",p_payload:{}});
- if(staffError)throw Error(staffError.message);
- jobs.forEach(j=>(j.steps||[]).forEach(step=>{
-  if(step.employee_id)assigned.push({employee_id:step.employee_id,job:j.title,stage:(data.stages||[]).find(x=>x.id===step.stage_id)?.name||"Production stage",status:step.status||"Not Started"});
- }));
- $("crm-employee-metrics").innerHTML=`<div><strong>${staff.filter(p=>p.active).length}</strong><small>Active employees</small></div><div><strong>${assigned.length}</strong><small>Assigned stages</small></div><div><strong>${jobs.length}</strong><small>Production jobs</small></div>`;
- $("crm-employee-directory").innerHTML=staff.length?`<div class="crm-business-detail-list">${staff.map(p=>`<div><strong>${escapeHtml(p.name)}</strong><small>${p.active?"Active":"Inactive"} · ${escapeHtml(p.role||"employee")} · ${escapeHtml(p.email||"No email")} · ${assigned.filter(a=>a.employee_id===p.id).length} stage assignments</small><div class="crm-employee-actions"><button class="crm-employee-toggle" type="button" data-employee-toggle="${escapeHtml(p.id)}" data-next-active="${p.active?"false":"true"}">${p.active?"Deactivate":"Reactivate"}</button>${p.email?`<button class="crm-employee-resend" type="button" data-resend-employee="${escapeHtml(p.email)}">Resend Setup Email</button>`:""}</div></div>`).join("")}</div>`:'<p class="info">No employees yet. Use the invitation form above to invite your first employee.</p>';
- $("crm-employee-assignments").innerHTML=assigned.length?`<table><thead><tr><th>Employee</th><th>Job</th><th>Stage</th><th>Status</th></tr></thead><tbody>${assigned.map(a=>`<tr><td>${escapeHtml(staff.find(p=>p.id===a.employee_id)?.name||"Inactive employee")}</td><td>${escapeHtml(a.job)}</td><td>${escapeHtml(a.stage)}</td><td>${escapeHtml(a.status)}</td></tr>`).join("")}</tbody></table>`:'<p class="info">No production assignments yet. Assigned stages will appear here automatically.</p>';
-}
-document.querySelector('button[data-page="employees"]').addEventListener("click",()=>loadEmployeeDirectory().catch(err=>status(err.message)));
-document.querySelector("#crm-employee-invite").addEventListener("submit",async e=>{
- e.preventDefault();const form=e.currentTarget,button=form.querySelector('button[type="submit"]');button.disabled=true;
- try{
-  const {data:{session},error:sessionError}=await db.auth.getSession();
-  if(sessionError||!session)throw Error("Please sign in again.");
-  const payload=Object.fromEntries(new FormData(form));
-  const response=await fetch(CRM_SUPABASE_URL+"/functions/v1/ai-apparel-invite-employee",{method:"POST",headers:{"Content-Type":"application/json","apikey":CRM_PUBLISHABLE_KEY,"Authorization":"Bearer "+session.access_token},body:JSON.stringify(payload)});
-  const result=await response.json();
-  if(!response.ok)throw Error(result.error||"Invitation could not be sent.");
-  form.reset();status("Invitation sent to "+payload.email);await loadEmployeeDirectory();
- }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
-});
 document.addEventListener("click",async e=>{
- const resend=e.target.closest("[data-resend-employee]");
- if(resend){
-  e.preventDefault();
-  const email=resend.dataset.resendEmployee;
-  if(!confirm("Send a password setup email to "+email+"?"))return;
-  resend.disabled=true;
-  const original=resend.textContent;
-  resend.textContent="Sending…";
-  try{
-   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:"https://ai-apparel-group.pages.dev/crm/employee.html?flow=invite"});
-   if(error)throw Error(error.message);
-   status("Password setup email requested for "+email);
-   alert("Password setup email requested for "+email+". Please check inbox and spam folder.");
-  }catch(err){
-   status("Could not send setup email: "+err.message);
-   alert("Could not send setup email: "+err.message);
-  }finally{
-   resend.disabled=false;
-   resend.textContent=original;
-  }
-  return;
- }
- const button=e.target.closest("[data-employee-toggle]");if(!button)return;
- const active=button.dataset.nextActive==="true";
- if(!confirm(active?"Reactivate this employee?":"Deactivate this employee? They will lose access to their assignments."))return;
- button.disabled=true;
+ const button=e.target.closest("[data-view-assignment]");
+ if(!button)return;
+ const target=$("employee-job-"+button.dataset.viewAssignment);
+ if(!target)return;
+ if(!target.hidden){target.hidden=true;button.setAttribute("aria-expanded","false");return;}
+ target.hidden=false;button.setAttribute("aria-expanded","true");
+ if(target.dataset.loaded==="true")return;
+ target.textContent="Loading job details and artwork…";button.disabled=true;
  try{
-  const {error}=await db.rpc("ai_apparel_crm_employee_directory",{p_action:"set_active",p_payload:{id:button.dataset.employeeToggle,active}});
+  const {data,error}=await db.rpc("ai_apparel_crm_employee_job_details",{p_assignment_id:button.dataset.viewAssignment});
   if(error)throw Error(error.message);
-  status(active?"Employee reactivated.":"Employee deactivated.");await loadEmployeeDirectory();
- }catch(err){status(err.message);alert(err.message);button.disabled=false}
-});
-async function loadProductionManagement(){
- const {data,error}=await db.rpc("ai_apparel_crm_production",{p_action:"list",p_payload:{}});
- if(error)throw Error(error.message);
- const jobs=data.jobs||[],stages=data.stages||[],staff=data.staff||[];
- const {data:approvedQuotes, error:quoteError}=await db.rpc("ai_apparel_crm_quotes",{p_action:"list",p_payload:{}});
- const quoteByJob=new Map((quoteError?[]:(approvedQuotes||[])).filter(x=>x.status==="Approved"&&x.job_id).map(x=>[String(x.job_id),x]));
- const expandedJobIds=new Set([...document.querySelectorAll("details[data-prod-job-details][open]")].map(el=>el.dataset.prodJobDetails));
- const usd=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(n)||0);
-
- $("crm-production-overview").innerHTML=`<div><strong>${jobs.length}</strong><small>Total jobs</small></div><div><strong>${jobs.filter(j=>!["Completed","Closed","Cancelled"].includes(j.status)).length}</strong><small>Active jobs</small></div><div><strong>${stages.length}</strong><small>Production stages</small></div><div><strong>${staff.filter(p=>p.active).length}</strong><small>Active employees</small></div>`;
- $("crm-production-jobs").innerHTML=jobs.length?jobs.map(j=>{
- const steps=Object.fromEntries((j.steps||[]).map(st=>[st.stage_id,st]));
- const totalStages=stages.length;
- const completedStages=stages.filter(st=>steps[st.id]?.status==="Completed").length;
- const activeStages=stages.filter(st=>steps[st.id]?.status==="In Progress").length;
- const heldStages=stages.filter(st=>steps[st.id]?.status==="On Hold").length;
- const assignedStages=stages.filter(st=>Boolean(steps[st.id]?.employee_id)).length;
- // A stage in progress counts as halfway through that stage; a completed stage counts fully.
- // On Hold does not advance the timeline beyond completed work.
- const progressUnits=completedStages+(activeStages*0.5);
- const percent=totalStages?Math.round(progressUnits/totalStages*100):0;
- const progressMarkup=`<div class="crm-prod-progress"><div class="crm-prod-progress-top"><strong>Production Timeline</strong><span>${percent}% progressed · ${completedStages} of ${totalStages} stages completed</span></div><div class="crm-prod-progress-track" role="progressbar" aria-label="Production timeline progress" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="crm-prod-progress-fill" style="width:${percent}%"></div></div><div class="crm-prod-progress-stats"><span>${activeStages} in progress</span><span>${heldStages} on hold</span><span>${assignedStages} assigned</span></div><small class="crm-prod-progress-help">In Progress advances the timeline halfway through its stage; Completed advances it to the end of that stage.</small></div>`;
-
- const quote=quoteByJob.get(String(j.id));
- const specs=quote?(quote.items||[]).map(item=>`<tr><td>${escapeHtml(item.description||"")}${item.variant_title?`<small>${escapeHtml(item.variant_title)}</small>`:""}${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}</td><td>${escapeHtml(item.quantity)}</td><td>${usd(item.unit_price)}</td></tr>`).join(""):"";
- const requirements=quote?`<details class="crm-prod-requirements" data-prod-job-details="${escapeHtml(j.id)}" ${expandedJobIds.has(String(j.id))?"open":""}><summary><span class="crm-prod-chevron">›</span><strong>Job Details &amp; Artwork</strong><span class="crm-prod-quote-badge">Approved · ${escapeHtml(quote.quote_number)}</span></summary><div class="crm-prod-req-body"><div class="crm-prod-req-metrics"><div><small>Quote title</small><strong>${escapeHtml(quote.title||"")}</strong></div><div><small>Items</small><strong>${(quote.items||[]).length}</strong></div><div><small>Quote total</small><strong>${usd(quote.total)}</strong></div></div><div class="crm-prod-req-table"><table><thead><tr><th>Product / Specifications</th><th>Quantity</th><th>Unit price</th></tr></thead><tbody>${specs}</tbody></table></div>${quote.notes?`<div class="crm-prod-req-notes"><strong>Production instructions</strong><p>${escapeHtml(quote.notes)}</p></div>`:""}<div class="crm-prod-req-art"><strong>Artwork &amp; Proofs</strong><div data-prod-quote-proofs="${escapeHtml(quote.id)}">Expand to load artwork.</div></div></div></details>`:`<details class="crm-prod-requirements" data-prod-job-details="${escapeHtml(j.id)}" ${expandedJobIds.has(String(j.id))?"open":""}><summary><span class="crm-prod-chevron">›</span><strong>Job Details &amp; Artwork</strong><span class="crm-prod-quote-badge">No linked quote</span></summary><div class="crm-prod-req-body"><p class="info">This job was created without an approved quote. Job details are available by clicking its title above.</p></div></details>`;
-
- return `<div class="panel"><h3><button class="crm-job-link" type="button" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button></h3><p class="info">${escapeHtml(j.number||"")} · ${escapeHtml(j.customer||"No customer")} · ${escapeHtml(j.business||"No business")} · ${escapeHtml(j.status)}</p><form data-production-due="${escapeHtml(j.id)}" class="crm-prod-form"><label>Due date <input type="date" name="due_date" value="${escapeHtml(j.due_date||"")}"></label><button type="submit">Save due date</button></form>${progressMarkup}${requirements}<div class="crm-prod-grid">${stages.map(st=>{
- const step=steps[st.id]||{};
- return `<form class="crm-prod-form" data-production-stage="${escapeHtml(st.id)}" data-production-job="${escapeHtml(j.id)}"><strong>${escapeHtml(st.name)}</strong><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(v=>`<option ${step.status===v?"selected":""}>${v}</option>`).join("")}</select></label><label>Employee<select name="employee_id"><option value="">Unassigned</option>${staff.map(e=>`<option value="${escapeHtml(e.id)}" ${step.employee_id===e.id?"selected":""}>${escapeHtml(e.name)}</option>`).join("")}</select></label><label>Notes<textarea name="notes" rows="2" maxlength="4000">${escapeHtml(step.notes||"")}</textarea></label><button type="submit">Save stage</button></form>`}).join("")}</div></div>`}).join(""):'<div class="panel"><p class="info">No production jobs yet. The production board will populate when your first real job is entered. No test jobs have been created.</p></div>';
-}
-async function loadProductionQuoteProofs(details){
- const target=details.querySelector("[data-prod-quote-proofs]");
- if(!target||target.dataset.loaded==="true")return;
- target.textContent="Loading artwork…";
- const quoteId=target.dataset.prodQuoteProofs;
- try{
-  const {data,error}=await db.rpc("ai_apparel_crm_quote_proofs",{p_quote_id:quoteId});
-  if(error)throw Error(error.message);
-  if(!details.isConnected)return;
-  target.textContent="";
-  if(!data?.length){target.textContent="No artwork uploaded yet.";target.dataset.loaded="true";return;}
-  for(const proof of data){
-   const row=document.createElement("div");row.className="crm-prod-proof-row";
-   const name=document.createElement("span");name.textContent=proof.filename||"Artwork proof";
-   const link=document.createElement("a");link.textContent="View / Download";link.target="_blank";link.rel="noopener noreferrer";
-   const {data:signed,error:linkError}=await db.storage.from("ai-apparel-quote-proofs").createSignedUrl(proof.path,300);
-   if(linkError){link.textContent="Unable to open";}else link.href=signed.signedUrl;
-   row.append(name,link);target.append(row);
+  if(!data)throw Error("Job details unavailable.");
+  const items=data.items||[],proofs=data.proofs||[];
+  target.innerHTML=`<h4>Job Specifications</h4><p class="muted">${esc(data.job_number||"")} · Approved quote ${esc(data.quote_number||"Not linked")}</p><div class="employee-specs">${items.length?items.map(item=>`<div class="employee-spec"><strong>${esc(item.description||"Product")}</strong><span>Quantity: ${esc(item.quantity||0)}${item.variant?` · ${esc(item.variant)}`:""}${item.sku?` · SKU: ${esc(item.sku)}`:""}</span></div>`).join(""):"<p class='muted'>No approved quote specifications attached.</p>"}</div><h4>Production Instructions</h4><p class="employee-instructions">${esc(data.instructions||"No additional instructions provided.")}</p><h4>Artwork &amp; Proofs</h4><div class="employee-proof-list">${proofs.length?"":"<p class='muted'>No artwork uploaded for this job.</p>"}</div>`;
+  const proofList=target.querySelector(".employee-proof-list");
+  for(const proof of proofs){
+   const row=document.createElement("div");row.className="employee-proof";
+   const name=document.createElement("span");name.textContent=proof.filename||"Artwork";
+   const link=document.createElement("a");link.target="_blank";link.rel="noopener noreferrer";link.textContent="View / Download";
+   const {data:signed,error:signError}=await db.storage.from("ai-apparel-quote-proofs").createSignedUrl(proof.path,300);
+   if(signError){link.textContent="Artwork unavailable";link.removeAttribute("href");}
+   else link.href=signed.signedUrl;
+   row.append(name,link);proofList.append(row);
   }
   target.dataset.loaded="true";
- }catch(err){target.textContent="Artwork unavailable: "+err.message;}
-}
-document.addEventListener("toggle",e=>{
- if(e.target.matches?.("details[data-prod-job-details]")&&e.target.open)loadProductionQuoteProofs(e.target);
-},true);
-document.querySelector('button[data-page="production"]').addEventListener("click",()=>loadProductionManagement().catch(err=>status(err.message)));
-document.addEventListener("submit",async e=>{
- const f=e.target;if(!f.matches("[data-production-due],[data-production-stage]"))return;
- e.preventDefault();const btn=f.querySelector('button[type="submit"]');btn.disabled=true;
- try{
- const due=f.hasAttribute("data-production-due");
- const payload=due?{job_id:f.dataset.productionDue,due_date:f.elements.due_date.value}:{job_id:f.dataset.productionJob,stage_id:f.dataset.productionStage,status:f.elements.status.value,employee_id:f.elements.employee_id.value,notes:f.elements.notes.value};
- const {error}=await db.rpc("ai_apparel_crm_production",{p_action:due?"save_due":"save_step",p_payload:payload});
- if(error)throw Error(error.message);
- status("Production update saved.");await loadProductionManagement();
- }catch(err){status(err.message);alert(err.message);btn.disabled=false}
+ }catch(err){target.textContent="Unable to load assigned job details: "+err.message;}
+ finally{button.disabled=false;}
 });
-async function loadProductionJobs(){
- const {data,error}=await db.rpc("ai_apparel_crm_jobs",{p_action:"list",p_payload:{}});
- if(error)throw Error(error.message);
- $("crm-jobs-list").innerHTML=data.length?'<table><thead><tr><th>Job</th><th>Customer</th><th>Business</th><th>Status</th><th>Shopify order</th></tr></thead><tbody>'+data.map(j=>`<tr><td><button type="button" class="crm-job-link" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button><div class="info">${escapeHtml(j.job_number||"")}</div></td><td>${escapeHtml(j.customer_name||"Not assigned")}</td><td>${escapeHtml(j.business_name||"Not assigned")}</td><td>${escapeHtml(j.status||"New")}</td><td>${escapeHtml(j.shopify_order_id?String(j.shopify_order_id).split("/").pop():"—")}</td></tr>`).join("")+'</tbody></table>':'<p class="info">No production jobs have been created yet.</p>';
-}
-let jobCustomerSearchTimer;
-let jobCustomerSearchRequest=0;
-async function searchJobCustomers(search=""){
- const request=++jobCustomerSearchRequest;
- const sel=$("crm-job-customer"),help=$("crm-job-customer-help");
- const previous=sel.value;
- sel.innerHTML='<option value="">Loading customers…</option>';
- const {data,error}=await db.rpc("ai_apparel_crm_customers",{p_search:search,p_limit:100,p_offset:0});
- if(request!==jobCustomerSearchRequest)return;
- if(error){sel.innerHTML='<option value="">Unable to load customers</option>';help.textContent=error.message;throw Error(error.message);}
- const rows=data?.items||[];
- sel.innerHTML='<option value="">No customer selected</option>'+rows.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||c.email||"Unnamed customer")} — ${escapeHtml(c.email||"")}</option>`).join("");
- if(rows.some(c=>String(c.id)===previous))sel.value=previous;
- help.textContent=rows.length?(rows.length===100?"Showing first 100 matches. Type more to narrow your search.":`${rows.length} customer(s) found.`):"No matching customers. Try another name or email.";
-}
-async function setupJobForm(){
- try{
-  if(!businessOptions.length)await loadBusinesses();
-  $("crm-job-business").innerHTML='<option value="">No business selected</option>'+businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
-  if(!businessOptions.length)status("No business accounts were returned. Check your session.");
- }catch(err){status("Unable to load business accounts: "+err.message);}
- try{await searchJobCustomers($("crm-job-customer-search").value.trim());}
- catch(err){status("Unable to load online customers: "+err.message);}
- try{await loadProductionJobs();}catch(err){status("Unable to load production jobs: "+err.message);}
-}
-$("crm-job-customer-search").addEventListener("input",()=>{
- clearTimeout(jobCustomerSearchTimer);
- jobCustomerSearchTimer=setTimeout(()=>searchJobCustomers($("crm-job-customer-search").value.trim()).catch(e=>status(e.message)),300);
-});
-document.querySelector('button[data-page="jobs"]').addEventListener("click",()=>setupJobForm());
-$("crm-job-form").addEventListener("submit",async e=>{
- e.preventDefault();const button=e.currentTarget.querySelector('button[type="submit"]');button.disabled=true;
- try{
-  const payload=Object.fromEntries(new FormData(e.currentTarget));
-  const {error}=await db.rpc("ai_apparel_crm_jobs",{p_action:"create",p_payload:payload});
-  if(error)throw Error(error.message);
-  e.currentTarget.reset();await loadProductionJobs();status("Production job created and associations saved.");
- }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
-});
-$("logout").addEventListener("click",async()=>{await db.auth.signOut();location.reload()});
-if(db)db.auth.getSession().then(({data})=>{if(data.session)refresh();else status("Sign in to access AI Apparel CRM.")});
-else status("Authentication library failed to load.");
-</script>
-<div id="crm-profile-modal" class="crm-modal" hidden role="dialog" aria-modal="true" aria-labelledby="crm-profile-title"><div class="crm-modal-backdrop" data-close-profile></div><div class="crm-modal-panel"><div class="crm-modal-header"><div><div class="crm-eyebrow">CUSTOMER PROFILE</div><h2 id="crm-profile-title">Customer</h2></div><button type="button" class="crm-modal-close" data-close-profile aria-label="Close customer profile">×</button></div><div id="crm-profile-content"></div></div></div><script>document.addEventListener("click",e=>{if(e.target.closest("[data-close-profile]"))document.getElementById("crm-profile-modal").hidden=true});document.addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("crm-profile-modal").hidden=true});</script><script>
-/* AI Apparel itemized quote builder. No store orders are created by this form. */
-(function(){
-const q=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-const money=n=>Number(n||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
-let searchTimer,searchToken=0;
-const allowedTypes=new Set(['image/png','image/jpeg','image/webp','application/pdf']);
-function validateProofFiles(files){for(const f of files){if(!allowedTypes.has(f.type))throw Error('Unsupported proof file: '+f.name);if(f.size>15*1024*1024)throw Error('Proof file exceeds 15 MB: '+f.name);}}
-async function uploadProofs(quoteId,files){
- validateProofFiles(files);
- for(const f of files){
-  const ext=f.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')||'file';
-  const path=quoteId+'/'+crypto.randomUUID()+'.'+ext;
-  const {error:uploadError}=await db.storage.from('ai-apparel-quote-proofs').upload(path,f,{contentType:f.type,upsert:false});
-  if(uploadError)throw Error('Artwork upload failed for '+f.name+': '+uploadError.message);
-  const {error:linkError}=await db.rpc('ai_apparel_crm_quote_proofs',{p_quote_id:quoteId,p_path:path,p_filename:f.name,p_mime:f.type});
-  if(linkError)throw Error('Artwork uploaded but could not be linked: '+linkError.message);
- }
-}
-async function viewProofs(quoteId,target){
- const {data,error}=await db.rpc('ai_apparel_crm_quote_proofs',{p_quote_id:quoteId});
- if(error)throw Error(error.message);
- target.innerHTML='';
- if(!data.length){target.textContent='No artwork uploaded yet.';return;}
- for(const proof of data){
-  const {data:link,error:linkError}=await db.storage.from('ai-apparel-quote-proofs').createSignedUrl(proof.path,300);
-  const a=document.createElement('a');a.textContent=proof.filename;a.style.cssText='display:block;margin:7px 0;text-decoration:underline';
-  if(linkError){a.textContent=proof.filename+' (unable to open)';}else{a.href=link.signedUrl;a.target='_blank';a.rel='noopener noreferrer';}
-  target.appendChild(a);
- }
-}
-function addItem(v={}){
- const row=document.createElement('div');row.className='ai-quote-row';
- row.style.cssText='padding:12px;margin:12px 0;border:1px solid #d6dce4;border-radius:10px;background:#fafbfd';
- row.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">'+
- '<label>Type<select class="qi-type"><option value="custom">Custom / Service</option><option value="store">Store Product</option></select></label>'+
- '<label style="grid-column:span 2">Item description<input class="qi-description" required placeholder="Product or service" value="'+esc(v.description||'')+'"></label>'+
- '<label>SKU<input class="qi-sku" placeholder="Optional"></label>'+
- '<label>Size / Color / Variant<input class="qi-variant" placeholder="Optional"></label>'+
- '<label>Quantity<input class="qi-quantity" type="number" min=".01" step=".01" value="'+esc(v.quantity||1)+'" required></label>'+
- '<label>Unit price ($)<input class="qi-price" type="number" min="0" step=".01" value="'+esc(v.unit_price??0)+'" required></label>'+
- '</div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px"><strong class="qi-total">$0.00</strong><button type="button" class="qi-remove">Remove</button></div>';
- row.querySelector('.qi-type').value=v.item_type||'custom';
- row.querySelector('.qi-sku').value=v.sku||'';
- row.querySelector('.qi-variant').value=v.variant_title||'';
- row.querySelector('.qi-remove').onclick=()=>{row.remove();totals()};
- row.addEventListener('input',totals);q('ai-quote-items').appendChild(row);totals();
-}
-function items(){return [...q('ai-quote-items').querySelectorAll('.ai-quote-row')].map(r=>({
- item_type:r.querySelector('.qi-type').value,
- description:r.querySelector('.qi-description').value.trim(),
- sku:r.querySelector('.qi-sku').value.trim(),
- variant_title:r.querySelector('.qi-variant').value.trim(),
- quantity:Number(r.querySelector('.qi-quantity').value),
- unit_price:Number(r.querySelector('.qi-price').value)
-}));}
-function totals(){
- const lines=items(),subtotal=lines.reduce((a,b)=>a+Math.round(b.quantity*b.unit_price*100)/100,0);
- const discount=Number(q('ai-quote-discount').value||0),shipping=Number(q('ai-quote-shipping').value||0),tax=Number(q('ai-quote-tax').value||0);
- q('ai-quote-items').querySelectorAll('.ai-quote-row').forEach((r,i)=>r.querySelector('.qi-total').textContent=money(lines[i].quantity*lines[i].unit_price));
- q('ai-quote-totals').textContent='Subtotal: '+money(subtotal)+' | Total: '+money(subtotal-discount+shipping+tax);
-}
-async function customers(term=''){
- const token=++searchToken,select=q('ai-quote-customer'),prev=select.value;
- const {data,error}=await db.rpc('ai_apparel_crm_customers',{p_search:term,p_limit:100,p_offset:0});
- if(token!==searchToken)return;if(error)throw Error(error.message);
- select.innerHTML='<option value="">No customer selected</option>'+(data?.items||[]).map(c=>'<option value="'+esc(c.id)+'">'+esc([c.first_name,c.last_name].filter(Boolean).join(' ')||c.email||c.id)+'</option>').join('');
- if([...select.options].some(o=>o.value===prev))select.value=prev;
-}
-async function list(){
- const {data,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'list',p_payload:{}});
- if(error){q('ai-quotes-list').textContent=error.message;return;}
- const renderCards=quotes=>quotes.map(x=>{
- const state=String(x.status||'Draft');
- const badgeClass=state==='Approved'?'approved':state==='Declined'?'declined':state==='Sent'?'sent':'draft';
- const date=x.created_at?new Date(x.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
- const details=(x.items||[]).map(i=>'<div class="ai-sq-line"><span>'+esc(i.description)+(i.variant_title?' · '+esc(i.variant_title):'')+'</span><span>'+esc(i.quantity)+' × '+money(i.unit_price)+'</span></div>').join('');
- return '<article class="ai-sq-card"><div class="ai-sq-top"><div><div class="ai-sq-number">'+esc(x.quote_number)+' <span class="ai-sq-date">'+esc(date)+'</span></div><h4>'+esc(x.title)+'</h4><div class="ai-sq-customer">'+esc(x.customer_name||x.business_name||'Unassigned customer')+(x.customer_name&&x.business_name?' · '+esc(x.business_name):'')+'</div></div><span class="ai-sq-badge '+badgeClass+'">'+esc(state)+'</span></div>'+ 
- '<div class="ai-sq-middle"><div><span class="ai-sq-caption">ESTIMATE TOTAL</span><strong class="ai-sq-price">'+money(x.total)+'</strong></div><div><span class="ai-sq-caption">PRODUCTION JOB</span><strong class="ai-sq-job">'+esc(x.job_number||'Not created')+'</strong></div></div>'+ 
- '<details class="ai-sq-details"><summary>View '+(x.items||[]).length+' line items &amp; specifications <span>⌄</span></summary><div class="ai-sq-lines">'+(details||'<p>No line items</p>')+(x.notes?'<p class="ai-sq-notes">'+esc(x.notes)+'</p>':'')+'</div></details>'+ 
- '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id?'disabled':'')+'>'+['Draft','Sent','Changes Requested','Approved','Declined'].map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div><div class="ai-proof-list" data-id="'+esc(x.id)+'"></div></article>';
- }).join('');
- const active=data.filter(x=>x.status!=='Approved');
- const archived=data.filter(x=>x.status==='Approved');
- const openQuotes=q('ai-active-quote-details')?.open ?? true;
- const openArchive=q('ai-archived-quote-details')?.open ?? false;
- q('ai-quotes-list').innerHTML=
- '<details id="ai-active-quote-details" class="ai-quote-fold" '+(openQuotes?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Quotes</strong><span class="ai-quote-fold-count">'+active.length+' active</span></summary><div class="ai-quote-fold-content"><div class="ai-saved-quotes-grid">'+(active.length?renderCards(active):'<p class="info">No active quotes. Create a quote to get started.</p>')+'</div></div></details>'+
- '<details id="ai-archived-quote-details" class="ai-quote-fold ai-quote-archive-section" '+(openArchive?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Archived Quotes</strong><span class="ai-quote-fold-count">'+archived.length+' approved</span></summary><div class="ai-quote-fold-content"><p class="info">Approved quotes are moved here automatically. Their artwork and production job links remain available.</p><div class="ai-saved-quotes-grid">'+(archived.length?renderCards(archived):'<p class="info">No approved quotes yet.</p>')+'</div></div></details>';
-}
-async function load(){
- try{if(!businessOptions.length)await loadBusinesses();q('ai-quote-business').innerHTML='<option value="">No business selected</option>'+businessOptions.map(b=>'<option value="'+esc(b.id)+'">'+esc(b.name)+'</option>').join('');}catch(e){status('Business accounts: '+e.message)}
- try{await customers(q('ai-quote-customer-search').value.trim())}catch(e){status('Customer lookup: '+e.message)}
- await list();
-}
-q('ai-quote-add-item').onclick=()=>addItem();
-['ai-quote-discount','ai-quote-shipping','ai-quote-tax'].forEach(id=>q(id).addEventListener('input',totals));
-q('ai-quote-customer-search').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>customers(q('ai-quote-customer-search').value.trim()).catch(e=>status(e.message)),300)});
-q('ai-quote-form').addEventListener('submit',async e=>{
- e.preventDefault();const form=e.currentTarget;const button=form.querySelector('button[type=submit]');button.disabled=true;
- try{
-  const payload=Object.fromEntries(new FormData(form));payload.items=items();const proofFiles=[...q('ai-quote-artwork').files];validateProofFiles(proofFiles);
-  if(!payload.items.length)throw Error('Add at least one line item.');
-  if(payload.items.some(i=>!i.description||!Number.isFinite(i.quantity)||i.quantity<=0||!Number.isFinite(i.unit_price)||i.unit_price<0))throw Error('Each item needs a description, positive quantity and valid price.');
-  const subtotal=payload.items.reduce((a,b)=>a+Math.round(b.quantity*b.unit_price*100)/100,0);
-  if(Number(payload.discount_amount)>subtotal)throw Error('Discount exceeds subtotal.');
-  const {data:created,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'create',p_payload:payload});
-  if(error)throw Error(error.message);
-  if(proofFiles.length){try{await uploadProofs(created.id,proofFiles)}catch(uploadError){await list();throw Error('Quote '+created.quote_number+' was saved, but '+uploadError.message+'. You can attach artwork from Saved Quotes.')}}
-  form.reset();q('ai-quote-artwork-names').textContent='No artwork selected';q('ai-quote-items').innerHTML='';addItem();await load();status('Itemized quote saved as Draft.');
- }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
-});
-q('ai-quote-artwork').addEventListener('change',e=>{const files=[...e.target.files];q('ai-quote-artwork-names').textContent=files.length?files.map(f=>f.name).join(' · '):'No artwork selected';});
-q('ai-quotes-list').addEventListener('click',async e=>{
- const btn=e.target.closest('.ai-view-proofs');if(!btn)return;
- const target=[...q('ai-quotes-list').querySelectorAll('.ai-proof-list')].find(el=>el.dataset.id===btn.dataset.id);
- try{target.textContent='Loading artwork…';await viewProofs(btn.dataset.id,target)}catch(err){target.textContent=err.message;status(err.message)}
-});
-q('ai-quotes-list').addEventListener('change',async e=>{
- const input=e.target.closest('.ai-attach-proof');if(!input)return;
- try{const files=[...input.files];if(!files.length)return;validateProofFiles(files);input.disabled=true;await uploadProofs(input.dataset.id,files);const target=[...q('ai-quotes-list').querySelectorAll('.ai-proof-list')].find(el=>el.dataset.id===input.dataset.id);await viewProofs(input.dataset.id,target);status('Artwork attached to quote.')}catch(err){status(err.message);alert(err.message)}finally{input.disabled=false;input.value=''}
-});
-q('ai-quotes-list').addEventListener('change',async e=>{
- const sel=e.target.closest('.ai-quote-status');if(!sel)return;
- const next=sel.value;if(next==='Approved'&&!confirm('Approve quote and create the linked production job?')){await list();return;}
- sel.disabled=true;
- try{const {error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'status',p_payload:{id:sel.dataset.id,status:next}});if(error)throw Error(error.message);await list();if(next==='Approved'){await loadProductionJobs();status('Quote approved; linked job created.')}else status('Quote status updated.');}
- catch(err){status(err.message);alert(err.message);await list();}
-});
-document.querySelector('button[data-page="quotes"]').addEventListener('click',load);
-addItem();
-})();
+$("login-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const f=new FormData(e.target);const {error}=await db.auth.signInWithPassword({email:f.get("email"),password:f.get("password")});b.disabled=false;if(error)msg(error.message,true);else{msg("");await render()}});
+$("password-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const {error}=await db.auth.updateUser({password:new FormData(e.target).get("password"),data:{employee_password_initialized:true}});b.disabled=false;if(error)msg(error.message,true);else{passwordFlow=false;msg("Password saved. Your employee account is ready.");await render()}});
+$("reset-link").addEventListener("click",async()=>{const email=$("login-form").elements.email.value;if(!email){msg("Enter your email first.",true);return}const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname+"?flow=invite"});msg(error?error.message:"If your account exists, a password reset email will arrive shortly.",!!error)});
+$("signout").addEventListener("click",async()=>{await db.auth.signOut();passwordFlow=false;msg("Signed out.");await render()});
+document.addEventListener("submit",async e=>{const f=e.target;if(!f.matches("[data-assignment]"))return;e.preventDefault();const b=f.querySelector("button");b.disabled=true;const {error}=await db.rpc("ai_apparel_crm_employee_stage_update",{p_assignment_id:f.dataset.assignment,p_status:f.elements.status.value,p_notes:f.elements.notes.value});b.disabled=false;if(error)msg(error.message,true);else{msg("Production stage updated.");await render()}});
+db.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){passwordFlow=true;setTimeout(render,0)}else if(event==="SIGNED_IN"){setTimeout(render,0)}});
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session&&(new URLSearchParams(location.search).get("flow")==="invite"||location.hash.includes("type=invite")||location.search.includes("type=invite"))){passwordFlow=true}await render()})();
 </script></body></html>
