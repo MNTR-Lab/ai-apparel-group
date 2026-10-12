@@ -35,6 +35,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <button class="nav" data-page="production">⚙ &nbsp; Production</button>
 <button class="nav" data-page="employees">♧ &nbsp; Employees & Tasks</button>
 <button class="nav" data-page="matching">◇ &nbsp; Business Matching</button>
+<button class="nav" data-page="orderreviews">☷ &nbsp; Order Match Review</button>
 <button class="nav" data-page="rewards">★ &nbsp; Rewards Integration</button>
 </nav><div class="foot"><div style="border-top:1px solid rgba(255,255,255,.25);padding-top:15px"><span style="font-size:11px;letter-spacing:.7px;color:#FFFFFF">Powered by</span><img src="https://cdn.shopify.com/s/files/1/0719/1966/5231/files/Blueprint_Collective-white.png?v=1791560539" alt="Blueprint Collective" style="width:100%;max-width:190px;height:auto;max-height:85px;object-fit:contain;object-position:left center;margin-top:10px"></div></div></aside>
 <main><div class="top"><h1 id="page-title">Dashboard</h1><span class="pill" id="connection-status">SIGN IN REQUIRED</span></div>
@@ -68,13 +69,14 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Blueprint's production stages and automatic completion workflow will be adapted for AI Apparel.</p><div class="panel"><div class="empty">Production stage updates are disabled in staging.</div></div></section>
 <section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Assignments, notifications, task completion and access controls.</p><div class="panel"><div class="empty">Employee accounts and role-based permissions are not configured yet.</div></div></section>
 <section id="matching" hidden><h2>Business Matching Rules</h2><p class="lead">Set up product-title phrases that identify an organization. Rules remain in draft until reviewed and activated in a later phase. They do not change rewards or orders.</p><div class="panel"><h3>Add draft matching rule</h3><div class="quick" style="flex-wrap:wrap"><select id="rule-business" style="padding:10px;min-width:190px"><option value="">Select organization</option></select><input id="rule-phrase" placeholder="Product title contains (e.g., Carolina ENT)" style="padding:10px;min-width:240px;flex:1"><button class="action" type="button" id="add-rule">Save draft rule</button></div><p class="info">Use distinctive organization names. Generic words such as "shirt" or "team" can create incorrect matches.</p><div id="rule-list" class="empty">Sign in to load rules.</div></div></section>
+<section id="orderreviews" hidden><h2>Order Match Review</h2><p class="lead">Review suggested organization matches before linking an order. Approval never changes rewards points or balances.</p><div class="panel"><div class="quick"><button class="action" id="refresh-order-reviews" type="button">Refresh reviews</button></div><div id="order-review-list" class="empty">Sign in to load order reviews.</div></div></section>
 <section id="rewards" hidden><h2>Organization Rewards</h2><p class="lead">The existing Rewards Portal remains the source of truth for organization balances and points.</p>
 <div class="panel"><h3>Existing Rewards Portal</h3><p class="info">We will connect organization records to the CRM without modifying the current rewards calculations or Shopify order import.</p>
 <div class="quick"><a class="action" href="https://portal.aiapparelgroup.com" target="_blank" rel="noopener noreferrer">Open Existing Rewards Portal ↗</a></div></div>
 <div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
 <div style="text-align:center;color:#75879b;font-size:12px;margin:28px 0 8px">Powered by <strong style="color:#006fba">Blueprint Collective</strong></div></div></main></div>
 <script>
-const names={matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration"};
+const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration"};
 document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
 const page=button.dataset.page;
 document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
@@ -120,6 +122,17 @@ $("rule-list").addEventListener("click",async e=>{
  const id=e.target.dataset.deleteRule;if(!id)return;
  try{const {error}=await db.rpc("ai_apparel_crm_match_rules",{p_action:"delete",p_rule_id:id});if(error)throw Error(error.message);await loadRules();status("Draft rule deleted.");}catch(e){status(e.message)}
 });
+async function loadOrderReviews(){
+const {data,error}=await db.rpc("ai_apparel_crm_order_reviews",{p_action:"list"});
+if(error)throw Error(error.message);
+$("order-review-list").innerHTML=data.length?'<table><thead><tr><th>Order</th><th>Products</th><th>Suggested business</th><th>Matched phrase</th><th>Status</th><th>Review</th></tr></thead><tbody>'+data.map(r=>`<tr><td>${escapeHtml(r.order_name||r.id)}</td><td>${escapeHtml((r.product_titles||[]).join(", "))}</td><td>${escapeHtml(r.business)}</td><td>${escapeHtml(r.phrase)}</td><td>${escapeHtml(r.status)}</td><td>${r.status==="pending"?`<button type="button" data-review-action="approve" data-review-id="${escapeHtml(r.id)}">Approve</button> <button type="button" data-review-action="reject" data-review-id="${escapeHtml(r.id)}">Reject</button>`:"Reviewed"}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No order suggestions yet. Add draft product-title rules first; no automatic assignments are enabled.</div>';
+}
+$("refresh-order-reviews").addEventListener("click",async()=>{try{await loadOrderReviews()}catch(e){status(e.message)}});
+$("order-review-list").addEventListener("click",async e=>{
+const btn=e.target.closest("[data-review-action]");if(!btn)return;
+if(!confirm(btn.dataset.reviewAction==="approve"?"Approve this business association for this order?":"Reject this suggested match?"))return;
+try{btn.disabled=true;const {error}=await db.rpc("ai_apparel_crm_order_reviews",{p_action:btn.dataset.reviewAction,p_review_id:btn.dataset.reviewId});if(error)throw Error(error.message);await loadOrderReviews();status("Order review saved. Rewards balances were not changed.");}catch(err){status(err.message)}finally{btn.disabled=false}
+});
 async function loadCustomers(){
 if(!businessOptions.length)await loadBusinesses();
 const {data,error}=await db.rpc("ai_apparel_crm_customers",{p_search:$("customer-search").value.trim(),p_limit:50,p_offset:customerOffset});
@@ -160,7 +173,7 @@ $("clients-list").className="";
 $("clients-list").innerHTML=clients.length?'<table><thead><tr><th>Client</th><th>Contact</th><th>Email</th><th>Status</th></tr></thead><tbody>'+clients.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.contact_name)}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.status)}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No CRM clients have been created yet.</div>';
 $("connection-status").textContent="CRM CONNECTED";
 $("login-form").hidden=true;$("logout").hidden=false;
-await loadCustomers();await loadRules();status("Signed in as an authorized AI Apparel administrator.");
+await loadCustomers();await loadRules();await loadOrderReviews();status("Signed in as an authorized AI Apparel administrator.");
 }catch(e){$("connection-status").textContent="ACCESS RESTRICTED";status(e.message)}
 }
 $("login-form").addEventListener("submit",async e=>{
