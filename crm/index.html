@@ -177,13 +177,24 @@ if(error)throw Error(error.message);
 const rows=data.items||[],total=data.total||0;
 $("customer-count").textContent=`${total.toLocaleString()} imported customers • Showing ${rows.length?customerOffset+1:0}–${customerOffset+rows.length}`;
 const options=businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
-$("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Linked businesses</th><th>Manage association</th></tr></thead><tbody>'+rows.map(c=>{
+$("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Linked businesses</th><th>Manage association</th><th>Order history</th></tr></thead><tbody>'+rows.map(c=>{
 const links=(c.businesses||[]).map(b=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:4px 7px;border-radius:6px;background:#e9f3fa">${escapeHtml(b.name)} <button type="button" data-unlink="${escapeHtml(c.id)}" data-business="${escapeHtml(b.id)}" title="Remove association" style="border:0;background:transparent;color:#a12b45;font-weight:bold">×</button></span>`).join("")||"Not linked";
-return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><select data-customer="${escapeHtml(c.id)}" style="max-width:170px;padding:7px"><option value="">Select business</option>${options}</select> <button type="button" data-add-business="${escapeHtml(c.id)}" class="action" style="padding:7px 10px">Link</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
+return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><select data-customer="${escapeHtml(c.id)}" style="max-width:170px;padding:7px"><option value="">Select business</option>${options}</select> <button type="button" data-add-business="${escapeHtml(c.id)}" class="action" style="padding:7px 10px">Link</button></td><td><button type="button" class="review-btn approve" data-view-orders="${escapeHtml(c.id)}">View Orders</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
 $("previous-customers").disabled=customerOffset===0;
 $("next-customers").disabled=customerOffset+rows.length>=total;
 }
 $("shopify-customers").addEventListener("click",async e=>{
+const view=e.target.closest("[data-view-orders]");
+if(view){
+ try{
+ const {data,error}=await db.rpc("ai_apparel_crm_customer_orders",{p_customer_id:view.dataset.viewOrders});
+ if(error)throw Error(error.message);
+ const details=(data||[]).map(o=>`${o.order_name||o.order_id} — ${o.business||"No approved business association"}${o.product_titles?.length?" — "+o.product_titles.join(", "):""}`).join("\\n");
+ alert(details||"No Shopify orders found for this customer.");
+ }catch(err){status(err.message)}
+ return;
+}
+
 const add=e.target.closest("[data-add-business]");
 const remove=e.target.closest("[data-unlink]");
 if(!add&&!remove)return;
