@@ -24,6 +24,18 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .quick{display:flex;gap:10px;flex-wrap:wrap}.info{line-height:1.6;color:#607186;font-size:14px}
 @media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.columns{grid-template-columns:1fr}}
 @media(max-width:700px){.shell{display:block}aside{width:auto;padding:12px}.brand{padding:8px}.foot{display:none}nav{display:flex;overflow-x:auto}.nav{white-space:nowrap}.top{padding:15px}.content{padding:17px}.grid{grid-template-columns:1fr 1fr}.card{padding:14px}}
+
+/* Order-review actions: scoped to this page only */
+#orderreviews .review-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:180px}
+#orderreviews .review-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:35px;padding:8px 13px;border-radius:8px;font-size:12px;font-weight:750;line-height:1.15;letter-spacing:.01em;transition:background .15s,border-color .15s,box-shadow .15s}
+#orderreviews .review-btn.approve{color:#fff;background:var(--blue);border:1px solid var(--blue)}
+#orderreviews .review-btn.approve:hover{background:#005a97;border-color:#005a97}
+#orderreviews .review-btn.reject{color:#a42657;background:#fff;border:1px solid #e5b9cb}
+#orderreviews .review-btn.reject:hover{background:#fff0f5;border-color:#cc338b}
+#orderreviews .review-btn:focus-visible{outline:3px solid #88c9fa;outline-offset:2px}
+#orderreviews .review-btn:disabled{opacity:.55;cursor:wait}
+#orderreviews .review-done{font-size:12px;font-weight:700;color:#597188}
+#orderreviews td{vertical-align:middle}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -125,7 +137,7 @@ $("rule-list").addEventListener("click",async e=>{
 async function loadOrderReviews(){
 const {data,error}=await db.rpc("ai_apparel_crm_order_reviews",{p_action:"list"});
 if(error)throw Error(error.message);
-$("order-review-list").innerHTML=data.length?'<table><thead><tr><th>Order</th><th>Products</th><th>Suggested business</th><th>Matched phrase</th><th>Status</th><th>Review</th></tr></thead><tbody>'+data.map(r=>`<tr><td>${escapeHtml(r.order_name||r.id)}</td><td>${escapeHtml((r.product_titles||[]).join(", "))}</td><td>${escapeHtml(r.business)}</td><td>${escapeHtml(r.phrase)}</td><td>${escapeHtml(r.status)}</td><td>${r.status==="pending"?`<button type="button" data-review-action="approve" data-review-id="${escapeHtml(r.id)}">Approve</button> <button type="button" data-review-action="reject" data-review-id="${escapeHtml(r.id)}">Reject</button>`:"Reviewed"}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No order suggestions yet. Add draft product-title rules first; no automatic assignments are enabled.</div>';
+$("order-review-list").innerHTML=data.length?'<table><thead><tr><th>Order</th><th>Products</th><th>Suggested business</th><th>Matched phrase</th><th>Status</th><th>Review</th></tr></thead><tbody>'+data.map(r=>`<tr><td>${escapeHtml(r.order_name||r.id)}</td><td>${escapeHtml((r.product_titles||[]).join(", "))}</td><td>${escapeHtml(r.business)}</td><td>${escapeHtml(r.phrase)}</td><td>${escapeHtml(r.status)}</td><td>${r.status==="pending"?`<div class="review-actions"><button class="review-btn approve" type="button" data-review-action="approve" data-review-id="${escapeHtml(r.id)}">✓ Approve</button><button class="review-btn reject" type="button" data-review-action="reject" data-review-id="${escapeHtml(r.id)}">Reject</button></div>`:`<span class="review-done">${escapeHtml(r.status)}</span>`}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No order suggestions yet. Add draft product-title rules first; no automatic assignments are enabled.</div>';
 }
 $("refresh-order-reviews").addEventListener("click",async()=>{try{await loadOrderReviews()}catch(e){status(e.message)}});
 $("order-review-list").addEventListener("click",async e=>{
