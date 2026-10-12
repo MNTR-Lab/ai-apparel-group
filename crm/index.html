@@ -39,8 +39,8 @@ button.primary:hover{background:#005a97}
 <section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
 <section id="app"><div class="card"><h1 id="greeting">My Production Assignments</h1><p class="muted">Only work assigned to your employee account appears here.</p><div id="summary"></div></div><div id="assignments" class="grid"></div></section></main>
 <script>
-const URL="https://qpavspvpdebtbbffdcmo.supabase.co",KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
-const db=window.supabase.createClient(URL,KEY,{auth:{detectSessionInUrl:true}});
+const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co",KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+const db=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const msg=(m,bad=false)=>{$("message").textContent=m;$("message").className=bad?"error":""};
