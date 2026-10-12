@@ -42,6 +42,22 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 #orderreviews .bulk-toolbar .review-btn{font-size:13px}
 #orderreviews .bulk-count{font-size:13px;color:#61758a}
 #orderreviews .review-btn:disabled{cursor:not-allowed;opacity:.5}
+
+/* Modern customer business controls — functional native select, no new dependencies */
+#clients .business-association{display:flex;align-items:center;gap:9px;min-width:270px}
+#clients .business-select-wrap{position:relative;flex:1;min-width:175px;max-width:240px}
+#clients .business-select-wrap::after{content:"";position:absolute;right:15px;top:50%;width:8px;height:8px;border-right:2px solid #55708b;border-bottom:2px solid #55708b;transform:translateY(-70%) rotate(45deg);pointer-events:none}
+#clients .business-select{appearance:none;-webkit-appearance:none;width:100%;min-height:40px;padding:9px 36px 9px 13px;background:#fff;border:1px solid #cbd8e6;border-radius:10px;color:#23364b;font-size:13px;font-weight:600;box-shadow:0 1px 3px #18334a0a;cursor:pointer;transition:border-color .16s,box-shadow .16s}
+#clients .business-select:hover{border-color:#7caed4;background:#fbfdff}
+#clients .business-select:focus-visible{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px #006fba22}
+#clients .business-select:has(option:checked[value=""]){color:#66788c}
+#clients .business-select option{color:#23364b;background:#fff;font-weight:500}
+#clients .business-link-btn{min-height:40px;border-radius:10px;padding:9px 15px;box-shadow:0 2px 5px #006fba1c}
+#clients .business-link-btn:hover{background:#005d9d}
+#clients .customer-orders-btn{min-height:40px;border:1px solid #cbd8e6;border-radius:10px;background:#fff;color:#185d93;padding:9px 13px;font-size:12px;font-weight:750;white-space:nowrap}
+#clients .customer-orders-btn:hover{border-color:#7caed4;background:#eff7ff}
+#clients .customer-orders-btn:focus-visible,#clients .business-link-btn:focus-visible{outline:3px solid #a5d5f5;outline-offset:2px}
+#clients #shopify-customers td{vertical-align:middle}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -179,7 +195,7 @@ $("customer-count").textContent=`${total.toLocaleString()} imported customers �
 const options=businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
 $("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Linked businesses</th><th>Manage association</th><th>Order history</th></tr></thead><tbody>'+rows.map(c=>{
 const links=(c.businesses||[]).map(b=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:4px 7px;border-radius:6px;background:#e9f3fa">${escapeHtml(b.name)} <button type="button" data-unlink="${escapeHtml(c.id)}" data-business="${escapeHtml(b.id)}" title="Remove association" style="border:0;background:transparent;color:#a12b45;font-weight:bold">×</button></span>`).join("")||"Not linked";
-return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><select data-customer="${escapeHtml(c.id)}" style="max-width:170px;padding:7px"><option value="">Select business</option>${options}</select> <button type="button" data-add-business="${escapeHtml(c.id)}" class="action" style="padding:7px 10px">Link</button></td><td><button type="button" class="review-btn approve" data-view-orders="${escapeHtml(c.id)}">View Orders</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
+return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><div class="business-association"><div class="business-select-wrap"><select aria-label="Select business for ${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"customer")}" class="business-select" data-customer="${escapeHtml(c.id)}"><option value="">Select business…</option>${options}</select></div><button type="button" data-add-business="${escapeHtml(c.id)}" class="action business-link-btn">Link</button></div></td><td><button type="button" class="customer-orders-btn" data-view-orders="${escapeHtml(c.id)}">View Orders</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
 $("previous-customers").disabled=customerOffset===0;
 $("next-customers").disabled=customerOffset+rows.length>=total;
 }
