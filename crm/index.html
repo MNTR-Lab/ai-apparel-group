@@ -130,6 +130,17 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .ai-quote-archive-heading h3{margin:0;color:#17324f;font-size:19px}
 .ai-quote-archive-heading span{padding:6px 11px;border-radius:999px;background:#e9f2fc;color:#315c89;font-weight:700;font-size:12px}
 </style>
+<style>
+.ai-quote-fold{border:1px solid #e3e9f2;border-radius:13px;background:#fff;margin-bottom:15px;overflow:hidden}
+.ai-quote-fold-title{display:flex;align-items:center;gap:11px;cursor:pointer;padding:16px 18px;list-style:none;color:#17324f;font-size:17px}
+.ai-quote-fold-title::-webkit-details-marker{display:none}
+.ai-quote-fold-title:hover{background:#f5f8fc}
+.ai-quote-fold-chevron{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#eaf2fc;color:#2664a5;font-size:23px;line-height:1;transition:transform .15s ease}
+.ai-quote-fold[open]>.ai-quote-fold-title .ai-quote-fold-chevron{transform:rotate(90deg)}
+.ai-quote-fold-count{margin-left:auto;font-size:12px;font-weight:700;color:#4e6884;background:#edf3f9;border-radius:999px;padding:5px 10px}
+.ai-quote-fold-content{padding:0 16px 16px}
+.ai-quote-fold.ai-quote-archive-section{margin-top:12px;padding-top:0;border-top:1px solid #e3e9f2}
+</style>
 </head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -212,7 +223,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <label>Quote notes / specifications<textarea name="notes" rows="3" placeholder="Artwork, turnaround time, delivery instructions, etc."></textarea></label>
 <div class="ai-proof-upload"><div class="ai-proof-symbol">✦</div><div><strong>Artwork & Proofs</strong><p>Attach design artwork or a customer proof to this estimate. PNG, JPG, WebP or PDF — 15 MB max per file.</p></div><label class="ai-proof-picker">Choose files<input id="ai-quote-artwork" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple></label><div id="ai-quote-artwork-names" class="ai-proof-names">No artwork selected</div></div>
 <button class="action" type="submit">Save Draft Quote</button>
-</form></div><div class="panel ai-quote-panel"><h3>Quotes</h3><div id="ai-quotes-list">Loading…</div></div></section>
+</form></div><div class="panel ai-quote-panel"><div id="ai-quotes-list">Loading…</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<input type="search" id="crm-job-customer-search" placeholder="Search customer name or email…" autocomplete="off"><select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select><small id="crm-job-customer-help" style="font-weight:400;color:#65788c">Type a name or email to find a customer.</small></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Track real jobs through production stages, assignments, due dates, and notes.</p><div class="panel"><h3>Production Overview</h3><div id="crm-production-overview" class="crm-business-summary">Loading…</div></div><div id="crm-production-jobs"></div></section>
 <section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Invite employees by email and manage their access to assigned production work.</p><div class="panel"><h3>Invite Employee</h3><form id="crm-employee-invite" class="crm-employee-invite"><label>Full name<input name="name" required maxlength="150" placeholder="Employee name"></label><label>Email address<input name="email" type="email" required placeholder="employee@example.com"></label><label>Role<select name="role"><option value="employee">Employee</option><option value="manager">Manager</option></select></label><button type="submit" class="action">Send Invitation</button></form><p class="info">The employee receives an email to activate their account. They can access only their assigned production stages. No password is shared with administrators.</p></div><div class="panel"><div class="crm-business-summary" id="crm-employee-metrics">Loading…</div></div><div class="panel"><h3>Employee Directory</h3><div id="crm-employee-directory">Loading employee records…</div></div><div class="panel"><h3>Production Assignments</h3><div id="crm-employee-assignments">Loading assignments…</div></div></section>
@@ -690,8 +701,11 @@ async function list(){
  }).join('');
  const active=data.filter(x=>x.status!=='Approved');
  const archived=data.filter(x=>x.status==='Approved');
- q('ai-quotes-list').innerHTML='<div class="ai-saved-quotes-grid">'+(active.length?renderCards(active):'<p class="info">No active quotes. Create a quote to get started.</p>')+'</div>'+
- '<div class="ai-quote-archive-section"><div class="ai-quote-archive-heading"><h3>Archived Quotes</h3><span>'+archived.length+' approved</span></div><p class="info">Approved quotes are moved here automatically. Their artwork and production job links remain available.</p><div class="ai-saved-quotes-grid">'+(archived.length?renderCards(archived):'<p class="info">No approved quotes yet.</p>')+'</div></div>';
+ const openQuotes=q('ai-active-quote-details')?.open ?? true;
+ const openArchive=q('ai-archived-quote-details')?.open ?? false;
+ q('ai-quotes-list').innerHTML=
+ '<details id="ai-active-quote-details" class="ai-quote-fold" '+(openQuotes?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Quotes</strong><span class="ai-quote-fold-count">'+active.length+' active</span></summary><div class="ai-quote-fold-content"><div class="ai-saved-quotes-grid">'+(active.length?renderCards(active):'<p class="info">No active quotes. Create a quote to get started.</p>')+'</div></div></details>'+
+ '<details id="ai-archived-quote-details" class="ai-quote-fold ai-quote-archive-section" '+(openArchive?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Archived Quotes</strong><span class="ai-quote-fold-count">'+archived.length+' approved</span></summary><div class="ai-quote-fold-content"><p class="info">Approved quotes are moved here automatically. Their artwork and production job links remain available.</p><div class="ai-saved-quotes-grid">'+(archived.length?renderCards(archived):'<p class="info">No approved quotes yet.</p>')+'</div></div></details>';
 }
 async function load(){
  try{if(!businessOptions.length)await loadBusinesses();q('ai-quote-business').innerHTML='<option value="">No business selected</option>'+businessOptions.map(b=>'<option value="'+esc(b.id)+'">'+esc(b.name)+'</option>').join('');}catch(e){status('Business accounts: '+e.message)}
