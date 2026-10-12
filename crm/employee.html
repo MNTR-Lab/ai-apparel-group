@@ -38,6 +38,28 @@ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const msg=(m,bad=false)=>{$("message").textContent=m;$("message").className=bad?"error":""};
 const inviteFlowAtLoad=new URLSearchParams(location.search).get("flow")==="invite"||new URLSearchParams(location.search).has("code")||location.href.includes("type=invite")||location.href.includes("type=recovery");
 let passwordFlow=inviteFlowAtLoad;
+async function initializeRecoveryLink(){
+ const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+ const query=new URLSearchParams(location.search);
+ if(hash.get("error")||query.get("error")){
+  msg("This password link is invalid or expired. Please request a new setup email.",true);
+  return;
+ }
+ const accessToken=hash.get("access_token"),refreshToken=hash.get("refresh_token");
+ if(accessToken&&refreshToken){
+  passwordFlow=true;
+  const {error}=await db.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
+  if(error){msg("Could not activate this password link: "+error.message+". Request a fresh setup email.",true);return}
+  history.replaceState(null,"",location.pathname+"?flow=invite");
+  return;
+ }
+ if(query.has("code")){
+  passwordFlow=true;
+  const {error}=await db.auth.exchangeCodeForSession(query.get("code"));
+  if(error){msg("Could not activate this password link: "+error.message+". Request a fresh setup email.",true);return}
+  history.replaceState(null,"",location.pathname+"?flow=invite");
+ }
+}
 async function render(){
  const {data:{session}}=await db.auth.getSession();
  if(session&&session.user?.user_metadata?.account_type==="ai_apparel_employee"&&session.user?.user_metadata?.employee_password_initialized!==true)passwordFlow=true;
@@ -59,5 +81,11 @@ $("reset-link").addEventListener("click",async()=>{const email=$("login-form").e
 $("signout").addEventListener("click",async()=>{await db.auth.signOut();passwordFlow=false;msg("Signed out.");await render()});
 document.addEventListener("submit",async e=>{const f=e.target;if(!f.matches("[data-assignment]"))return;e.preventDefault();const b=f.querySelector("button");b.disabled=true;const {error}=await db.rpc("ai_apparel_crm_employee_stage_update",{p_assignment_id:f.dataset.assignment,p_status:f.elements.status.value,p_notes:f.elements.notes.value});b.disabled=false;if(error)msg(error.message,true);else{msg("Production stage updated.");await render()}});
 db.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){passwordFlow=true;setTimeout(render,0)}else if(event==="SIGNED_IN"){setTimeout(render,0)}});
-(async()=>{const {data:{session}}=await db.auth.getSession();if(session&&(new URLSearchParams(location.search).get("flow")==="invite"||location.hash.includes("type=invite")||location.search.includes("type=invite"))){passwordFlow=true}await render()})();
+(async()=>{
+ try{await initializeRecoveryLink()}catch(err){msg("Unable to process setup link: "+err.message,true)}
+ const {data:{session}}=await db.auth.getSession();
+ if(session&&(new URLSearchParams(location.search).get("flow")==="invite"||location.hash.includes("type=invite")||location.hash.includes("type=recovery")))passwordFlow=true;
+ await render();
+ if(!session&&inviteFlowAtLoad)msg("The setup link could not establish a session. Request a new setup email, then open the newest link.",true);
+})();
 </script></body></html>
