@@ -56,7 +56,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="columns"><div class="panel"><h3>Recent Jobs</h3><div class="empty">No live job data is connected yet.</div></div><div class="panel"><h3>Connected Systems Plan</h3><table><tr><td>Blueprint CRM shell</td><td><span class="state green">UI staged</span></td></tr><tr><td>AI Apparel client data</td><td><span class="state">Pending</span></td></tr><tr><td>Shopify order integration</td><td><span class="state">Keep existing</span></td></tr><tr><td>Rewards Portal</td><td><span class="state">Keep existing</span></td></tr></table></div></div>
 <div class="notice"><strong>Connection status:</strong> CRM clients and dashboard totals are now backed by the separate AI Apparel CRM schema. Existing Shopify and Rewards integrations are unchanged. Quotes, jobs, employee assignments and production actions are not enabled yet.</div>
 </section>
-<section id="clients" hidden><h2>Client Management</h2><p class="lead">Client profiles, contacts, linked quotes and jobs.</p><div class="panel"><div id="clients-list" class="empty">Sign in to load clients.</div><div style="margin-top:16px"><button class="action" id="show-client-form" type="button">+ Add Client</button><form id="client-form" hidden style="margin-top:15px;gap:10px;max-width:450px">
+<section id="clients" hidden><h2>Client Management</h2><p class="lead">Client profiles, contacts, linked quotes and jobs.</p><div class="panel"><div class="quick" style="margin-bottom:14px"><input id="customer-search" placeholder="Search online customers" style="padding:10px;flex:1;min-width:200px"><button class="action" id="search-customers" type="button">Search</button></div><div id="customer-count" class="info">Sign in to load customers.</div><div id="shopify-customers" style="overflow-x:auto;margin-top:12px"></div><div class="quick" style="margin:12px 0 24px"><button class="action secondary" id="previous-customers" type="button">Previous</button><button class="action secondary" id="next-customers" type="button">Next</button></div><h3>Manually added CRM clients</h3><div id="clients-list" class="empty">Sign in to load clients.</div><div style="margin-top:16px"><button class="action" id="show-client-form" type="button">+ Add Client</button><form id="client-form" hidden style="margin-top:15px;gap:10px;max-width:450px">
 <input required maxlength="200" name="name" placeholder="Client / company name" style="padding:10px">
 <input name="contact_name" placeholder="Contact name" style="padding:10px">
 <input type="email" name="email" placeholder="Email" style="padding:10px">
@@ -89,6 +89,20 @@ const $=id=>document.getElementById(id);
 const status=msg=>{$("auth-message").textContent=msg};
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function api(action,payload={}){if(!db)throw Error("Unable to load authentication library");const {data,error}=await db.rpc("ai_apparel_crm_api",{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data}
+let customerOffset=0;
+async function loadCustomers(){
+const {data,error}=await db.rpc("ai_apparel_crm_customers",{p_search:$("customer-search").value.trim(),p_limit:50,p_offset:customerOffset});
+if(error)throw Error(error.message);
+const rows=data.items||[],total=data.total||0;
+$("customer-count").textContent=`${total.toLocaleString()} imported customers • Showing ${rows.length?customerOffset+1:0}–${customerOffset+rows.length}`;
+$("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Business</th></tr></thead><tbody>'+rows.map(c=>`<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${escapeHtml((c.businesses||[]).map(b=>b.name).join(", ")||"Not linked")}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
+$("previous-customers").disabled=customerOffset===0;
+$("next-customers").disabled=customerOffset+rows.length>=total;
+}
+$("search-customers").addEventListener("click",async()=>{customerOffset=0;try{await loadCustomers()}catch(e){status(e.message)}});
+$("customer-search").addEventListener("keydown",e=>{if(e.key==="Enter")$("search-customers").click()});
+$("previous-customers").addEventListener("click",async()=>{customerOffset=Math.max(0,customerOffset-50);try{await loadCustomers()}catch(e){status(e.message)}});
+$("next-customers").addEventListener("click",async()=>{customerOffset+=50;try{await loadCustomers()}catch(e){status(e.message)}});
 async function refresh(){
 try{
 const [d,clients]=await Promise.all([api("dashboard"),api("clients")]);
@@ -97,7 +111,7 @@ $("clients-list").className="";
 $("clients-list").innerHTML=clients.length?'<table><thead><tr><th>Client</th><th>Contact</th><th>Email</th><th>Status</th></tr></thead><tbody>'+clients.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.contact_name)}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.status)}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No CRM clients have been created yet.</div>';
 $("connection-status").textContent="CRM CONNECTED";
 $("login-form").hidden=true;$("logout").hidden=false;
-status("Signed in as an authorized AI Apparel administrator.");
+await loadCustomers();status("Signed in as an authorized AI Apparel administrator.");
 }catch(e){$("connection-status").textContent="ACCESS RESTRICTED";status(e.message)}
 }
 $("login-form").addEventListener("submit",async e=>{
