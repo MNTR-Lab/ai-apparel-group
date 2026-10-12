@@ -36,6 +36,12 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 #orderreviews .review-btn:disabled{opacity:.55;cursor:wait}
 #orderreviews .review-done{font-size:12px;font-weight:700;color:#597188}
 #orderreviews td{vertical-align:middle}
+#orderreviews .bulk-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:12px 0}
+#orderreviews .bulk-toolbar label{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:650}
+#orderreviews .bulk-toolbar input,#orderreviews .review-select{width:17px;height:17px;accent-color:var(--blue);cursor:pointer}
+#orderreviews .bulk-toolbar .review-btn{font-size:13px}
+#orderreviews .bulk-count{font-size:13px;color:#61758a}
+#orderreviews .review-btn:disabled{cursor:not-allowed;opacity:.5}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -137,10 +143,29 @@ $("rule-list").addEventListener("click",async e=>{
 async function loadOrderReviews(){
 const {data,error}=await db.rpc("ai_apparel_crm_order_reviews",{p_action:"list"});
 if(error)throw Error(error.message);
-$("order-review-list").innerHTML=data.length?'<table><thead><tr><th>Order</th><th>Products</th><th>Suggested business</th><th>Matched phrase</th><th>Status</th><th>Review</th></tr></thead><tbody>'+data.map(r=>`<tr><td>${escapeHtml(r.order_name||r.id)}</td><td>${escapeHtml((r.product_titles||[]).join(", "))}</td><td>${escapeHtml(r.business)}</td><td>${escapeHtml(r.phrase)}</td><td>${escapeHtml(r.status)}</td><td>${r.status==="pending"?`<div class="review-actions"><button class="review-btn approve" type="button" data-review-action="approve" data-review-id="${escapeHtml(r.id)}">✓ Approve</button><button class="review-btn reject" type="button" data-review-action="reject" data-review-id="${escapeHtml(r.id)}">Reject</button></div>`:`<span class="review-done">${escapeHtml(r.status)}</span>`}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No order suggestions yet. Add draft product-title rules first; no automatic assignments are enabled.</div>';
+const pending=data.filter(r=>r.status==="pending");
+const toolbar=pending.length?`<div class="bulk-toolbar"><label><input type="checkbox" id="select-all-reviews"> Select all pending (${pending.length})</label><span class="bulk-count" id="selected-review-count">0 selected</span><button type="button" class="review-btn approve" id="approve-selected-reviews" disabled>✓ Approve Selected</button></div>`:"";
+$("order-review-list").innerHTML=data.length?toolbar+'<div style="overflow-x:auto"><table><thead><tr><th>Select</th><th>Order</th><th>Products</th><th>Suggested business</th><th>Matched phrase</th><th>Status</th><th>Review</th></tr></thead><tbody>'+data.map(r=>`<tr><td>${r.status==="pending"?`<input type="checkbox" class="review-select" aria-label="Select ${escapeHtml(r.order_name||"order")}" value="${escapeHtml(r.id)}">`:""}</td><td>${escapeHtml(r.order_name||r.id)}</td><td>${escapeHtml((r.product_titles||[]).join(", "))}</td><td>${escapeHtml(r.business)}</td><td>${escapeHtml(r.phrase)}</td><td>${escapeHtml(r.status)}</td><td>${r.status==="pending"?`<div class="review-actions"><button class="review-btn approve" type="button" data-review-action="approve" data-review-id="${escapeHtml(r.id)}">✓ Approve</button><button class="review-btn reject" type="button" data-review-action="reject" data-review-id="${escapeHtml(r.id)}">Reject</button></div>`:`<span class="review-done">${escapeHtml(r.status)}</span>`}</td></tr>`).join("")+'</tbody></table></div>':'<div class="empty">No order suggestions yet. New matches appear after Shopify order import.</div>';
+}
+function updateReviewSelection(){
+const checks=[...document.querySelectorAll("#order-review-list .review-select")];const n=checks.filter(c=>c.checked).length;
+const count=$("selected-review-count"),all=$("select-all-reviews"),button=$("approve-selected-reviews");
+if(count)count.textContent=`${n} selected`;
+if(button)button.disabled=n===0;
+if(all){all.checked=checks.length>0&&n===checks.length;all.indeterminate=n>0&&n<checks.length;}
 }
 $("refresh-order-reviews").addEventListener("click",async()=>{try{await loadOrderReviews()}catch(e){status(e.message)}});
+$("order-review-list").addEventListener("change",e=>{
+if(e.target.id==="select-all-reviews"){document.querySelectorAll("#order-review-list .review-select").forEach(c=>c.checked=e.target.checked)}
+if(e.target.matches(".review-select")||e.target.id==="select-all-reviews")updateReviewSelection();
+});
 $("order-review-list").addEventListener("click",async e=>{
+const bulk=e.target.closest("#approve-selected-reviews");
+if(bulk){const ids=[...document.querySelectorAll("#order-review-list .review-select:checked")].map(c=>c.value);
+if(!ids.length)return;
+if(!confirm(`Approve ${ids.length} selected order match${ids.length===1?"":"es"}? Only the selected orders will be approved. Rewards balances will not change.`))return;
+try{bulk.disabled=true;const {data,error}=await db.rpc("ai_apparel_crm_bulk_approve_reviews",{p_review_ids:ids});if(error)throw Error(error.message);await loadOrderReviews();status(`${data.approved} order match${data.approved===1?"":"es"} approved. Rewards balances were not changed.`);}catch(err){status(err.message);bulk.disabled=false;}return;
+}
 const btn=e.target.closest("[data-review-action]");if(!btn)return;
 if(!confirm(btn.dataset.reviewAction==="approve"?"Approve this business association for this order?":"Reject this suggested match?"))return;
 try{btn.disabled=true;const {error}=await db.rpc("ai_apparel_crm_order_reviews",{p_action:btn.dataset.reviewAction,p_review_id:btn.dataset.reviewId});if(error)throw Error(error.message);await loadOrderReviews();status("Order review saved. Rewards balances were not changed.");}catch(err){status(err.message)}finally{btn.disabled=false}
