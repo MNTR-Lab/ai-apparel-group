@@ -108,7 +108,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-job-link{background:none;border:0;padding:0;color:#006fba;font:inherit;font-weight:700;cursor:pointer;text-align:left}.crm-job-link:hover{text-decoration:underline}
 .crm-job-summary{display:flex;justify-content:space-between}.crm-status-label{display:grid;gap:8px;font-size:13px;font-weight:700;color:#334b63;margin-bottom:12px}
 .crm-status-label select{max-width:320px;min-height:42px;padding:10px;border:1px solid #cddbe9;border-radius:9px;background:white}
-</style></head>
+.crm-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}.crm-prod-form{display:grid;gap:9px;padding:12px;border:1px solid #d6e1ec;border-radius:10px;margin-top:12px}.crm-prod-form label{display:grid;gap:5px;font-size:13px;font-weight:600}.crm-prod-form select,.crm-prod-form input,.crm-prod-form textarea{padding:9px;border:1px solid #c9d7e4;border-radius:7px;background:white;color:#173247;width:100%;box-sizing:border-box}.crm-prod-form button{background:#086eb1;color:white;border:0;border-radius:7px;padding:10px;cursor:pointer}</style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
@@ -152,7 +152,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <section id="businesses" hidden><h2>Business Accounts</h2><p class="lead">Organization profiles, verified customers, and approved Shopify order associations.</p><div class="panel"><div id="business-account-list" class="crm-business-cards"><p class="info">Sign in to load organizations.</p></div></div></section>
 <section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">New quotes will be managed by this CRM after the quote backend and customer approval flow are verified.</p><div class="panel"><div class="empty">Quote creation is intentionally disabled until AI Apparel's own database and authentication are configured.</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
-<section id="production" hidden><h2>Production Management</h2><p class="lead">Blueprint's production stages and automatic completion workflow will be adapted for AI Apparel.</p><div class="panel"><div class="empty">Production stage updates are disabled in staging.</div></div></section>
+<section id="production" hidden><h2>Production Management</h2><p class="lead">Track real jobs through production stages, assignments, due dates, and notes.</p><div class="panel"><h3>Production Overview</h3><div id="crm-production-overview" class="crm-business-summary">Loading…</div></div><div id="crm-production-jobs"></div></section>
 <section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Assignments, notifications, task completion and access controls.</p><div class="panel"><div class="empty">Employee accounts and role-based permissions are not configured yet.</div></div></section>
 <section id="matching" hidden><h2>Business Matching Rules</h2><p class="lead">Set up product-title phrases that identify an organization. Rules remain in draft until reviewed and activated in a later phase. They do not change rewards or orders.</p><div class="panel"><h3>Add draft matching rule</h3><div class="quick" style="flex-wrap:wrap"><select id="rule-business" style="padding:10px;min-width:190px"><option value="">Select organization</option></select><input id="rule-phrase" placeholder="Product title contains (e.g., Carolina ENT)" style="padding:10px;min-width:240px;flex:1"><button class="action" type="button" id="add-rule">Save draft rule</button></div><p class="info">Use distinctive organization names. Generic words such as "shirt" or "team" can create incorrect matches.</p><div id="rule-list" class="empty">Sign in to load rules.</div></div></section>
 <section id="orderreviews" hidden><h2>Order Match Review</h2><p class="lead">Review suggested organization matches before linking an order. Approval never changes rewards points or balances.</p><div class="panel"><div class="quick"><button class="action" id="refresh-order-reviews" type="button">Refresh reviews</button></div><div id="order-review-list" class="empty">Sign in to load order reviews.</div></div></section>
@@ -395,7 +395,7 @@ async function openProductionJob(jobId){
   if(error)throw Error(error.message);
   if(modal.hidden)return;
   $("crm-profile-title").textContent=data.title;
-  const statuses=["New","In Progress","On Hold","Completed","Cancelled"];
+  const statuses=["New","In Production","Production Complete","Completed","Closed","On Hold","Cancelled"];
   content.innerHTML=`<div class="crm-profile-grid"><div><small>Job number</small><strong>${escapeHtml(data.job_number||"Not assigned")}</strong></div><div><small>Customer</small><strong>${escapeHtml(data.customer_name||"Not assigned")}</strong></div><div><small>Business account</small><strong>${escapeHtml(data.business_name||"Not assigned")}</strong></div><div><small>Shopify order</small><strong>${escapeHtml(data.shopify_order_id?String(data.shopify_order_id).split("/").pop():"Not linked")}</strong></div><div><small>Due date</small><strong>${escapeHtml(data.due_date||"Not scheduled")}</strong></div><div><small>Created</small><strong>${escapeHtml(data.created_at?new Date(data.created_at).toLocaleDateString():"Unknown")}</strong></div></div><form id="crm-job-status-form" data-job-id="${escapeHtml(data.id)}"><label class="crm-status-label">Job status<select name="status" required>${statuses.map(st=>`<option value="${st}" ${data.status===st?"selected":""}>${st}</option>`).join("")}</select></label><button type="submit" class="action">Save Status</button></form><p class="info">Changing status updates this CRM job only; it does not automatically update Shopify, rewards, or production tasks.</p>`;
  }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
 }
@@ -410,6 +410,30 @@ document.addEventListener("submit",async e=>{
   status("Job status saved.");await openProductionJob(form.dataset.jobId);
   if(!document.getElementById("jobs").hidden)await loadProductionJobs();
  }catch(err){status(err.message);alert(err.message)}finally{btn.disabled=false}
+});
+
+async function loadProductionManagement(){
+ const {data,error}=await db.rpc("ai_apparel_crm_production",{p_action:"list",p_payload:{}});
+ if(error)throw Error(error.message);
+ const jobs=data.jobs||[],stages=data.stages||[],staff=data.staff||[];
+ $("crm-production-overview").innerHTML=`<div><strong>${jobs.length}</strong><small>Total jobs</small></div><div><strong>${jobs.filter(j=>!["Completed","Closed","Cancelled"].includes(j.status)).length}</strong><small>Active jobs</small></div><div><strong>${stages.length}</strong><small>Production stages</small></div><div><strong>${staff.length}</strong><small>Active employees</small></div>`;
+ $("crm-production-jobs").innerHTML=jobs.length?jobs.map(j=>{
+ const steps=Object.fromEntries((j.steps||[]).map(st=>[st.stage_id,st]));
+ return `<div class="panel"><h3><button class="crm-job-link" type="button" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button></h3><p class="info">${escapeHtml(j.number||"")} · ${escapeHtml(j.customer||"No customer")} · ${escapeHtml(j.business||"No business")} · ${escapeHtml(j.status)}</p><form data-production-due="${escapeHtml(j.id)}" class="crm-prod-form"><label>Due date <input type="date" name="due_date" value="${escapeHtml(j.due_date||"")}"></label><button type="submit">Save due date</button></form><div class="crm-prod-grid">${stages.map(st=>{
+ const step=steps[st.id]||{};
+ return `<form class="crm-prod-form" data-production-stage="${escapeHtml(st.id)}" data-production-job="${escapeHtml(j.id)}"><strong>${escapeHtml(st.name)}</strong><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(v=>`<option ${step.status===v?"selected":""}>${v}</option>`).join("")}</select></label><label>Employee<select name="employee_id"><option value="">Unassigned</option>${staff.map(e=>`<option value="${escapeHtml(e.id)}" ${step.employee_id===e.id?"selected":""}>${escapeHtml(e.name)}</option>`).join("")}</select></label><label>Notes<textarea name="notes" rows="2" maxlength="4000">${escapeHtml(step.notes||"")}</textarea></label><button type="submit">Save stage</button></form>`}).join("")}</div></div>`}).join(""):'<div class="panel"><p class="info">No production jobs yet. The production board will populate when your first real job is entered. No test jobs have been created.</p></div>';
+}
+document.querySelector('button[data-page="production"]').addEventListener("click",()=>loadProductionManagement().catch(err=>status(err.message)));
+document.addEventListener("submit",async e=>{
+ const f=e.target;if(!f.matches("[data-production-due],[data-production-stage]"))return;
+ e.preventDefault();const btn=f.querySelector('button[type="submit"]');btn.disabled=true;
+ try{
+ const due=f.hasAttribute("data-production-due");
+ const payload=due?{job_id:f.dataset.productionDue,due_date:f.elements.due_date.value}:{job_id:f.dataset.productionJob,stage_id:f.dataset.productionStage,status:f.elements.status.value,employee_id:f.elements.employee_id.value,notes:f.elements.notes.value};
+ const {error}=await db.rpc("ai_apparel_crm_production",{p_action:due?"save_due":"save_step",p_payload:payload});
+ if(error)throw Error(error.message);
+ status("Production update saved.");await loadProductionManagement();
+ }catch(err){status(err.message);alert(err.message);btn.disabled=false}
 });
 async function loadProductionJobs(){
  const {data,error}=await db.rpc("ai_apparel_crm_jobs",{p_action:"list",p_payload:{}});
