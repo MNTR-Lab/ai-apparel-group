@@ -155,6 +155,27 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-job-proof-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #e7ebf0;overflow-wrap:anywhere}
 .crm-job-proof-row a{white-space:nowrap;text-decoration:underline}
 </style>
+<style>
+.crm-prod-requirements{border:1px solid #dce6f1;border-radius:12px;margin:16px 0 20px;background:#fff;overflow:hidden}
+.crm-prod-requirements>summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;padding:15px 16px;color:#1b395c}
+.crm-prod-requirements>summary::-webkit-details-marker{display:none}
+.crm-prod-requirements>summary:hover{background:#f6f9fd}
+.crm-prod-chevron{display:inline-flex;align-items:center;justify-content:center;background:#e9f1fb;color:#27609c;width:24px;height:24px;border-radius:6px;font-size:24px;transition:transform .15s}
+.crm-prod-requirements[open] .crm-prod-chevron{transform:rotate(90deg)}
+.crm-prod-quote-badge{margin-left:auto;background:#e8f4ee;color:#24714e;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700}
+.crm-prod-req-body{padding:2px 16px 17px}
+.crm-prod-req-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+.crm-prod-req-metrics>div{background:#f5f8fc;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:5px}
+.crm-prod-req-metrics small{color:#62758b;font-size:11px}
+.crm-prod-req-table{overflow-x:auto;margin:12px 0}
+.crm-prod-req-table table{width:100%}
+.crm-prod-req-table td small{display:block;color:#62758b}
+.crm-prod-req-notes{background:#f5f8fc;border-radius:8px;padding:12px;margin:12px 0}
+.crm-prod-req-notes p{white-space:pre-wrap;margin:6px 0 0}
+.crm-prod-req-art{margin-top:15px}
+.crm-prod-proof-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e3eaf2;overflow-wrap:anywhere}
+.crm-prod-proof-row a{white-space:nowrap;text-decoration:underline}
+</style>
 </head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -590,13 +611,47 @@ async function loadProductionManagement(){
  const {data,error}=await db.rpc("ai_apparel_crm_production",{p_action:"list",p_payload:{}});
  if(error)throw Error(error.message);
  const jobs=data.jobs||[],stages=data.stages||[],staff=data.staff||[];
+ const {data:approvedQuotes, error:quoteError}=await db.rpc("ai_apparel_crm_quotes",{p_action:"list",p_payload:{}});
+ const quoteByJob=new Map((quoteError?[]:(approvedQuotes||[])).filter(x=>x.status==="Approved"&&x.job_id).map(x=>[String(x.job_id),x]));
+ const expandedJobIds=new Set([...document.querySelectorAll("details[data-prod-job-details][open]")].map(el=>el.dataset.prodJobDetails));
+ const usd=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(n)||0);
+
  $("crm-production-overview").innerHTML=`<div><strong>${jobs.length}</strong><small>Total jobs</small></div><div><strong>${jobs.filter(j=>!["Completed","Closed","Cancelled"].includes(j.status)).length}</strong><small>Active jobs</small></div><div><strong>${stages.length}</strong><small>Production stages</small></div><div><strong>${staff.filter(p=>p.active).length}</strong><small>Active employees</small></div>`;
  $("crm-production-jobs").innerHTML=jobs.length?jobs.map(j=>{
  const steps=Object.fromEntries((j.steps||[]).map(st=>[st.stage_id,st]));
- return `<div class="panel"><h3><button class="crm-job-link" type="button" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button></h3><p class="info">${escapeHtml(j.number||"")} · ${escapeHtml(j.customer||"No customer")} · ${escapeHtml(j.business||"No business")} · ${escapeHtml(j.status)}</p><form data-production-due="${escapeHtml(j.id)}" class="crm-prod-form"><label>Due date <input type="date" name="due_date" value="${escapeHtml(j.due_date||"")}"></label><button type="submit">Save due date</button></form><div class="crm-prod-grid">${stages.map(st=>{
+ const quote=quoteByJob.get(String(j.id));
+ const specs=quote?(quote.items||[]).map(item=>`<tr><td>${escapeHtml(item.description||"")}${item.variant_title?`<small>${escapeHtml(item.variant_title)}</small>`:""}${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}</td><td>${escapeHtml(item.quantity)}</td><td>${usd(item.unit_price)}</td></tr>`).join(""):"";
+ const requirements=quote?`<details class="crm-prod-requirements" data-prod-job-details="${escapeHtml(j.id)}" ${expandedJobIds.has(String(j.id))?"open":""}><summary><span class="crm-prod-chevron">›</span><strong>Job Details &amp; Artwork</strong><span class="crm-prod-quote-badge">Approved · ${escapeHtml(quote.quote_number)}</span></summary><div class="crm-prod-req-body"><div class="crm-prod-req-metrics"><div><small>Quote title</small><strong>${escapeHtml(quote.title||"")}</strong></div><div><small>Items</small><strong>${(quote.items||[]).length}</strong></div><div><small>Quote total</small><strong>${usd(quote.total)}</strong></div></div><div class="crm-prod-req-table"><table><thead><tr><th>Product / Specifications</th><th>Quantity</th><th>Unit price</th></tr></thead><tbody>${specs}</tbody></table></div>${quote.notes?`<div class="crm-prod-req-notes"><strong>Production instructions</strong><p>${escapeHtml(quote.notes)}</p></div>`:""}<div class="crm-prod-req-art"><strong>Artwork &amp; Proofs</strong><div data-prod-quote-proofs="${escapeHtml(quote.id)}">Expand to load artwork.</div></div></div></details>`:`<details class="crm-prod-requirements" data-prod-job-details="${escapeHtml(j.id)}" ${expandedJobIds.has(String(j.id))?"open":""}><summary><span class="crm-prod-chevron">›</span><strong>Job Details &amp; Artwork</strong><span class="crm-prod-quote-badge">No linked quote</span></summary><div class="crm-prod-req-body"><p class="info">This job was created without an approved quote. Job details are available by clicking its title above.</p></div></details>`;
+
+ return `<div class="panel"><h3><button class="crm-job-link" type="button" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button></h3><p class="info">${escapeHtml(j.number||"")} · ${escapeHtml(j.customer||"No customer")} · ${escapeHtml(j.business||"No business")} · ${escapeHtml(j.status)}</p><form data-production-due="${escapeHtml(j.id)}" class="crm-prod-form"><label>Due date <input type="date" name="due_date" value="${escapeHtml(j.due_date||"")}"></label><button type="submit">Save due date</button></form>${requirements}<div class="crm-prod-grid">${stages.map(st=>{
  const step=steps[st.id]||{};
  return `<form class="crm-prod-form" data-production-stage="${escapeHtml(st.id)}" data-production-job="${escapeHtml(j.id)}"><strong>${escapeHtml(st.name)}</strong><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(v=>`<option ${step.status===v?"selected":""}>${v}</option>`).join("")}</select></label><label>Employee<select name="employee_id"><option value="">Unassigned</option>${staff.map(e=>`<option value="${escapeHtml(e.id)}" ${step.employee_id===e.id?"selected":""}>${escapeHtml(e.name)}</option>`).join("")}</select></label><label>Notes<textarea name="notes" rows="2" maxlength="4000">${escapeHtml(step.notes||"")}</textarea></label><button type="submit">Save stage</button></form>`}).join("")}</div></div>`}).join(""):'<div class="panel"><p class="info">No production jobs yet. The production board will populate when your first real job is entered. No test jobs have been created.</p></div>';
 }
+async function loadProductionQuoteProofs(details){
+ const target=details.querySelector("[data-prod-quote-proofs]");
+ if(!target||target.dataset.loaded==="true")return;
+ target.textContent="Loading artwork…";
+ const quoteId=target.dataset.prodQuoteProofs;
+ try{
+  const {data,error}=await db.rpc("ai_apparel_crm_quote_proofs",{p_quote_id:quoteId});
+  if(error)throw Error(error.message);
+  if(!details.isConnected)return;
+  target.textContent="";
+  if(!data?.length){target.textContent="No artwork uploaded yet.";target.dataset.loaded="true";return;}
+  for(const proof of data){
+   const row=document.createElement("div");row.className="crm-prod-proof-row";
+   const name=document.createElement("span");name.textContent=proof.filename||"Artwork proof";
+   const link=document.createElement("a");link.textContent="View / Download";link.target="_blank";link.rel="noopener noreferrer";
+   const {data:signed,error:linkError}=await db.storage.from("ai-apparel-quote-proofs").createSignedUrl(proof.path,300);
+   if(linkError){link.textContent="Unable to open";}else link.href=signed.signedUrl;
+   row.append(name,link);target.append(row);
+  }
+  target.dataset.loaded="true";
+ }catch(err){target.textContent="Artwork unavailable: "+err.message;}
+}
+document.addEventListener("toggle",e=>{
+ if(e.target.matches?.("details[data-prod-job-details]")&&e.target.open)loadProductionQuoteProofs(e.target);
+},true);
 document.querySelector('button[data-page="production"]').addEventListener("click",()=>loadProductionManagement().catch(err=>status(err.message)));
 document.addEventListener("submit",async e=>{
  const f=e.target;if(!f.matches("[data-production-due],[data-production-stage]"))return;
