@@ -153,7 +153,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <input name="phone" placeholder="Phone" style="padding:10px">
 <button class="action" type="submit">Save Client</button></form></div></div></section>
 <section id="businesses" hidden><h2>Business Accounts</h2><p class="lead">Organization profiles, verified customers, and approved Shopify order associations.</p><div class="panel"><div id="business-account-list" class="crm-business-cards"><p class="info">Sign in to load organizations.</p></div></div></section>
-<section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">New quotes will be managed by this CRM after the quote backend and customer approval flow are verified.</p><div class="panel"><div class="empty">Quote creation is intentionally disabled until AI Apparel's own database and authentication are configured.</div></div></section>
+<section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">Create quotes and approve them to automatically open a linked production job.</p><div class="panel"><h3>Create Quote</h3><form id="ai-quote-form" class="crm-job-form"><label>Quote title<input name="title" required maxlength="200" placeholder="Project description"></label><label>Online customer<input id="ai-quote-customer-search" type="search" placeholder="Search name or email"><select name="customer_id" id="ai-quote-customer"><option value="">No customer selected</option></select></label><label>Business account<select name="business_id" id="ai-quote-business"><option value="">No business selected</option></select></label><label>Quote amount (USD)<input type="number" min="0" step="0.01" name="total" required value="0"></label><label>Notes<textarea name="notes" rows="3" placeholder="Scope and details"></textarea></label><button class="action" type="submit">Create Quote</button></form></div><div class="panel"><h3>Quotes</h3><div id="ai-quotes-list">Loading…</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<input type="search" id="crm-job-customer-search" placeholder="Search customer name or email…" autocomplete="off"><select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select><small id="crm-job-customer-help" style="font-weight:400;color:#65788c">Type a name or email to find a customer.</small></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Track real jobs through production stages, assignments, due dates, and notes.</p><div class="panel"><h3>Production Overview</h3><div id="crm-production-overview" class="crm-business-summary">Loading…</div></div><div id="crm-production-jobs"></div></section>
 <section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Invite employees by email and manage their access to assigned production work.</p><div class="panel"><h3>Invite Employee</h3><form id="crm-employee-invite" class="crm-employee-invite"><label>Full name<input name="name" required maxlength="150" placeholder="Employee name"></label><label>Email address<input name="email" type="email" required placeholder="employee@example.com"></label><label>Role<select name="role"><option value="employee">Employee</option><option value="manager">Manager</option></select></label><button type="submit" class="action">Send Invitation</button></form><p class="info">The employee receives an email to activate their account. They can access only their assigned production stages. No password is shared with administrators.</p></div><div class="panel"><div class="crm-business-summary" id="crm-employee-metrics">Loading…</div></div><div class="panel"><h3>Employee Directory</h3><div id="crm-employee-directory">Loading employee records…</div></div><div class="panel"><h3>Production Assignments</h3><div id="crm-employee-assignments">Loading assignments…</div></div></section>
@@ -546,4 +546,46 @@ $("logout").addEventListener("click",async()=>{await db.auth.signOut();location.
 if(db)db.auth.getSession().then(({data})=>{if(data.session)refresh();else status("Sign in to access AI Apparel CRM.")});
 else status("Authentication library failed to load.");
 </script>
-<div id="crm-profile-modal" class="crm-modal" hidden role="dialog" aria-modal="true" aria-labelledby="crm-profile-title"><div class="crm-modal-backdrop" data-close-profile></div><div class="crm-modal-panel"><div class="crm-modal-header"><div><div class="crm-eyebrow">CUSTOMER PROFILE</div><h2 id="crm-profile-title">Customer</h2></div><button type="button" class="crm-modal-close" data-close-profile aria-label="Close customer profile">×</button></div><div id="crm-profile-content"></div></div></div><script>document.addEventListener("click",e=>{if(e.target.closest("[data-close-profile]"))document.getElementById("crm-profile-modal").hidden=true});document.addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("crm-profile-modal").hidden=true});</script></body></html>
+<div id="crm-profile-modal" class="crm-modal" hidden role="dialog" aria-modal="true" aria-labelledby="crm-profile-title"><div class="crm-modal-backdrop" data-close-profile></div><div class="crm-modal-panel"><div class="crm-modal-header"><div><div class="crm-eyebrow">CUSTOMER PROFILE</div><h2 id="crm-profile-title">Customer</h2></div><button type="button" class="crm-modal-close" data-close-profile aria-label="Close customer profile">×</button></div><div id="crm-profile-content"></div></div></div><script>document.addEventListener("click",e=>{if(e.target.closest("[data-close-profile]"))document.getElementById("crm-profile-modal").hidden=true});document.addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("crm-profile-modal").hidden=true});</script><script>
+/* AI Apparel quote-to-job workflow; existing CRM functions and employee login unchanged. */
+(function(){
+ const $q=id=>document.getElementById(id);
+ const escq=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ let qTimer=0,qSearchToken=0;
+ async function quoteCustomers(term=''){
+  const token=++qSearchToken,select=$q('ai-quote-customer'),prev=select.value;
+  const {data,error}=await db.rpc('ai_apparel_crm_customers',{p_search:term,p_limit:100,p_offset:0});
+  if(token!==qSearchToken)return;
+  if(error)throw Error(error.message);
+  select.innerHTML='<option value="">No customer selected</option>'+(data?.items||[]).map(c=>'<option value="'+escq(c.id)+'">'+escq([c.first_name,c.last_name].filter(Boolean).join(' ')||c.name||c.email||c.id)+'</option>').join('');
+  if([...select.options].some(o=>o.value===prev))select.value=prev;
+ }
+ async function quoteLoad(){
+  try{
+   if(!businessOptions.length)await loadBusinesses();
+   $q('ai-quote-business').innerHTML='<option value="">No business selected</option>'+businessOptions.map(b=>'<option value="'+escq(b.id)+'">'+escq(b.name)+'</option>').join('');
+  }catch(e){status('Quote business accounts: '+e.message)}
+  try{await quoteCustomers($q('ai-quote-customer-search').value.trim())}catch(e){status('Quote customers: '+e.message)}
+  await quoteList();
+ }
+ async function quoteList(){
+  const {data,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'list',p_payload:{}});
+  if(error){$q('ai-quotes-list').textContent=error.message;return;}
+  if(!data?.length){$q('ai-quotes-list').innerHTML='<p class="info">No quotes created yet.</p>';return;}
+  $q('ai-quotes-list').innerHTML='<div style="overflow-x:auto"><table><thead><tr><th>Quote</th><th>Customer / Business</th><th>Amount</th><th>Status</th><th>Job</th></tr></thead><tbody>'+data.map(q=>'<tr><td><strong>'+escq(q.quote_number)+'</strong><div>'+escq(q.title)+'</div></td><td>'+escq(q.customer_name||'—')+'<div>'+escq(q.business_name||'')+'</div></td><td>$'+Number(q.total||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td><td><select class="ai-quote-status" data-id="'+escq(q.id)+'" '+(q.job_id?'disabled':'')+'>'+['Draft','Sent','Changes Requested','Approved','Declined'].map(x=>'<option '+(q.status===x?'selected ':'')+'value="'+x+'">'+x+'</option>').join('')+'</select></td><td>'+escq(q.job_number||'—')+'</td></tr>').join('')+'</tbody></table></div>';
+ }
+ $q('ai-quote-customer-search').addEventListener('input',()=>{clearTimeout(qTimer);qTimer=setTimeout(()=>quoteCustomers($q('ai-quote-customer-search').value.trim()).catch(e=>status(e.message)),300)});
+ $q('ai-quote-form').addEventListener('submit',async e=>{
+  e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');btn.disabled=true;
+  try{const payload=Object.fromEntries(new FormData(e.currentTarget));const {error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'create',p_payload:payload});if(error)throw Error(error.message);e.currentTarget.reset();await quoteLoad();status('Quote created successfully.');}catch(err){status(err.message);alert(err.message)}finally{btn.disabled=false}
+ });
+ $q('ai-quotes-list').addEventListener('change',async e=>{
+  const sel=e.target.closest('.ai-quote-status');if(!sel)return;
+  const next=sel.value;
+  if(next==='Approved'&&!confirm('Approve this quote and automatically create its production job?')){await quoteList();return;}
+  sel.disabled=true;
+  try{const {data,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'status',p_payload:{id:sel.dataset.id,status:next}});if(error)throw Error(error.message);await quoteList();if(next==='Approved'){await loadProductionJobs();status('Quote approved. Linked production job created.')}else status('Quote updated.')}catch(err){status(err.message);alert(err.message);await quoteList();}
+ });
+ document.querySelector('button[data-page="quotes"]').addEventListener('click',quoteLoad);
+})();
+</script></body></html>
