@@ -176,6 +176,14 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-prod-proof-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e3eaf2;overflow-wrap:anywhere}
 .crm-prod-proof-row a{white-space:nowrap;text-decoration:underline}
 </style>
+<style>
+.crm-prod-progress{border:1px solid #e2e9f1;border-radius:12px;padding:14px 16px;background:#f9fbfe;margin:14px 0}
+.crm-prod-progress-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px}
+.crm-prod-progress-top>span{color:#4e647e;font-weight:600}
+.crm-prod-progress-track{height:10px;background:#e3eaf3;border-radius:999px;overflow:hidden;margin:12px 0}
+.crm-prod-progress-fill{height:100%;background:#268d80;border-radius:999px;transition:width .25s ease}
+.crm-prod-progress-stats{display:flex;gap:8px 18px;flex-wrap:wrap;color:#526b84;font-size:12px}
+</style>
 </head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -619,11 +627,19 @@ async function loadProductionManagement(){
  $("crm-production-overview").innerHTML=`<div><strong>${jobs.length}</strong><small>Total jobs</small></div><div><strong>${jobs.filter(j=>!["Completed","Closed","Cancelled"].includes(j.status)).length}</strong><small>Active jobs</small></div><div><strong>${stages.length}</strong><small>Production stages</small></div><div><strong>${staff.filter(p=>p.active).length}</strong><small>Active employees</small></div>`;
  $("crm-production-jobs").innerHTML=jobs.length?jobs.map(j=>{
  const steps=Object.fromEntries((j.steps||[]).map(st=>[st.stage_id,st]));
+ const totalStages=stages.length;
+ const completedStages=stages.filter(st=>steps[st.id]?.status==="Completed").length;
+ const activeStages=stages.filter(st=>steps[st.id]?.status==="In Progress").length;
+ const heldStages=stages.filter(st=>steps[st.id]?.status==="On Hold").length;
+ const assignedStages=stages.filter(st=>Boolean(steps[st.id]?.employee_id)).length;
+ const percent=totalStages?Math.round(completedStages/totalStages*100):0;
+ const progressMarkup=`<div class="crm-prod-progress"><div class="crm-prod-progress-top"><strong>Production Progress</strong><span>${completedStages} of ${totalStages} stages completed · ${percent}%</span></div><div class="crm-prod-progress-track" role="progressbar" aria-label="Production stages completed" aria-valuenow="${completedStages}" aria-valuemin="0" aria-valuemax="${totalStages}"><div class="crm-prod-progress-fill" style="width:${percent}%"></div></div><div class="crm-prod-progress-stats"><span>${activeStages} in progress</span><span>${heldStages} on hold</span><span>${assignedStages} assigned</span></div></div>`;
+
  const quote=quoteByJob.get(String(j.id));
  const specs=quote?(quote.items||[]).map(item=>`<tr><td>${escapeHtml(item.description||"")}${item.variant_title?`<small>${escapeHtml(item.variant_title)}</small>`:""}${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}</td><td>${escapeHtml(item.quantity)}</td><td>${usd(item.unit_price)}</td></tr>`).join(""):"";
  const requirements=quote?`<details class="crm-prod-requirements" data-prod-job-details="${escapeHtml(j.id)}" ${expandedJobIds.has(String(j.id))?"open":""}><summary><span class="crm-prod-chevron">›</span><strong>Job Details &amp; Artwork</strong><span class="crm-prod-quote-badge">Approved · ${escapeHtml(quote.quote_number)}</span></summary><div class="crm-prod-req-body"><div class="crm-prod-req-metrics"><div><small>Quote title</small><strong>${escapeHtml(quote.title||"")}</strong></div><div><small>Items</small><strong>${(quote.items||[]).length}</strong></div><div><small>Quote total</small><strong>${usd(quote.total)}</strong></div></div><div class="crm-prod-req-table"><table><thead><tr><th>Product / Specifications</th><th>Quantity</th><th>Unit price</th></tr></thead><tbody>${specs}</tbody></table></div>${quote.notes?`<div class="crm-prod-req-notes"><strong>Production instructions</strong><p>${escapeHtml(quote.notes)}</p></div>`:""}<div class="crm-prod-req-art"><strong>Artwork &amp; Proofs</strong><div data-prod-quote-proofs="${escapeHtml(quote.id)}">Expand to load artwork.</div></div></div></details>`:`<details class="crm-prod-requirements" data-prod-job-details="${escapeHtml(j.id)}" ${expandedJobIds.has(String(j.id))?"open":""}><summary><span class="crm-prod-chevron">›</span><strong>Job Details &amp; Artwork</strong><span class="crm-prod-quote-badge">No linked quote</span></summary><div class="crm-prod-req-body"><p class="info">This job was created without an approved quote. Job details are available by clicking its title above.</p></div></details>`;
 
- return `<div class="panel"><h3><button class="crm-job-link" type="button" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button></h3><p class="info">${escapeHtml(j.number||"")} · ${escapeHtml(j.customer||"No customer")} · ${escapeHtml(j.business||"No business")} · ${escapeHtml(j.status)}</p><form data-production-due="${escapeHtml(j.id)}" class="crm-prod-form"><label>Due date <input type="date" name="due_date" value="${escapeHtml(j.due_date||"")}"></label><button type="submit">Save due date</button></form>${requirements}<div class="crm-prod-grid">${stages.map(st=>{
+ return `<div class="panel"><h3><button class="crm-job-link" type="button" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button></h3><p class="info">${escapeHtml(j.number||"")} · ${escapeHtml(j.customer||"No customer")} · ${escapeHtml(j.business||"No business")} · ${escapeHtml(j.status)}</p><form data-production-due="${escapeHtml(j.id)}" class="crm-prod-form"><label>Due date <input type="date" name="due_date" value="${escapeHtml(j.due_date||"")}"></label><button type="submit">Save due date</button></form>${progressMarkup}${requirements}<div class="crm-prod-grid">${stages.map(st=>{
  const step=steps[st.id]||{};
  return `<form class="crm-prod-form" data-production-stage="${escapeHtml(st.id)}" data-production-job="${escapeHtml(j.id)}"><strong>${escapeHtml(st.name)}</strong><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(v=>`<option ${step.status===v?"selected":""}>${v}</option>`).join("")}</select></label><label>Employee<select name="employee_id"><option value="">Unassigned</option>${staff.map(e=>`<option value="${escapeHtml(e.id)}" ${step.employee_id===e.id?"selected":""}>${escapeHtml(e.name)}</option>`).join("")}</select></label><label>Notes<textarea name="notes" rows="2" maxlength="4000">${escapeHtml(step.notes||"")}</textarea></label><button type="submit">Save stage</button></form>`}).join("")}</div></div>`}).join(""):'<div class="panel"><p class="info">No production jobs yet. The production board will populate when your first real job is entered. No test jobs have been created.</p></div>';
 }
