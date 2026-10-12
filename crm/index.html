@@ -111,7 +111,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}.crm-prod-form{display:grid;gap:9px;padding:12px;border:1px solid #d6e1ec;border-radius:10px;margin-top:12px}.crm-prod-form label{display:grid;gap:5px;font-size:13px;font-weight:600}.crm-prod-form select,.crm-prod-form input,.crm-prod-form textarea{padding:9px;border:1px solid #c9d7e4;border-radius:7px;background:white;color:#173247;width:100%;box-sizing:border-box}.crm-prod-form button{background:#086eb1;color:white;border:0;border-radius:7px;padding:10px;cursor:pointer}#crm-production-overview{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:850px){#crm-production-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){#crm-production-overview{grid-template-columns:1fr}}
-.crm-employee-invite{display:grid;grid-template-columns:1fr 1fr 150px auto;gap:12px;align-items:end}.crm-employee-invite label{display:grid;gap:6px;font-size:13px;font-weight:600}.crm-employee-invite input,.crm-employee-invite select{padding:10px;border:1px solid #cdd9e5;border-radius:8px;background:white;color:#18334b;min-width:0}.crm-employee-toggle{margin-top:8px;border:1px solid #cdd9e5;border-radius:7px;background:white;color:#19476b;padding:7px 12px;cursor:pointer}@media(max-width:900px){.crm-employee-invite{grid-template-columns:1fr 1fr}}@media(max-width:520px){.crm-employee-invite{grid-template-columns:1fr}}</style></head>
+.crm-employee-invite{display:grid;grid-template-columns:1fr 1fr 150px auto;gap:12px;align-items:end}.crm-employee-invite label{display:grid;gap:6px;font-size:13px;font-weight:600}.crm-employee-invite input,.crm-employee-invite select{padding:10px;border:1px solid #cdd9e5;border-radius:8px;background:white;color:#18334b;min-width:0}.crm-employee-toggle{margin-top:8px;border:1px solid #cdd9e5;border-radius:7px;background:white;color:#19476b;padding:7px 12px;cursor:pointer}.crm-employee-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.crm-employee-actions .crm-employee-toggle{margin-top:0}.crm-employee-resend{border:1px solid #0872b7;border-radius:7px;background:#0872b7;color:white;padding:7px 12px;font-weight:650;cursor:pointer}.crm-employee-resend:disabled{opacity:.6;cursor:wait}@media(max-width:900px){.crm-employee-invite{grid-template-columns:1fr 1fr}}@media(max-width:520px){.crm-employee-invite{grid-template-columns:1fr}}</style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
@@ -426,7 +426,7 @@ async function loadEmployeeDirectory(){
   if(step.employee_id)assigned.push({employee_id:step.employee_id,job:j.title,stage:(data.stages||[]).find(x=>x.id===step.stage_id)?.name||"Production stage",status:step.status||"Not Started"});
  }));
  $("crm-employee-metrics").innerHTML=`<div><strong>${staff.filter(p=>p.active).length}</strong><small>Active employees</small></div><div><strong>${assigned.length}</strong><small>Assigned stages</small></div><div><strong>${jobs.length}</strong><small>Production jobs</small></div>`;
- $("crm-employee-directory").innerHTML=staff.length?`<div class="crm-business-detail-list">${staff.map(p=>`<div><strong>${escapeHtml(p.name)}</strong><small>${p.active?"Active":"Inactive"} · ${escapeHtml(p.role||"employee")} · ${escapeHtml(p.email||"No email")} · ${assigned.filter(a=>a.employee_id===p.id).length} stage assignments</small><button class="crm-employee-toggle" type="button" data-employee-toggle="${escapeHtml(p.id)}" data-next-active="${p.active?"false":"true"}">${p.active?"Deactivate":"Reactivate"}</button></div>`).join("")}</div>`:'<p class="info">No employees yet. Use the invitation form above to invite your first employee.</p>';
+ $("crm-employee-directory").innerHTML=staff.length?`<div class="crm-business-detail-list">${staff.map(p=>`<div><strong>${escapeHtml(p.name)}</strong><small>${p.active?"Active":"Inactive"} · ${escapeHtml(p.role||"employee")} · ${escapeHtml(p.email||"No email")} · ${assigned.filter(a=>a.employee_id===p.id).length} stage assignments</small><div class="crm-employee-actions"><button class="crm-employee-toggle" type="button" data-employee-toggle="${escapeHtml(p.id)}" data-next-active="${p.active?"false":"true"}">${p.active?"Deactivate":"Reactivate"}</button>${p.email?`<button class="crm-employee-resend" type="button" data-resend-employee="${escapeHtml(p.email)}">Resend Setup Email</button>`:""}</div></div>`).join("")}</div>`:'<p class="info">No employees yet. Use the invitation form above to invite your first employee.</p>';
  $("crm-employee-assignments").innerHTML=assigned.length?`<table><thead><tr><th>Employee</th><th>Job</th><th>Stage</th><th>Status</th></tr></thead><tbody>${assigned.map(a=>`<tr><td>${escapeHtml(staff.find(p=>p.id===a.employee_id)?.name||"Inactive employee")}</td><td>${escapeHtml(a.job)}</td><td>${escapeHtml(a.stage)}</td><td>${escapeHtml(a.status)}</td></tr>`).join("")}</tbody></table>`:'<p class="info">No production assignments yet. Assigned stages will appear here automatically.</p>';
 }
 document.querySelector('button[data-page="employees"]').addEventListener("click",()=>loadEmployeeDirectory().catch(err=>status(err.message)));
@@ -443,6 +443,28 @@ document.querySelector("#crm-employee-invite").addEventListener("submit",async e
  }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
 });
 document.addEventListener("click",async e=>{
+ const resend=e.target.closest("[data-resend-employee]");
+ if(resend){
+  e.preventDefault();
+  const email=resend.dataset.resendEmployee;
+  if(!confirm("Send a password setup email to "+email+"?"))return;
+  resend.disabled=true;
+  const original=resend.textContent;
+  resend.textContent="Sending…";
+  try{
+   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:"https://ai-apparel-group.pages.dev/crm/employee.html?flow=invite"});
+   if(error)throw Error(error.message);
+   status("Password setup email requested for "+email);
+   alert("Password setup email requested for "+email+". Please check inbox and spam folder.");
+  }catch(err){
+   status("Could not send setup email: "+err.message);
+   alert("Could not send setup email: "+err.message);
+  }finally{
+   resend.disabled=false;
+   resend.textContent=original;
+  }
+  return;
+ }
  const button=e.target.closest("[data-employee-toggle]");if(!button)return;
  const active=button.dataset.nextActive==="true";
  if(!confirm(active?"Reactivate this employee?":"Deactivate this employee? They will lose access to their assignments."))return;
