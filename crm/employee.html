@@ -26,66 +26,75 @@ button.primary:hover{background:#005a97}
 .pill{background:#e8f3ff;color:#155d90}
 .header button{border-color:#5b7b97}
 @media(max-width:600px){.header{min-height:75px}.portal-brand img{width:65px;height:45px}.wrap{margin:18px auto}#login{margin:30px auto;padding:25px 22px}}
+.employee-job-details{background:#f5f9fd;border:1px solid #d6e5f1;border-radius:10px;padding:16px;margin:12px 0 16px}
+.employee-job-details h4{margin:12px 0 7px;color:#173b5a}
+.employee-spec,.employee-proof{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #dce8f3;flex-wrap:wrap}
+.employee-spec{flex-direction:column;gap:4px}
+.employee-spec span{color:#5b7287;font-size:13px}
+.employee-instructions{white-space:pre-wrap;overflow-wrap:anywhere}
+.employee-proof a{color:#006fba;font-weight:700}
+.assignment>button[data-view-assignment]{margin:8px 0 10px}
 </style></head><body><header class="header"><div class="portal-brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group logo"><span>AI APPAREL GROUP <small>EMPLOYEE PORTAL</small></span></div><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
 <section class="card" id="login"><div class="login-kicker">AI APPAREL GROUP · TEAM ACCESS</div><h1>Welcome back</h1><h2 class="signin-subhead">Employee Sign In</h2><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary login-submit" type="submit">Sign In →</button></form><p class="reset-row"><button type="button" id="reset-link">Forgot password? Send reset email</button></p></section>
 <section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
 <section id="app"><div class="card"><h1 id="greeting">My Production Assignments</h1><p class="muted">Only work assigned to your employee account appears here.</p><div id="summary"></div></div><div id="assignments" class="grid"></div></section></main>
 <script>
 const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co",KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
-const db=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{detectSessionInUrl:false}});
+const db=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const msg=(m,bad=false)=>{$("message").textContent=m;$("message").className=bad?"error":""};
 const inviteFlowAtLoad=new URLSearchParams(location.search).get("flow")==="invite"||new URLSearchParams(location.search).has("code")||location.href.includes("type=invite")||location.href.includes("type=recovery");
 let passwordFlow=inviteFlowAtLoad;
-async function initializeRecoveryLink(){
- const hash=new URLSearchParams(location.hash.replace(/^#/,""));
- const query=new URLSearchParams(location.search);
- if(hash.get("error")||query.get("error")){
-  msg("This password link is invalid or expired. Please request a new setup email.",true);
-  return;
- }
- const accessToken=hash.get("access_token"),refreshToken=hash.get("refresh_token");
- if(accessToken&&refreshToken){
-  passwordFlow=true;
-  const {error}=await db.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
-  if(error){msg("Could not activate this password link: "+error.message+". Request a fresh setup email.",true);return}
-  history.replaceState(null,"",location.pathname+"?flow=invite");
-  return;
- }
- if(query.has("code")){
-  passwordFlow=true;
-  const {error}=await db.auth.exchangeCodeForSession(query.get("code"));
-  if(error){msg("Could not activate this password link: "+error.message+". Request a fresh setup email.",true);return}
-  history.replaceState(null,"",location.pathname+"?flow=invite");
- }
-}
 async function render(){
  const {data:{session}}=await db.auth.getSession();
  if(session&&session.user?.user_metadata?.account_type==="ai_apparel_employee"&&session.user?.user_metadata?.employee_password_initialized!==true)passwordFlow=true;
  $("signout").style.display=session?"block":"none";
- $("login").style.display=(session||passwordFlow)?"none":"block";
- $("password-setup").style.display=passwordFlow?"block":"none";
+ $("login").style.display=session?"none":"block";
+ $("password-setup").style.display=session&&passwordFlow?"block":"none";
  $("app").style.display=session&&!passwordFlow?"block":"none";
- if(passwordFlow){if(!session)msg("Password setup link is being verified. If this message remains, the link may have expired. Request a fresh setup email.",true);return;}if(!session)return;
+ if(!session||passwordFlow)return;
  const {data,error}=await db.rpc("ai_apparel_crm_employee_portal");
  if(error){$("app").style.display="none";msg("Employee access is not active for this account. Contact your administrator.",true);return}
  $("greeting").textContent="Welcome, "+data.employee.name;
  const rows=data.assignments||[];
  $("summary").innerHTML=`<span class="pill">${rows.length} assigned production stages</span>`;
- $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="card"><p class="muted">No work is assigned to you yet.</p></div>';
+ $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="card"><p class="muted">No work is assigned to you yet.</p></div>';
 }
+document.addEventListener("click",async e=>{
+ const button=e.target.closest("[data-view-assignment]");
+ if(!button)return;
+ const target=$("employee-job-"+button.dataset.viewAssignment);
+ if(!target)return;
+ if(!target.hidden){target.hidden=true;button.setAttribute("aria-expanded","false");return;}
+ target.hidden=false;button.setAttribute("aria-expanded","true");
+ if(target.dataset.loaded==="true")return;
+ target.textContent="Loading job details and artwork…";button.disabled=true;
+ try{
+  const {data,error}=await db.rpc("ai_apparel_crm_employee_job_details",{p_assignment_id:button.dataset.viewAssignment});
+  if(error)throw Error(error.message);
+  if(!data)throw Error("Job details unavailable.");
+  const items=data.items||[],proofs=data.proofs||[];
+  target.innerHTML=`<h4>Job Specifications</h4><p class="muted">${esc(data.job_number||"")} · Approved quote ${esc(data.quote_number||"Not linked")}</p><div class="employee-specs">${items.length?items.map(item=>`<div class="employee-spec"><strong>${esc(item.description||"Product")}</strong><span>Quantity: ${esc(item.quantity||0)}${item.variant?` · ${esc(item.variant)}`:""}${item.sku?` · SKU: ${esc(item.sku)}`:""}</span></div>`).join(""):"<p class='muted'>No approved quote specifications attached.</p>"}</div><h4>Production Instructions</h4><p class="employee-instructions">${esc(data.instructions||"No additional instructions provided.")}</p><h4>Artwork &amp; Proofs</h4><div class="employee-proof-list">${proofs.length?"":"<p class='muted'>No artwork uploaded for this job.</p>"}</div>`;
+  const proofList=target.querySelector(".employee-proof-list");
+  for(const proof of proofs){
+   const row=document.createElement("div");row.className="employee-proof";
+   const name=document.createElement("span");name.textContent=proof.filename||"Artwork";
+   const link=document.createElement("a");link.target="_blank";link.rel="noopener noreferrer";link.textContent="View / Download";
+   const {data:signed,error:signError}=await db.storage.from("ai-apparel-quote-proofs").createSignedUrl(proof.path,300);
+   if(signError){link.textContent="Artwork unavailable";link.removeAttribute("href");}
+   else link.href=signed.signedUrl;
+   row.append(name,link);proofList.append(row);
+  }
+  target.dataset.loaded="true";
+ }catch(err){target.textContent="Unable to load assigned job details: "+err.message;}
+ finally{button.disabled=false;}
+});
 $("login-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const f=new FormData(e.target);const {error}=await db.auth.signInWithPassword({email:f.get("email"),password:f.get("password")});b.disabled=false;if(error)msg(error.message,true);else{msg("");await render()}});
-$("password-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const {data:{session}}=await db.auth.getSession();if(!session){b.disabled=false;msg("The setup link did not authenticate. Please request a fresh setup email.",true);return;}const {error}=await db.auth.updateUser({password:new FormData(e.target).get("password"),data:{employee_password_initialized:true}});b.disabled=false;if(error)msg(error.message,true);else{passwordFlow=false;msg("Password saved. Your employee account is ready.");await render()}});
+$("password-form").addEventListener("submit",async e=>{e.preventDefault();const b=e.target.querySelector("button");b.disabled=true;const {error}=await db.auth.updateUser({password:new FormData(e.target).get("password"),data:{employee_password_initialized:true}});b.disabled=false;if(error)msg(error.message,true);else{passwordFlow=false;msg("Password saved. Your employee account is ready.");await render()}});
 $("reset-link").addEventListener("click",async()=>{const email=$("login-form").elements.email.value;if(!email){msg("Enter your email first.",true);return}const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname+"?flow=invite"});msg(error?error.message:"If your account exists, a password reset email will arrive shortly.",!!error)});
 $("signout").addEventListener("click",async()=>{await db.auth.signOut();passwordFlow=false;msg("Signed out.");await render()});
 document.addEventListener("submit",async e=>{const f=e.target;if(!f.matches("[data-assignment]"))return;e.preventDefault();const b=f.querySelector("button");b.disabled=true;const {error}=await db.rpc("ai_apparel_crm_employee_stage_update",{p_assignment_id:f.dataset.assignment,p_status:f.elements.status.value,p_notes:f.elements.notes.value});b.disabled=false;if(error)msg(error.message,true);else{msg("Production stage updated.");await render()}});
 db.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){passwordFlow=true;setTimeout(render,0)}else if(event==="SIGNED_IN"){setTimeout(render,0)}});
-(async()=>{
- try{await initializeRecoveryLink()}catch(err){msg("Unable to process setup link: "+err.message,true)}
- const {data:{session}}=await db.auth.getSession();
- if(session&&(new URLSearchParams(location.search).get("flow")==="invite"||location.hash.includes("type=invite")||location.hash.includes("type=recovery")))passwordFlow=true;
- await render();
- if(!session&&inviteFlowAtLoad)msg("The setup link could not establish a session. Request a new setup email, then open the newest link.",true);
-})();
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session&&(new URLSearchParams(location.search).get("flow")==="invite"||location.hash.includes("type=invite")||location.search.includes("type=invite"))){passwordFlow=true}await render()})();
 </script></body></html>
