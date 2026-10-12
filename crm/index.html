@@ -184,7 +184,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-prod-progress-fill{height:100%;background:#268d80;border-radius:999px;transition:width .25s ease}
 .crm-prod-progress-stats{display:flex;gap:8px 18px;flex-wrap:wrap;color:#526b84;font-size:12px}
 </style>
-</head>
+<style>.crm-prod-progress-help{display:block;margin-top:10px;color:#64748b;font-size:11px}</style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
@@ -632,8 +632,11 @@ async function loadProductionManagement(){
  const activeStages=stages.filter(st=>steps[st.id]?.status==="In Progress").length;
  const heldStages=stages.filter(st=>steps[st.id]?.status==="On Hold").length;
  const assignedStages=stages.filter(st=>Boolean(steps[st.id]?.employee_id)).length;
- const percent=totalStages?Math.round(completedStages/totalStages*100):0;
- const progressMarkup=`<div class="crm-prod-progress"><div class="crm-prod-progress-top"><strong>Production Progress</strong><span>${completedStages} of ${totalStages} stages completed · ${percent}%</span></div><div class="crm-prod-progress-track" role="progressbar" aria-label="Production stages completed" aria-valuenow="${completedStages}" aria-valuemin="0" aria-valuemax="${totalStages}"><div class="crm-prod-progress-fill" style="width:${percent}%"></div></div><div class="crm-prod-progress-stats"><span>${activeStages} in progress</span><span>${heldStages} on hold</span><span>${assignedStages} assigned</span></div></div>`;
+ // A stage in progress counts as halfway through that stage; a completed stage counts fully.
+ // On Hold does not advance the timeline beyond completed work.
+ const progressUnits=completedStages+(activeStages*0.5);
+ const percent=totalStages?Math.round(progressUnits/totalStages*100):0;
+ const progressMarkup=`<div class="crm-prod-progress"><div class="crm-prod-progress-top"><strong>Production Timeline</strong><span>${percent}% progressed · ${completedStages} of ${totalStages} stages completed</span></div><div class="crm-prod-progress-track" role="progressbar" aria-label="Production timeline progress" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="crm-prod-progress-fill" style="width:${percent}%"></div></div><div class="crm-prod-progress-stats"><span>${activeStages} in progress</span><span>${heldStages} on hold</span><span>${assignedStages} assigned</span></div><small class="crm-prod-progress-help">In Progress advances the timeline halfway through its stage; Completed advances it to the end of that stage.</small></div>`;
 
  const quote=quoteByJob.get(String(j.id));
  const specs=quote?(quote.items||[]).map(item=>`<tr><td>${escapeHtml(item.description||"")}${item.variant_title?`<small>${escapeHtml(item.variant_title)}</small>`:""}${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}</td><td>${escapeHtml(item.quantity)}</td><td>${usd(item.unit_price)}</td></tr>`).join(""):"";
