@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>AI Apparel Group | CRM Staging</title>
+<title>AI Apparel Group | CRM</title>
 <style>
 :root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#192536;background:#f4f6f9;--blue:#006fba;--pink:#cc338b}
 *{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer}.shell{display:flex;min-height:100vh}
@@ -40,9 +40,14 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="content">
 <div class="panel" id="auth-panel" style="margin-bottom:18px">
 <h3>AI Apparel CRM Admin Sign-In</h3>
-<p class="info">Use the existing AI Apparel administrator email. We will send a one-time sign-in code.</p>
-<form id="login-form" style="display:flex;gap:8px;flex-wrap:wrap"><input id="login-email" type="email" required placeholder="Admin email" style="padding:10px;min-width:250px"><button class="action" type="submit">Send Sign-In Code</button></form>
-<form id="verify-form" hidden style="gap:8px;flex-wrap:wrap;margin-top:10px"><input id="login-code" type="text" required placeholder="Enter email code" style="padding:10px;min-width:220px"><button class="action" type="submit">Verify Code</button></form>
+<p class="info">Sign in with your administrator email and password. No magic links required.</p>
+<form id="login-form" style="display:grid;gap:10px;max-width:380px">
+<label for="login-email">Email address</label>
+<input id="login-email" type="email" required autocomplete="username" value="bikard@mntrlab.com" style="padding:10px">
+<label for="login-password">Password</label>
+<input id="login-password" type="password" required autocomplete="current-password" minlength="8" placeholder="Enter your password" style="padding:10px">
+<button class="action" type="submit">Sign In</button>
+</form>
 <div id="auth-message" class="info" role="status"></div>
 <button id="logout" class="action secondary" hidden type="button">Sign Out</button>
 </div>
@@ -91,15 +96,23 @@ for(const k of ["clients","quotes","jobs","tasks"])$("stat-"+k).textContent=d[k]
 $("clients-list").className="";
 $("clients-list").innerHTML=clients.length?'<table><thead><tr><th>Client</th><th>Contact</th><th>Email</th><th>Status</th></tr></thead><tbody>'+clients.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.contact_name)}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.status)}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">No CRM clients have been created yet.</div>';
 $("connection-status").textContent="CRM CONNECTED";
-$("login-form").hidden=true;$("verify-form").hidden=true;$("logout").hidden=false;
+$("login-form").hidden=true;$("logout").hidden=false;
 status("Signed in as an authorized AI Apparel administrator.");
 }catch(e){$("connection-status").textContent="ACCESS RESTRICTED";status(e.message)}
 }
 $("login-form").addEventListener("submit",async e=>{
-e.preventDefault();try{const email=$("login-email").value.trim();const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false}});if(error)throw error;$("verify-form").hidden=false;$("verify-form").style.display="flex";status("Check your email for the sign-in code.");}catch(e){status(e.message)}
-});
-$("verify-form").addEventListener("submit",async e=>{
-e.preventDefault();try{const {error}=await db.auth.verifyOtp({email:$("login-email").value.trim(),token:$("login-code").value.trim(),type:"email"});if(error)throw error;await refresh()}catch(e){status(e.message)}
+e.preventDefault();
+const btn=e.currentTarget.querySelector('button[type="submit"]');btn.disabled=true;
+try{
+if(!db)throw Error("Authentication library failed to load.");
+const email=$("login-email").value.trim().toLowerCase();
+const password=$("login-password").value;
+const {error}=await db.auth.signInWithPassword({email,password});
+if(error)throw error;
+$("login-password").value="";
+await refresh();
+}catch(err){status(err.message==="Invalid login credentials"?"Incorrect email or password, or the account has not been created yet.":err.message)}
+finally{btn.disabled=false}
 });
 $("show-client-form").addEventListener("click",()=>{$("client-form").hidden=!$("client-form").hidden;$("client-form").style.display=$("client-form").hidden?"none":"grid"});
 $("client-form").addEventListener("submit",async e=>{
