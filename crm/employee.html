@@ -118,6 +118,14 @@ body:has(#app.employee-shell[style*="display: flex"]) #message:empty{display:non
 .employee-unread{border-left:3px solid #006fba;padding-left:13px;background:#f5faff}
 #task-nav-count,#notification-nav-count{float:right;background:#006fba;border-radius:12px;padding:0 7px;font-size:11px}
 #task-nav-count:empty,#notification-nav-count:empty{display:none}
+.employee-dashboard-columns{display:grid;grid-template-columns:1.3fr 1fr;gap:17px;margin:17px 0}
+.employee-dashboard-production{margin-top:17px!important}
+.employee-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.employee-section-heading h3{margin:0!important}
+.employee-section-heading .action{font-size:12px;padding:8px 10px;white-space:nowrap}
+.employee-dashboard-columns .panel{min-width:0}
+@media(max-width:900px){.employee-dashboard-columns{grid-template-columns:1fr}}
+@media(max-width:500px){.employee-section-heading{align-items:flex-start;flex-wrap:wrap}}
 </style></head><body><header class="header"><div class="portal-brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group logo"><span>AI APPAREL GROUP <small>EMPLOYEE PORTAL</small></span></div><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
 <section class="card" id="login"><div class="login-kicker">AI APPAREL GROUP · TEAM ACCESS</div><h1>Welcome back</h1><h2 class="signin-subhead">Employee Sign In</h2><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary login-submit" type="submit">Sign In →</button></form><p class="reset-row"><button type="button" id="reset-link">Forgot password? Send reset email</button></p></section>
 <section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
@@ -139,15 +147,16 @@ body:has(#app.employee-shell[style*="display: flex"]) #message:empty{display:non
       <p id="employee-welcome" class="lead"></p>
       <div id="employee-dashboard" class="employee-page">
         <div class="grid employee-metrics">
-          <div class="card"><label>My Assigned Stages</label><strong id="metric-assigned">0</strong><small>Production assignments</small></div>
-          <div class="card"><label>In Progress</label><strong id="metric-active">0</strong><small>Stages underway</small></div>
-          <div class="card"><label>Completed</label><strong id="metric-complete">0</strong><small>Finished stages</small></div>
-          <div class="card"><label>On Hold</label><strong id="metric-hold">0</strong><small>Stages requiring attention</small></div>
+          <div class="card"><label>Open Tasks</label><strong id="metric-tasks">0</strong><small>Awaiting completion</small></div>
+          <div class="card"><label>Assigned Jobs</label><strong id="metric-jobs">0</strong><small>Jobs with your production stages</small></div>
+          <div class="card"><label>Production In Progress</label><strong id="metric-active">0</strong><small>Stages currently underway</small></div>
+          <div class="card"><label>Unread Notifications</label><strong id="metric-notifications">0</strong><small>Updates requiring review</small></div>
         </div>
-        <div class="columns">
-          <div class="panel"><h3>My Production Work</h3><div id="dashboard-work"></div></div>
-          <div class="panel"><h3>Quick Access</h3><p class="info">Review your assigned jobs, open artwork, and update production stages.</p><div class="quick"><button type="button" class="action" data-employee-go="jobs">My Jobs</button><button type="button" class="action secondary" data-employee-go="production">Production Management</button></div></div>
+        <div class="employee-dashboard-columns">
+          <div class="panel"><div class="employee-section-heading"><h3>My Tasks</h3><button type="button" class="action secondary" data-employee-go="tasks">View All Tasks</button></div><div id="dashboard-tasks"></div></div>
+          <div class="panel"><div class="employee-section-heading"><h3>Notifications</h3><button type="button" class="action secondary" data-employee-go="notifications">View Notifications</button></div><div id="dashboard-notifications"></div></div>
         </div>
+        <div class="panel employee-dashboard-production"><div class="employee-section-heading"><h3>Assigned Production Work</h3><button type="button" class="action secondary" data-employee-go="production">Manage Production</button></div><div id="dashboard-work"></div></div>
       </div>
       <div id="employee-jobs" class="employee-page" hidden><div class="panel"><h3>Jobs &amp; Projects</h3><p class="info">Only jobs with stages assigned to you appear here.</p><div id="job-list"></div></div></div>
       <div id="employee-tasks" class="employee-page" hidden><div class="panel"><h3>My Tasks</h3><p class="info">Tasks assigned to you by management. Completed work can be reviewed in the Archived section.</p><div id="employee-task-list"></div><details style="margin-top:18px"><summary>Archived Tasks</summary><div id="employee-task-archive"></div></details></div></div>
@@ -177,13 +186,13 @@ async function render(){
  $("employee-welcome").textContent="Welcome, "+data.employee.name+". Here's your assigned work.";
  const rows=data.assignments||[];
  window.employeeAssignments=rows;
- $("metric-assigned").textContent=rows.length;
+ $("metric-jobs").textContent=new Set(rows.map(x=>x.job_number||x.job)).size;
  $("metric-active").textContent=rows.filter(x=>x.status==="In Progress").length;
- $("metric-complete").textContent=rows.filter(x=>x.status==="Completed").length;
- $("metric-hold").textContent=rows.filter(x=>x.status==="On Hold").length;
+
+
  const grouped=new Map();
  for(const a of rows){const key=a.job_number||a.job;if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(a);}
- const workRows=rows.map(a=>`<div class="employee-work-row"><div><strong>${esc(a.job)}</strong><small>${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</small></div><span class="state">${esc(a.status||"Not Started")}</span></div>`).join("");
+ const workRows=rows.slice(0,5).map(a=>`<div class="employee-work-row"><div><strong>${esc(a.job)}</strong><small>${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</small></div><span class="state">${esc(a.status||"Not Started")}</span></div>`).join("");
  $("dashboard-work").innerHTML=workRows||'<div class="employee-empty">No production stages assigned yet.</div>';
  $("job-list").innerHTML=grouped.size?[...grouped.values()].map(group=>`<div class="employee-work-row"><div><strong>${esc(group[0].job)}</strong><small>${esc(group[0].job_number||"")} · ${group.length} assigned stage${group.length===1?"":"s"}</small></div><button class="action secondary" type="button" data-employee-go="production">Open Production</button></div>`).join(""):'<div class="employee-empty">No jobs assigned yet.</div>';
  $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="employee-empty">No work is assigned to you yet.</div>';
@@ -198,8 +207,13 @@ async function loadEmployeeTasks(){
  const taskHtml=t=>`<div class="employee-task-row"><div><strong>${esc(t.title)}</strong><small>${esc(t.job||"General task")} · Due ${esc(t.due_date||"Not set")}</small><p>${esc(t.instructions||"No additional instructions.")}</p></div><label>Status<select data-employee-task="${esc(t.id)}">${["Not Started","In Progress","Completed"].map(x=>`<option value="${x}" ${t.status===x?"selected":""}>${x}</option>`).join("")}</select></label></div>`;
  $("employee-task-list").innerHTML=active.length?active.map(taskHtml).join(""):'<div class="employee-empty">No active tasks assigned.</div>';
  $("employee-task-archive").innerHTML=archived.length?archived.map(t=>`<div class="employee-task-row"><strong>${esc(t.title)}</strong><small>Archived</small></div>`).join(""):'<p class="info">No archived tasks.</p>';
+ const outstanding=active.filter(t=>t.status!=="Completed");
+ $("metric-tasks").textContent=outstanding.length;
+ $("dashboard-tasks").innerHTML=outstanding.length?outstanding.slice(0,5).map(t=>`<div class="employee-work-row"><div><strong>${esc(t.title)}</strong><small>${esc(t.job||"General task")} · Due ${esc(t.due_date||"Not set")}</small></div><span class="state">${esc(t.status)}</span></div>`).join(""):'<div class="employee-empty">All caught up — no outstanding tasks.</div>';
  $("task-nav-count").textContent=active.filter(t=>t.status!=="Completed").length||"";
  const unread=notifications.filter(n=>!n.read_at);
+ $("metric-notifications").textContent=unread.length;
+ $("dashboard-notifications").innerHTML=unread.length?unread.slice(0,5).map(n=>`<div class="employee-work-row"><div><strong>${esc(n.title)}</strong><small>${esc(n.message||"")}</small></div><span class="state">New</span></div>`).join(""):'<div class="employee-empty">No unread notifications.</div>';
  $("notification-nav-count").textContent=unread.length||"";
  $("employee-notification-list").innerHTML=notifications.length?notifications.map(n=>`<div class="employee-task-row ${n.read_at?"":"employee-unread"}"><div><strong>${esc(n.title)}</strong><p>${esc(n.message||"")}</p><small>${esc(new Date(n.created_at).toLocaleString())}</small></div>${n.read_at?'<span class="muted">Read</span>':`<button class="primary" type="button" data-employee-read="${esc(n.id)}">Mark Read</button>`}</div>`).join(""):'<div class="employee-empty">No notifications yet.</div>';
 }
