@@ -104,6 +104,10 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-job-form label{display:grid;gap:7px;font-size:13px;font-weight:700;color:#334b63}
 .crm-job-form input,.crm-job-form select{width:100%;box-sizing:border-box;min-height:42px;padding:10px;border:1px solid #cedbe8;border-radius:9px;background:white;color:#24374c;font:inherit}
 .crm-job-form .action{justify-self:start;min-height:42px}@media(max-width:650px){.crm-job-form{grid-template-columns:1fr}}
+
+.crm-job-link{background:none;border:0;padding:0;color:#006fba;font:inherit;font-weight:700;cursor:pointer;text-align:left}.crm-job-link:hover{text-decoration:underline}
+.crm-job-summary{display:flex;justify-content:space-between}.crm-status-label{display:grid;gap:8px;font-size:13px;font-weight:700;color:#334b63;margin-bottom:12px}
+.crm-status-label select{max-width:320px;min-height:42px;padding:10px;border:1px solid #cddbe9;border-radius:9px;background:white}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -292,6 +296,8 @@ if(view){
   if(modal.hidden)return;
   const orders=Array.isArray(data)?data:[];
   content.innerHTML=contact+`<h3>Order history <span class="crm-order-count">${orders.length}</span></h3>`+(orders.length?`<div class="crm-order-list">${orders.map(o=>`<div class="crm-order-item"><div><strong>${escapeHtml(o.order_name||("Shopify order "+String(o.order_id||"").split("/").pop()))}</strong><div class="info">${escapeHtml(o.business||"No approved business association")}</div>${Array.isArray(o.product_titles)&&o.product_titles.length?`<div class="info">${escapeHtml(o.product_titles.join(", "))}</div>`:""}</div><span class="crm-order-tag">${o.business?"Linked":"Unlinked"}</span></div>`).join("")}</div>`:'<p class="info">No Shopify orders found for this customer.</p>');
+  await appendRelatedJobs({p_customer_id:customer.id,p_business_id:null});
+
  }catch(err){content.innerHTML=contact+`<h3>Order history</h3><p class="info">${escapeHtml(err.message)}</p>`}
  return;
 }
@@ -363,13 +369,52 @@ $("business-account-list").addEventListener("click",async e=>{
   (customers.length?`<div class="crm-business-detail-list">${customers.map(c=>`<div><strong>${escapeHtml(c.name||"Unnamed customer")}</strong><small>${escapeHtml(c.email||"No email")} ${c.verified?" · Verified association":""}</small></div>`).join("")}</div>`:'<p class="info">No customers linked to this organization yet.</p>')+
   `<h3>Approved Shopify order associations</h3>`+
   (orders.length?`<div class="crm-business-detail-list">${orders.map(o=>`<div><strong>${escapeHtml(o.order_name||("Shopify order "+String(o.order_id||"").split("/").pop()))}</strong><small>${escapeHtml(o.order_date?new Date(o.order_date).toLocaleDateString():"Date not available")}${Array.isArray(o.product_titles)&&o.product_titles.length?" · "+escapeHtml(o.product_titles.join(", ")):""}</small></div>`).join("")}</div>`:'<p class="info">No approved Shopify orders associated with this organization.</p>');
+  await appendRelatedJobs({p_customer_id:null,p_business_id:data.id});
+
  }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
 });
 document.querySelector('button[data-page="businesses"]').addEventListener("click",()=>loadBusinessAccounts().catch(e=>status(e.message)));
+function jobListMarkup(jobs){
+ return jobs.length?`<div class="crm-business-detail-list">${jobs.map(j=>`<div class="crm-job-summary"><div><button type="button" class="crm-job-link" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button><small>${escapeHtml(j.job_number||"")} · ${escapeHtml(j.status||"New")}${j.business_name?" · "+escapeHtml(j.business_name):""}</small></div></div>`).join("")}</div>`:'<p class="info">No production jobs associated with this profile yet.</p>';
+}
+async function appendRelatedJobs(payload){
+ const content=$("crm-profile-content");
+ const {data,error}=await db.rpc("ai_apparel_crm_related_jobs",payload);
+ if(error)throw Error(error.message);
+ if($("crm-profile-modal").hidden)return;
+ const block=document.createElement("div");
+ block.innerHTML=`<h3>Production Jobs <span class="crm-order-count">${data.length}</span></h3>`+jobListMarkup(data);
+ content.appendChild(block);
+}
+async function openProductionJob(jobId){
+ const modal=$("crm-profile-modal"),content=$("crm-profile-content");
+ modal.hidden=false;$("crm-profile-title").textContent="Production Job";
+ content.innerHTML='<p class="info">Loading job details…</p>';
+ try{
+  const {data,error}=await db.rpc("ai_apparel_crm_job_detail",{p_job_id:jobId});
+  if(error)throw Error(error.message);
+  if(modal.hidden)return;
+  $("crm-profile-title").textContent=data.title;
+  const statuses=["New","In Progress","On Hold","Completed","Cancelled"];
+  content.innerHTML=`<div class="crm-profile-grid"><div><small>Job number</small><strong>${escapeHtml(data.job_number||"Not assigned")}</strong></div><div><small>Customer</small><strong>${escapeHtml(data.customer_name||"Not assigned")}</strong></div><div><small>Business account</small><strong>${escapeHtml(data.business_name||"Not assigned")}</strong></div><div><small>Shopify order</small><strong>${escapeHtml(data.shopify_order_id?String(data.shopify_order_id).split("/").pop():"Not linked")}</strong></div><div><small>Due date</small><strong>${escapeHtml(data.due_date||"Not scheduled")}</strong></div><div><small>Created</small><strong>${escapeHtml(data.created_at?new Date(data.created_at).toLocaleDateString():"Unknown")}</strong></div></div><form id="crm-job-status-form" data-job-id="${escapeHtml(data.id)}"><label class="crm-status-label">Job status<select name="status" required>${statuses.map(st=>`<option value="${st}" ${data.status===st?"selected":""}>${st}</option>`).join("")}</select></label><button type="submit" class="action">Save Status</button></form><p class="info">Changing status updates this CRM job only; it does not automatically update Shopify, rewards, or production tasks.</p>`;
+ }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-open-job]");if(b)openProductionJob(b.dataset.openJob)});
+document.addEventListener("submit",async e=>{
+ if(e.target.id!=="crm-job-status-form")return;
+ e.preventDefault();
+ const form=e.target,btn=form.querySelector('button[type="submit"]');btn.disabled=true;
+ try{
+  const {error}=await db.rpc("ai_apparel_crm_job_status",{p_job_id:form.dataset.jobId,p_status:form.elements.status.value});
+  if(error)throw Error(error.message);
+  status("Job status saved.");await openProductionJob(form.dataset.jobId);
+  if(!document.getElementById("jobs").hidden)await loadProductionJobs();
+ }catch(err){status(err.message);alert(err.message)}finally{btn.disabled=false}
+});
 async function loadProductionJobs(){
  const {data,error}=await db.rpc("ai_apparel_crm_jobs",{p_action:"list",p_payload:{}});
  if(error)throw Error(error.message);
- $("crm-jobs-list").innerHTML=data.length?'<table><thead><tr><th>Job</th><th>Customer</th><th>Business</th><th>Status</th><th>Shopify order</th></tr></thead><tbody>'+data.map(j=>`<tr><td><strong>${escapeHtml(j.title)}</strong><div class="info">${escapeHtml(j.job_number||"")}</div></td><td>${escapeHtml(j.customer_name||"Not assigned")}</td><td>${escapeHtml(j.business_name||"Not assigned")}</td><td>${escapeHtml(j.status||"New")}</td><td>${escapeHtml(j.shopify_order_id?String(j.shopify_order_id).split("/").pop():"—")}</td></tr>`).join("")+'</tbody></table>':'<p class="info">No production jobs have been created yet.</p>';
+ $("crm-jobs-list").innerHTML=data.length?'<table><thead><tr><th>Job</th><th>Customer</th><th>Business</th><th>Status</th><th>Shopify order</th></tr></thead><tbody>'+data.map(j=>`<tr><td><button type="button" class="crm-job-link" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button><div class="info">${escapeHtml(j.job_number||"")}</div></td><td>${escapeHtml(j.customer_name||"Not assigned")}</td><td>${escapeHtml(j.business_name||"Not assigned")}</td><td>${escapeHtml(j.status||"New")}</td><td>${escapeHtml(j.shopify_order_id?String(j.shopify_order_id).split("/").pop():"—")}</td></tr>`).join("")+'</tbody></table>':'<p class="info">No production jobs have been created yet.</p>';
 }
 async function setupJobForm(){
  if(!businessOptions.length)await loadBusinesses();
