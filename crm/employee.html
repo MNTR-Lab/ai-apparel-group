@@ -1,7 +1,33 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Apparel Group — Employee Portal</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
 :root{font-family:Inter,Arial,sans-serif;color:#142c43;background:#f2f6fa}*{box-sizing:border-box}body{margin:0}.header{background:#102b46;color:white;padding:18px max(22px,calc((100vw - 1060px)/2));display:flex;justify-content:space-between;align-items:center}.header strong{font-size:20px}.header button{background:transparent;border:1px solid #91a9bf;color:white;border-radius:8px;padding:9px 13px;cursor:pointer}.wrap{max-width:1060px;margin:30px auto;padding:0 18px}.card{background:white;border:1px solid #dce5ed;border-radius:14px;padding:23px;margin-bottom:18px;box-shadow:0 5px 22px #152f4610}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px}label{display:grid;gap:6px;font-size:13px;font-weight:600;margin-bottom:14px}input,select,textarea{width:100%;padding:11px;border:1px solid #cad6e2;border-radius:8px;background:white;color:#18334a;font:inherit}textarea{resize:vertical}button.primary{background:#0872b7;border:0;color:white;padding:11px 18px;border-radius:8px;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.muted{color:#667d90;font-size:13px}.pill{display:inline-block;padding:5px 10px;border-radius:20px;background:#e7f0f9;color:#125b8d;font-size:12px;font-weight:700}.error{color:#a52323}#message{margin-bottom:14px}#login{max-width:470px;margin:45px auto}#app,#password-setup,#signout{display:none}h1{font-size:25px}h2{font-size:19px;margin-top:0}.assignment h3{margin-bottom:5px}@media(max-width:600px){.header{padding:15px}.wrap{margin-top:16px}}
-</style></head><body><header class="header"><strong>AI APPAREL GROUP <span style="font-weight:400;font-size:14px">/ Employee Portal</span></strong><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
-<section class="card" id="login"><h1>Employee Sign In</h1><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Sign In</button></form><p><button type="button" id="reset-link">Send password reset email</button></p></section>
+/* AI Apparel Group established black, blue and white brand system */
+:root{--ai-blue:#006fba;--ai-black:#05080d;--ai-pink:#cc338b;color:#192536;background:#f4f6f9}
+body{background:linear-gradient(115deg,#f3f6fa 0%,#f7f9fc 54%,#e9f3fc 100%);min-height:100vh}
+.header{background:#000;color:#fff;min-height:90px;border-bottom:3px solid var(--ai-blue);padding:14px max(24px,calc((100vw - 1100px)/2))}
+.portal-brand{display:flex;align-items:center;gap:18px;font-weight:800;font-size:15px;letter-spacing:.035em}
+.portal-brand img{width:88px;height:58px;object-fit:contain}
+.portal-brand small{display:block;font-size:10px;font-weight:650;letter-spacing:.18em;color:#adc4da;margin-top:5px}
+.wrap{max-width:1100px;margin:50px auto}
+#login{max-width:470px;margin:68px auto;padding:36px 38px 34px;border-radius:17px;box-shadow:0 18px 52px #0a2c491c;border:1px solid #dae5ef;border-top:4px solid var(--ai-blue)}
+.login-kicker{font-size:10px;letter-spacing:.14em;color:var(--ai-blue);font-weight:850;margin-bottom:13px}
+#login h1{font-size:30px;letter-spacing:-.035em;margin:0 0 4px}
+.signin-subhead{font-size:15px;font-weight:650;color:#597089;margin:0 0 12px}
+#login .muted{line-height:1.55;margin:0 0 26px}
+#login label{font-size:13px;color:#30475d;gap:9px;margin-bottom:18px}
+#login input{height:47px;background:#fafcfe;border:1px solid #cddce9;padding:12px 14px}
+#login input:focus{outline:3px solid #006fba24;border-color:var(--ai-blue)}
+button.primary{background:var(--ai-blue);border-radius:9px}
+button.primary:hover{background:#005a97}
+.login-submit{width:100%;height:47px;margin-top:3px}
+.reset-row{text-align:center;margin:20px 0 0}
+#reset-link{border:0;background:none;color:var(--ai-blue);font-size:13px;font-weight:700;cursor:pointer}
+#password-setup{max-width:480px;margin:50px auto;border-top:4px solid var(--ai-blue)}
+#app>.card:first-child{border-top:4px solid var(--ai-blue)}
+.pill{background:#e8f3ff;color:#155d90}
+.header button{border-color:#5b7b97}
+@media(max-width:600px){.header{min-height:75px}.portal-brand img{width:65px;height:45px}.wrap{margin:18px auto}#login{margin:30px auto;padding:25px 22px}}
+</style></head><body><header class="header"><div class="portal-brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group logo"><span>AI APPAREL GROUP <small>EMPLOYEE PORTAL</small></span></div><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
+<section class="card" id="login"><div class="login-kicker">AI APPAREL GROUP · TEAM ACCESS</div><h1>Welcome back</h1><h2 class="signin-subhead">Employee Sign In</h2><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary login-submit" type="submit">Sign In →</button></form><p class="reset-row"><button type="button" id="reset-link">Forgot password? Send reset email</button></p></section>
 <section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
 <section id="app"><div class="card"><h1 id="greeting">My Production Assignments</h1><p class="muted">Only work assigned to your employee account appears here.</p><div id="summary"></div></div><div id="assignments" class="grid"></div></section></main>
 <script>
