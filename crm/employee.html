@@ -126,6 +126,16 @@ body:has(#app.employee-shell[style*="display: flex"]) #message:empty{display:non
 .employee-dashboard-columns .panel{min-width:0}
 @media(max-width:900px){.employee-dashboard-columns{grid-template-columns:1fr}}
 @media(max-width:500px){.employee-section-heading{align-items:flex-start;flex-wrap:wrap}}
+
+.employee-job-card{padding:16px 0;border-bottom:1px solid #e7edf3}
+.employee-job-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.employee-job-heading strong{font-size:15px}
+.employee-job-heading small{display:block;color:#6d8197;margin-top:6px}
+.employee-job-expanded{margin-top:18px;border-top:1px solid #e7edf3;padding-top:14px}
+.employee-job-expanded h4{margin:18px 0 9px;color:#1c3d59}
+.employee-job-expanded .employee-job-details{margin-top:0}
+.employee-job-expanded .employee-work-row{padding:12px 0}
+.employee-job-actions{display:flex;gap:10px;margin-top:20px}
 </style></head><body><header class="header"><div class="portal-brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group logo"><span>AI APPAREL GROUP <small>EMPLOYEE PORTAL</small></span></div><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
 <section class="card" id="login"><div class="login-kicker">AI APPAREL GROUP · TEAM ACCESS</div><h1>Welcome back</h1><h2 class="signin-subhead">Employee Sign In</h2><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary login-submit" type="submit">Sign In →</button></form><p class="reset-row"><button type="button" id="reset-link">Forgot password? Send reset email</button></p></section>
 <section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
@@ -158,7 +168,7 @@ body:has(#app.employee-shell[style*="display: flex"]) #message:empty{display:non
         </div>
         <div class="panel employee-dashboard-production"><div class="employee-section-heading"><h3>Assigned Production Work</h3><button type="button" class="action secondary" data-employee-go="production">Manage Production</button></div><div id="dashboard-work"></div></div>
       </div>
-      <div id="employee-jobs" class="employee-page" hidden><div class="panel"><h3>Jobs &amp; Projects</h3><p class="info">Only jobs with stages assigned to you appear here.</p><div id="job-list"></div></div></div>
+      <div id="employee-jobs" class="employee-page" hidden><div class="panel"><h3>Jobs &amp; Projects</h3><p class="info">Select a job to view its specifications, approved artwork, production instructions, assigned stages, and related tasks.</p><div id="job-list"></div></div></div>
       <div id="employee-tasks" class="employee-page" hidden><div class="panel"><h3>My Tasks</h3><p class="info">Tasks assigned to you by management. Completed work can be reviewed in the Archived section.</p><div id="employee-task-list"></div><details style="margin-top:18px"><summary>Archived Tasks</summary><div id="employee-task-archive"></div></details></div></div>
       <div id="employee-notifications" class="employee-page" hidden><div class="panel"><h3>Notifications</h3><p class="info">New assignments and important updates appear here.</p><div id="employee-notification-list"></div></div></div>
       <div id="employee-production" class="employee-page" hidden><div class="panel"><h3>Production Management</h3><p class="info">Manage your assigned production stages. Updates are shared with management.</p><div id="assignments" class="employee-assignment-list"></div></div></div>
@@ -194,7 +204,8 @@ async function render(){
  for(const a of rows){const key=a.job_number||a.job;if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(a);}
  const workRows=rows.slice(0,5).map(a=>`<div class="employee-work-row"><div><strong>${esc(a.job)}</strong><small>${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</small></div><span class="state">${esc(a.status||"Not Started")}</span></div>`).join("");
  $("dashboard-work").innerHTML=workRows||'<div class="employee-empty">No production stages assigned yet.</div>';
- $("job-list").innerHTML=grouped.size?[...grouped.values()].map(group=>`<div class="employee-work-row"><div><strong>${esc(group[0].job)}</strong><small>${esc(group[0].job_number||"")} · ${group.length} assigned stage${group.length===1?"":"s"}</small></div><button class="action secondary" type="button" data-employee-go="production">Open Production</button></div>`).join(""):'<div class="employee-empty">No jobs assigned yet.</div>';
+ $("job-list").innerHTML=grouped.size?[...grouped.values()].map((group,index)=>`<article class="employee-job-card"><div class="employee-job-heading"><div><strong>${esc(group[0].job)}</strong><small>${esc(group[0].job_number||"")} · ${group.length} assigned stage${group.length===1?"":"s"}</small></div><button class="action secondary" type="button" data-open-job="${index}" aria-expanded="false">View Job Details</button></div><div class="employee-job-expanded" id="employee-job-expanded-${index}" hidden></div></article>`).join(""):'<div class="employee-empty">No jobs assigned yet.</div>';
+ window.employeeJobGroups=[...grouped.values()];
  $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="employee-empty">No work is assigned to you yet.</div>';
 
  await loadEmployeeTasks();
@@ -203,6 +214,7 @@ async function loadEmployeeTasks(){
  const {data,error}=await db.rpc("ai_apparel_crm_staff_tasks",{p_action:"list",p_payload:{}});
  if(error){msg("Unable to load tasks: "+error.message,true);return}
  const tasks=data.tasks||[],notifications=data.notifications||[];
+ window.employeeTaskRecords=tasks;
  const active=tasks.filter(t=>t.status!=="Archived"),archived=tasks.filter(t=>t.status==="Archived");
  const taskHtml=t=>`<div class="employee-task-row"><div><strong>${esc(t.title)}</strong><small>${esc(t.job||"General task")} · Due ${esc(t.due_date||"Not set")}</small><p>${esc(t.instructions||"No additional instructions.")}</p></div><label>Status<select data-employee-task="${esc(t.id)}">${["Not Started","In Progress","Completed"].map(x=>`<option value="${x}" ${t.status===x?"selected":""}>${x}</option>`).join("")}</select></label></div>`;
  $("employee-task-list").innerHTML=active.length?active.map(taskHtml).join(""):'<div class="employee-empty">No active tasks assigned.</div>';
@@ -238,19 +250,10 @@ document.addEventListener("click",e=>{
  const b=e.target.closest("[data-employee-page],[data-employee-go]");
  if(b)showEmployeePage(b.dataset.employeePage||b.dataset.employeeGo);
 });
-document.addEventListener("click",async e=>{
- const button=e.target.closest("[data-view-assignment]");
- if(!button)return;
- const target=$("employee-job-"+button.dataset.viewAssignment);
- if(!target)return;
- if(!target.hidden){target.hidden=true;button.setAttribute("aria-expanded","false");return;}
- target.hidden=false;button.setAttribute("aria-expanded","true");
- if(target.dataset.loaded==="true")return;
- target.textContent="Loading job details and artwork…";button.disabled=true;
- try{
-  const {data,error}=await db.rpc("ai_apparel_crm_employee_job_details",{p_assignment_id:button.dataset.viewAssignment});
-  if(error)throw Error(error.message);
-  if(!data)throw Error("Job details unavailable.");
+async function loadEmployeeJobArtwork(target,assignmentId){
+ const {data,error}=await db.rpc("ai_apparel_crm_employee_job_details",{p_assignment_id:assignmentId});
+ if(error)throw Error(error.message);
+ if(!data)throw Error("Job details unavailable.");
   const items=data.items||[],proofs=data.proofs||[];
   target.innerHTML=`<h4>Job Specifications</h4><p class="muted">${esc(data.job_number||"")} · Approved quote ${esc(data.quote_number||"Not linked")}</p><div class="employee-specs">${items.length?items.map(item=>`<div class="employee-spec"><strong>${esc(item.description||"Product")}</strong><span>Quantity: ${esc(item.quantity||0)}${item.variant?` · ${esc(item.variant)}`:""}${item.sku?` · SKU: ${esc(item.sku)}`:""}</span></div>`).join(""):"<p class='muted'>No approved quote specifications attached.</p>"}</div><h4>Production Instructions</h4><p class="employee-instructions">${esc(data.instructions||"No additional instructions provided.")}</p><h4>Artwork &amp; Proofs</h4><div class="employee-proof-list">${proofs.length?"":"<p class='muted'>No artwork uploaded for this job.</p>"}</div>`;
   const proofList=target.querySelector(".employee-proof-list");
@@ -263,7 +266,51 @@ document.addEventListener("click",async e=>{
    else link.href=signed.signedUrl;
    row.append(name,link);proofList.append(row);
   }
-  target.dataset.loaded="true";
+ return data;
+}
+document.addEventListener("click",async e=>{
+ const button=e.target.closest("[data-view-assignment]");
+ if(!button)return;
+ const target=$("employee-job-"+button.dataset.viewAssignment);
+ if(!target)return;
+ if(!target.hidden){target.hidden=true;button.setAttribute("aria-expanded","false");return;}
+ target.hidden=false;button.setAttribute("aria-expanded","true");
+ if(target.dataset.loaded==="true")return;
+ target.textContent="Loading job details and artwork…";button.disabled=true;
+ try{await loadEmployeeJobArtwork(target,button.dataset.viewAssignment);target.dataset.loaded="true";}
+ catch(err){target.textContent="Unable to load assigned job details: "+err.message;}
+ finally{button.disabled=false;}
+});
+document.addEventListener("click",async e=>{
+ const button=e.target.closest("[data-open-job]");if(!button)return;
+ const index=Number(button.dataset.openJob),group=window.employeeJobGroups?.[index];
+ const target=$("employee-job-expanded-"+index);if(!target||!group?.length)return;
+ if(!target.hidden){target.hidden=true;button.setAttribute("aria-expanded","false");button.textContent="View Job Details";return;}
+ target.hidden=false;button.setAttribute("aria-expanded","true");button.textContent="Hide Job Details";
+ if(target.dataset.loaded==="true")return;
+ target.innerHTML='<p class="info">Loading job details and artwork…</p>';button.disabled=true;
+ try{
+   const artwork=document.createElement("div");artwork.className="employee-job-details";
+   const details=await loadEmployeeJobArtwork(artwork,group[0].id);
+   const stageBlock=document.createElement("section");
+   stageBlock.innerHTML='<h4>My Assigned Production Stages</h4>';
+   for(const a of group){
+     const row=document.createElement("div");row.className="employee-work-row";
+     row.innerHTML=`<div><strong>${esc(a.stage)}</strong><small>Due ${esc(a.due_date||"Not set")}</small></div><span class="state">${esc(a.status||"Not Started")}</span>`;
+     stageBlock.append(row);
+   }
+   const taskBlock=document.createElement("section");
+   taskBlock.innerHTML='<h4>Related Tasks</h4>';
+   // Only display tasks explicitly linked to this job; never infer access from similar job names.
+   const related=(window.employeeTaskRecords||[]).filter(t=>details.job_id&&t.job_id===details.job_id);
+   if(related.length){for(const t of related){const row=document.createElement("div");row.className="employee-work-row";row.innerHTML=`<div><strong>${esc(t.title)}</strong><small>${esc(t.status)} · Due ${esc(t.due_date||"Not set")}</small><p class="employee-instructions">${esc(t.instructions||"")}</p></div>`;taskBlock.append(row);}}
+   else{const empty=document.createElement("p");empty.className="info";empty.textContent="No tasks linked to this job.";taskBlock.append(empty);}
+   const actions=document.createElement("div");actions.className="employee-job-actions";
+   const production=document.createElement("button");production.type="button";production.className="action";production.textContent="Manage My Production Stages";
+   production.addEventListener("click",()=>{showEmployeePage("production");const card=document.querySelector(`[data-assignment="${group[0].id}"]`);card?.closest(".assignment")?.scrollIntoView({behavior:"smooth",block:"start"});});
+   actions.append(production);
+   target.replaceChildren(artwork,stageBlock,taskBlock,actions);
+   target.dataset.loaded="true";
  }catch(err){target.textContent="Unable to load assigned job details: "+err.message;}
  finally{button.disabled=false;}
 });
