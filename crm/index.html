@@ -111,7 +111,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}.crm-prod-form{display:grid;gap:9px;padding:12px;border:1px solid #d6e1ec;border-radius:10px;margin-top:12px}.crm-prod-form label{display:grid;gap:5px;font-size:13px;font-weight:600}.crm-prod-form select,.crm-prod-form input,.crm-prod-form textarea{padding:9px;border:1px solid #c9d7e4;border-radius:7px;background:white;color:#173247;width:100%;box-sizing:border-box}.crm-prod-form button{background:#086eb1;color:white;border:0;border-radius:7px;padding:10px;cursor:pointer}#crm-production-overview{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:850px){#crm-production-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){#crm-production-overview{grid-template-columns:1fr}}
-</style></head>
+.crm-employee-invite{display:grid;grid-template-columns:1fr 1fr 150px auto;gap:12px;align-items:end}.crm-employee-invite label{display:grid;gap:6px;font-size:13px;font-weight:600}.crm-employee-invite input,.crm-employee-invite select{padding:10px;border:1px solid #cdd9e5;border-radius:8px;background:white;color:#18334b;min-width:0}.crm-employee-toggle{margin-top:8px;border:1px solid #cdd9e5;border-radius:7px;background:white;color:#19476b;padding:7px 12px;cursor:pointer}@media(max-width:900px){.crm-employee-invite{grid-template-columns:1fr 1fr}}@media(max-width:520px){.crm-employee-invite{grid-template-columns:1fr}}</style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
@@ -156,7 +156,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">New quotes will be managed by this CRM after the quote backend and customer approval flow are verified.</p><div class="panel"><div class="empty">Quote creation is intentionally disabled until AI Apparel's own database and authentication are configured.</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Track real jobs through production stages, assignments, due dates, and notes.</p><div class="panel"><h3>Production Overview</h3><div id="crm-production-overview" class="crm-business-summary">Loading…</div></div><div id="crm-production-jobs"></div></section>
-<section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Employee directory and production assignments. Employee account provisioning will be enabled separately after access permissions are configured.</p><div class="panel"><div class="crm-business-summary" id="crm-employee-metrics">Loading…</div></div><div class="panel"><h3>Employee Directory</h3><div id="crm-employee-directory">Loading employee records…</div></div><div class="panel"><h3>Production Assignments</h3><div id="crm-employee-assignments">Loading assignments…</div></div></section>
+<section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Invite employees by email and manage their access to assigned production work.</p><div class="panel"><h3>Invite Employee</h3><form id="crm-employee-invite" class="crm-employee-invite"><label>Full name<input name="name" required maxlength="150" placeholder="Employee name"></label><label>Email address<input name="email" type="email" required placeholder="employee@example.com"></label><label>Role<select name="role"><option value="employee">Employee</option><option value="manager">Manager</option></select></label><button type="submit" class="action">Send Invitation</button></form><p class="info">The employee receives an email to activate their account. They can access only their assigned production stages. No password is shared with administrators.</p></div><div class="panel"><div class="crm-business-summary" id="crm-employee-metrics">Loading…</div></div><div class="panel"><h3>Employee Directory</h3><div id="crm-employee-directory">Loading employee records…</div></div><div class="panel"><h3>Production Assignments</h3><div id="crm-employee-assignments">Loading assignments…</div></div></section>
 <section id="matching" hidden><h2>Business Matching Rules</h2><p class="lead">Set up product-title phrases that identify an organization. Rules remain in draft until reviewed and activated in a later phase. They do not change rewards or orders.</p><div class="panel"><h3>Add draft matching rule</h3><div class="quick" style="flex-wrap:wrap"><select id="rule-business" style="padding:10px;min-width:190px"><option value="">Select organization</option></select><input id="rule-phrase" placeholder="Product title contains (e.g., Carolina ENT)" style="padding:10px;min-width:240px;flex:1"><button class="action" type="button" id="add-rule">Save draft rule</button></div><p class="info">Use distinctive organization names. Generic words such as "shirt" or "team" can create incorrect matches.</p><div id="rule-list" class="empty">Sign in to load rules.</div></div></section>
 <section id="orderreviews" hidden><h2>Order Match Review</h2><p class="lead">Review suggested organization matches before linking an order. Approval never changes rewards points or balances.</p><div class="panel"><div class="quick"><button class="action" id="refresh-order-reviews" type="button">Refresh reviews</button></div><div id="order-review-list" class="empty">Sign in to load order reviews.</div></div></section>
 <section id="rewards" hidden><h2>Organization Rewards</h2><p class="lead">The existing Rewards Portal remains the source of truth for organization balances and points.</p>
@@ -419,20 +419,45 @@ document.addEventListener("submit",async e=>{
 async function loadEmployeeDirectory(){
  const {data,error}=await db.rpc("ai_apparel_crm_production",{p_action:"list",p_payload:{}});
  if(error)throw Error(error.message);
- const staff=data.staff||[],jobs=data.jobs||[],assigned=[];
+ const jobs=data.jobs||[],assigned=[];
+ const {data:staff,error:staffError}=await db.rpc("ai_apparel_crm_employee_directory",{p_action:"list",p_payload:{}});
+ if(staffError)throw Error(staffError.message);
  jobs.forEach(j=>(j.steps||[]).forEach(step=>{
   if(step.employee_id)assigned.push({employee_id:step.employee_id,job:j.title,stage:(data.stages||[]).find(x=>x.id===step.stage_id)?.name||"Production stage",status:step.status||"Not Started"});
  }));
- $("crm-employee-metrics").innerHTML=`<div><strong>${staff.length}</strong><small>Active employees</small></div><div><strong>${assigned.length}</strong><small>Assigned stages</small></div><div><strong>${jobs.length}</strong><small>Production jobs</small></div>`;
- $("crm-employee-directory").innerHTML=staff.length?`<div class="crm-business-detail-list">${staff.map(p=>`<div><strong>${escapeHtml(p.name)}</strong><small>Active · ${assigned.filter(a=>a.employee_id===p.id).length} stage assignments</small></div>`).join("")}</div>`:'<p class="info">No employee records yet. We will add employee creation and permissions before onboarding staff.</p>';
+ $("crm-employee-metrics").innerHTML=`<div><strong>${staff.filter(p=>p.active).length}</strong><small>Active employees</small></div><div><strong>${assigned.length}</strong><small>Assigned stages</small></div><div><strong>${jobs.length}</strong><small>Production jobs</small></div>`;
+ $("crm-employee-directory").innerHTML=staff.length?`<div class="crm-business-detail-list">${staff.map(p=>`<div><strong>${escapeHtml(p.name)}</strong><small>${p.active?"Active":"Inactive"} · ${escapeHtml(p.role||"employee")} · ${escapeHtml(p.email||"No email")} · ${assigned.filter(a=>a.employee_id===p.id).length} stage assignments</small><button class="crm-employee-toggle" type="button" data-employee-toggle="${escapeHtml(p.id)}" data-next-active="${p.active?"false":"true"}">${p.active?"Deactivate":"Reactivate"}</button></div>`).join("")}</div>`:'<p class="info">No employees yet. Use the invitation form above to invite your first employee.</p>';
  $("crm-employee-assignments").innerHTML=assigned.length?`<table><thead><tr><th>Employee</th><th>Job</th><th>Stage</th><th>Status</th></tr></thead><tbody>${assigned.map(a=>`<tr><td>${escapeHtml(staff.find(p=>p.id===a.employee_id)?.name||"Inactive employee")}</td><td>${escapeHtml(a.job)}</td><td>${escapeHtml(a.stage)}</td><td>${escapeHtml(a.status)}</td></tr>`).join("")}</tbody></table>`:'<p class="info">No production assignments yet. Assigned stages will appear here automatically.</p>';
 }
 document.querySelector('button[data-page="employees"]').addEventListener("click",()=>loadEmployeeDirectory().catch(err=>status(err.message)));
+document.querySelector("#crm-employee-invite").addEventListener("submit",async e=>{
+ e.preventDefault();const form=e.currentTarget,button=form.querySelector('button[type="submit"]');button.disabled=true;
+ try{
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError||!session)throw Error("Please sign in again.");
+  const payload=Object.fromEntries(new FormData(form));
+  const response=await fetch(CRM_SUPABASE_URL+"/functions/v1/ai-apparel-invite-employee",{method:"POST",headers:{"Content-Type":"application/json","apikey":CRM_PUBLISHABLE_KEY,"Authorization":"Bearer "+session.access_token},body:JSON.stringify(payload)});
+  const result=await response.json();
+  if(!response.ok)throw Error(result.error||"Invitation could not be sent.");
+  form.reset();status("Invitation sent to "+payload.email);await loadEmployeeDirectory();
+ }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
+});
+document.addEventListener("click",async e=>{
+ const button=e.target.closest("[data-employee-toggle]");if(!button)return;
+ const active=button.dataset.nextActive==="true";
+ if(!confirm(active?"Reactivate this employee?":"Deactivate this employee? They will lose access to their assignments."))return;
+ button.disabled=true;
+ try{
+  const {error}=await db.rpc("ai_apparel_crm_employee_directory",{p_action:"set_active",p_payload:{id:button.dataset.employeeToggle,active}});
+  if(error)throw Error(error.message);
+  status(active?"Employee reactivated.":"Employee deactivated.");await loadEmployeeDirectory();
+ }catch(err){status(err.message);alert(err.message);button.disabled=false}
+});
 async function loadProductionManagement(){
  const {data,error}=await db.rpc("ai_apparel_crm_production",{p_action:"list",p_payload:{}});
  if(error)throw Error(error.message);
  const jobs=data.jobs||[],stages=data.stages||[],staff=data.staff||[];
- $("crm-production-overview").innerHTML=`<div><strong>${jobs.length}</strong><small>Total jobs</small></div><div><strong>${jobs.filter(j=>!["Completed","Closed","Cancelled"].includes(j.status)).length}</strong><small>Active jobs</small></div><div><strong>${stages.length}</strong><small>Production stages</small></div><div><strong>${staff.length}</strong><small>Active employees</small></div>`;
+ $("crm-production-overview").innerHTML=`<div><strong>${jobs.length}</strong><small>Total jobs</small></div><div><strong>${jobs.filter(j=>!["Completed","Closed","Cancelled"].includes(j.status)).length}</strong><small>Active jobs</small></div><div><strong>${stages.length}</strong><small>Production stages</small></div><div><strong>${staff.filter(p=>p.active).length}</strong><small>Active employees</small></div>`;
  $("crm-production-jobs").innerHTML=jobs.length?jobs.map(j=>{
  const steps=Object.fromEntries((j.steps||[]).map(st=>[st.stage_id,st]));
  return `<div class="panel"><h3><button class="crm-job-link" type="button" data-open-job="${escapeHtml(j.id)}">${escapeHtml(j.title)}</button></h3><p class="info">${escapeHtml(j.number||"")} · ${escapeHtml(j.customer||"No customer")} · ${escapeHtml(j.business||"No business")} · ${escapeHtml(j.status)}</p><form data-production-due="${escapeHtml(j.id)}" class="crm-prod-form"><label>Due date <input type="date" name="due_date" value="${escapeHtml(j.due_date||"")}"></label><button type="submit">Save due date</button></form><div class="crm-prod-grid">${stages.map(st=>{
