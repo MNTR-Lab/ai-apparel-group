@@ -34,10 +34,115 @@ button.primary:hover{background:#005a97}
 .employee-instructions{white-space:pre-wrap;overflow-wrap:anywhere}
 .employee-proof a{color:#006fba;font-weight:700}
 .assignment>button[data-view-assignment]{margin:8px 0 10px}
+
+/* Shared visual system with the main AI Apparel CRM */
+
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#192536;background:#f4f6f9;--blue:#006fba;--pink:#cc338b}
+*{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer}.shell{display:flex;min-height:100vh}
+aside{width:250px;flex-shrink:0;background:#000000;color:white;padding:26px 16px;display:flex;flex-direction:column}
+.brand{padding:8px 10px 24px;font-size:21px;font-weight:850;line-height:1.2}.brand img{display:block;width:100%;max-width:185px;max-height:100px;object-fit:contain;object-position:left center;margin-bottom:10px}.brand .brand-name{font-size:14px;letter-spacing:.5px}.brand small{display:block;color:#FFFFFF;font-size:11px;letter-spacing:1.5px;margin-top:8px}
+nav{display:grid;gap:5px}.nav{background:none;border:0;color:#FFFFFF;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px}
+.nav:hover,.nav.active{background:rgba(255,255,255,.16);color:#FFFFFF;border-left:3px solid #FFFFFF}.foot{margin-top:auto;color:#FFFFFF;font-size:12px;padding:14px}
+main{flex:1;min-width:0}.top{background:white;border-bottom:1px solid #e2e8f0;padding:19px 30px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top h1{font-size:20px;margin:0}.pill{background:#fff4dc;color:#865600;border:1px solid #f2dba4;border-radius:30px;padding:7px 12px;font-size:12px;font-weight:750}
+.content{padding:28px 30px;max-width:1450px;margin:auto}.lead{color:#6d7d92;margin:4px 0 22px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.card,.panel{background:white;border:1px solid #e2e7ee;border-radius:13px;padding:20px;box-shadow:0 3px 12px #18283a08}
+.card label{font-size:12px;color:#66798d}.card strong{display:block;font-size:26px;margin:12px 0}.card small{font-size:12px;color:#8493a4}
+.columns{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:17px}.panel h3{margin:0 0 15px;font-size:16px}
+input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}th{font-size:11px;text-transform:uppercase;color:#728198;background:#f7f9fc}th,td{padding:13px 11px;border-bottom:1px solid #edf0f4}
+.state{font-size:11px;border-radius:30px;padding:5px 9px;background:#e8f3ff;color:#24639c}.state.green{background:#e5f6ec;color:#247149}
+.action{background:var(--blue);color:white;border:0;border-radius:8px;padding:10px 14px;text-decoration:none;display:inline-block;font-size:13px;font-weight:700}
+.action.secondary{background:white;color:var(--blue);border:1px solid #c7d7e5}
+.notice{margin-top:17px;background:#e9f3ff;border:1px solid #c9e1f8;border-radius:11px;padding:15px;font-size:13px;line-height:1.6}
+[hidden]{display:none!important}.empty{padding:30px;text-align:center;color:#75879b;border:1px dashed #d3dce7;border-radius:10px;background:#fafbfd;font-size:14px}
+.quick{display:flex;gap:10px;flex-wrap:wrap}.info{line-height:1.6;color:#607186;font-size:14px}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.columns{grid-template-columns:1fr}}
+@media(max-width:700px){.shell{display:block}aside{width:auto;padding:12px}.brand{padding:8px}.foot{display:none}nav{display:flex;overflow-x:auto}.nav{white-space:nowrap}.top{padding:15px}.content{padding:17px}.grid{grid-template-columns:1fr 1fr}.card{padding:14px}}
+
+
+#app.employee-shell{display:flex!important;min-height:100vh;background:#f4f6f9}
+#app.employee-shell[style*="display: none"]{display:none!important}
+body:has(#app.employee-shell[style*="display: flex"]) .header{display:none}
+body:has(#app.employee-shell[style*="display: flex"]) .wrap{max-width:none;margin:0;padding:0}
+body:has(#app.employee-shell[style*="display: flex"]) #message{position:fixed;right:24px;bottom:12px;z-index:1000;background:#fff;border-radius:8px;padding:5px 12px;box-shadow:0 3px 14px #0001}
+body:has(#app.employee-shell[style*="display: flex"]) #message:empty{display:none}
+.employee-sidebar{width:250px;flex-shrink:0;background:#000;color:white;padding:26px 16px;display:flex;flex-direction:column}
+.employee-sidebar .brand{padding:8px 10px 24px;font-size:21px;font-weight:850;line-height:1.2}
+.employee-sidebar .brand img{display:block;width:100%;max-width:185px;max-height:100px;object-fit:contain;object-position:left center;margin-bottom:10px}
+.employee-sidebar .brand-name{font-size:14px;letter-spacing:.5px}
+.employee-sidebar .brand small{display:block;color:white;font-size:11px;letter-spacing:1.5px;margin-top:8px}
+.employee-sidebar nav{display:grid;gap:5px}
+.employee-sidebar .nav{background:none;border:0;color:white;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px}
+.employee-sidebar .nav.active,.employee-sidebar .nav:hover{background:rgba(255,255,255,.16);border-left:3px solid white}
+.employee-sidebar .foot{margin-top:auto;color:white;font-size:12px;padding:14px}
+.employee-main{flex:1;min-width:0}
+.employee-main .top{background:white;border-bottom:1px solid #e2e8f0;padding:19px 30px;display:flex;justify-content:space-between;align-items:center}
+.employee-main .top h1{font-size:20px;margin:0}
+.employee-top-sub{font-size:12px;color:#77889b;margin-top:4px}
+.employee-main .content{padding:28px 30px;max-width:1450px;margin:auto}
+.employee-main .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.employee-main .card,.employee-main .panel{background:white;border:1px solid #e2e7ee;border-radius:13px;padding:20px;box-shadow:0 3px 12px #18283a08;margin-bottom:0}
+.employee-main .card label{font-size:12px;color:#66798d}
+.employee-main .card strong{display:block;font-size:26px;margin:12px 0}
+.employee-main .card small{font-size:12px;color:#8493a4}
+.employee-main .columns{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:17px}
+.employee-main .panel h3{margin:0 0 15px;font-size:16px}
+.employee-main .lead{color:#6d7d92;margin:4px 0 22px;font-size:14px}
+.employee-main .action{background:#006fba;color:white;border:0;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700}
+.employee-main .action.secondary{background:white;color:#006fba;border:1px solid #c7d7e5}
+.employee-main .quick{display:flex;gap:10px;flex-wrap:wrap}
+.employee-main .info{line-height:1.6;color:#607186;font-size:14px}
+.employee-main .pill{background:#fff4dc;color:#865600;border:1px solid #f2dba4}
+.employee-main .assignment{border:1px solid #e2e7ee;margin:14px 0;box-shadow:none}
+.employee-main .assignment h3{margin:0 0 6px;font-size:17px}
+.employee-main .assignment .muted{margin:5px 0 14px}
+.employee-main .assignment .primary{margin-bottom:12px}
+.employee-main .assignment form{border-top:1px solid #e9eef3;padding-top:14px}
+.employee-main .assignment form label{display:grid;gap:7px;font-size:13px;font-weight:700;margin-bottom:12px;color:#334b63}
+.employee-main .assignment select,.employee-main .assignment textarea{width:100%;padding:11px;border:1px solid #cad6e2;border-radius:8px;background:#fff;color:#18334a;font:inherit}
+.employee-main .assignment form button{margin-bottom:0}
+.employee-assignment-list{display:block}
+.employee-work-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #edf0f4;flex-wrap:wrap}
+.employee-work-row strong{font-size:14px}
+.employee-work-row small{display:block;color:#71869a;margin-top:5px}
+.employee-work-row .state{font-size:11px;border-radius:30px;padding:5px 9px;background:#e8f3ff;color:#24639c}
+.employee-empty{padding:25px;text-align:center;color:#75879b;border:1px dashed #d3dce7;border-radius:10px;background:#fafbfd}
+@media(max-width:1000px){.employee-main .grid{grid-template-columns:repeat(2,1fr)}.employee-main .columns{grid-template-columns:1fr}}
+@media(max-width:700px){#app.employee-shell{display:block!important}.employee-sidebar{width:auto;padding:12px}.employee-sidebar .brand{padding:8px}.employee-sidebar .foot{display:none}.employee-sidebar nav{display:flex;overflow-x:auto}.employee-sidebar .nav{white-space:nowrap}.employee-main .top{padding:15px}.employee-main .content{padding:17px}.employee-main .grid{grid-template-columns:repeat(2,1fr)}}
 </style></head><body><header class="header"><div class="portal-brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group logo"><span>AI APPAREL GROUP <small>EMPLOYEE PORTAL</small></span></div><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
 <section class="card" id="login"><div class="login-kicker">AI APPAREL GROUP · TEAM ACCESS</div><h1>Welcome back</h1><h2 class="signin-subhead">Employee Sign In</h2><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary login-submit" type="submit">Sign In →</button></form><p class="reset-row"><button type="button" id="reset-link">Forgot password? Send reset email</button></p></section>
 <section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
-<section id="app"><div class="card"><h1 id="greeting">My Production Assignments</h1><p class="muted">Only work assigned to your employee account appears here.</p><div id="summary"></div></div><div id="assignments" class="grid"></div></section></main>
+<section id="app" class="employee-shell">
+  <aside class="employee-sidebar">
+    <div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group"><span class="brand-name">AI APPAREL GROUP</span><small>EMPLOYEE CRM</small></div>
+    <nav aria-label="Employee navigation">
+      <button type="button" class="nav active" data-employee-page="dashboard">Dashboard</button>
+      <button type="button" class="nav" data-employee-page="jobs">Jobs &amp; Projects</button>
+      <button type="button" class="nav" data-employee-page="production">Production Management</button>
+    </nav>
+    <div class="foot">AI Apparel Group · Employee Access</div>
+  </aside>
+  <div class="employee-main">
+    <div class="top"><div><h1 id="page-title">Dashboard</h1><div class="employee-top-sub">Employee Workspace</div></div><span class="pill">EMPLOYEE</span></div>
+    <div class="content">
+      <p id="employee-welcome" class="lead"></p>
+      <div id="employee-dashboard" class="employee-page">
+        <div class="grid employee-metrics">
+          <div class="card"><label>My Assigned Stages</label><strong id="metric-assigned">0</strong><small>Production assignments</small></div>
+          <div class="card"><label>In Progress</label><strong id="metric-active">0</strong><small>Stages underway</small></div>
+          <div class="card"><label>Completed</label><strong id="metric-complete">0</strong><small>Finished stages</small></div>
+          <div class="card"><label>On Hold</label><strong id="metric-hold">0</strong><small>Stages requiring attention</small></div>
+        </div>
+        <div class="columns">
+          <div class="panel"><h3>My Production Work</h3><div id="dashboard-work"></div></div>
+          <div class="panel"><h3>Quick Access</h3><p class="info">Review your assigned jobs, open artwork, and update production stages.</p><div class="quick"><button type="button" class="action" data-employee-go="jobs">My Jobs</button><button type="button" class="action secondary" data-employee-go="production">Production Management</button></div></div>
+        </div>
+      </div>
+      <div id="employee-jobs" class="employee-page" hidden><div class="panel"><h3>Jobs &amp; Projects</h3><p class="info">Only jobs with stages assigned to you appear here.</p><div id="job-list"></div></div></div>
+      <div id="employee-production" class="employee-page" hidden><div class="panel"><h3>Production Management</h3><p class="info">Manage your assigned production stages. Updates are shared with management.</p><div id="assignments" class="employee-assignment-list"></div></div></div>
+    </div>
+  </div>
+</section></main>
 <script>
 const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co",KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
 const db=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{detectSessionInUrl:true}});
@@ -52,15 +157,35 @@ async function render(){
  $("signout").style.display=session?"block":"none";
  $("login").style.display=session?"none":"block";
  $("password-setup").style.display=session&&passwordFlow?"block":"none";
- $("app").style.display=session&&!passwordFlow?"block":"none";
+ $("app").style.display=session&&!passwordFlow?"flex":"none";
  if(!session||passwordFlow)return;
  const {data,error}=await db.rpc("ai_apparel_crm_employee_portal");
  if(error){$("app").style.display="none";msg("Employee access is not active for this account. Contact your administrator.",true);return}
- $("greeting").textContent="Welcome, "+data.employee.name;
+ $("employee-welcome").textContent="Welcome, "+data.employee.name+". Here's your assigned work.";
  const rows=data.assignments||[];
- $("summary").innerHTML=`<span class="pill">${rows.length} assigned production stages</span>`;
- $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="card"><p class="muted">No work is assigned to you yet.</p></div>';
+ window.employeeAssignments=rows;
+ $("metric-assigned").textContent=rows.length;
+ $("metric-active").textContent=rows.filter(x=>x.status==="In Progress").length;
+ $("metric-complete").textContent=rows.filter(x=>x.status==="Completed").length;
+ $("metric-hold").textContent=rows.filter(x=>x.status==="On Hold").length;
+ const grouped=new Map();
+ for(const a of rows){const key=a.job_number||a.job;if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(a);}
+ const workRows=rows.map(a=>`<div class="employee-work-row"><div><strong>${esc(a.job)}</strong><small>${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</small></div><span class="state">${esc(a.status||"Not Started")}</span></div>`).join("");
+ $("dashboard-work").innerHTML=workRows||'<div class="employee-empty">No production stages assigned yet.</div>';
+ $("job-list").innerHTML=grouped.size?[...grouped.values()].map(group=>`<div class="employee-work-row"><div><strong>${esc(group[0].job)}</strong><small>${esc(group[0].job_number||"")} · ${group.length} assigned stage${group.length===1?"":"s"}</small></div><button class="action secondary" type="button" data-employee-go="production">Open Production</button></div>`).join(""):'<div class="employee-empty">No jobs assigned yet.</div>';
+ $("assignments").innerHTML=rows.length?rows.map(a=>`<article class="card assignment"><h3>${esc(a.job)}</h3><p class="muted">${esc(a.job_number||"")} · ${esc(a.stage)} · Due ${esc(a.due_date||"Not set")}</p><button class="primary" type="button" data-view-assignment="${esc(a.id)}" aria-expanded="false">View Job Details &amp; Artwork</button><div class="employee-job-details" id="employee-job-${esc(a.id)}" hidden></div><form data-assignment="${esc(a.id)}"><label>Status<select name="status">${["Not Started","In Progress","On Hold","Completed"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select></label><label>Production notes<textarea name="notes" maxlength="4000" rows="4">${esc(a.notes||"")}</textarea></label><button class="primary" type="submit">Save Update</button></form></article>`).join(""):'<div class="employee-empty">No work is assigned to you yet.</div>';
+
 }
+function showEmployeePage(page){
+ if(!["dashboard","jobs","production"].includes(page))return;
+ document.querySelectorAll("[data-employee-page]").forEach(b=>b.classList.toggle("active",b.dataset.employeePage===page));
+ document.querySelectorAll(".employee-page").forEach(el=>el.hidden=el.id!=="employee-"+page);
+ $("page-title").textContent=({dashboard:"Dashboard",jobs:"Jobs & Projects",production:"Production Management"})[page];
+}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-employee-page],[data-employee-go]");
+ if(b)showEmployeePage(b.dataset.employeePage||b.dataset.employeeGo);
+});
 document.addEventListener("click",async e=>{
  const button=e.target.closest("[data-view-assignment]");
  if(!button)return;
