@@ -99,6 +99,11 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-business-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}.crm-business-summary>div{padding:15px;border:1px solid #e3eaf1;border-radius:12px;background:#f6f9fc}.crm-business-summary strong,.crm-business-summary small{display:block}.crm-business-summary strong{font-size:20px}.crm-business-summary small{color:#65788c;font-size:12px;margin-top:4px}
 .crm-business-detail-list{display:grid;gap:8px;margin-bottom:22px}.crm-business-detail-list>div{padding:12px 14px;border:1px solid #e3eaf1;border-radius:10px}.crm-business-detail-list strong,.crm-business-detail-list small{display:block}.crm-business-detail-list small{color:#65788c;margin-top:5px;overflow-wrap:anywhere}
 @media(max-width:600px){.crm-business-summary{grid-template-columns:1fr}}
+
+.crm-job-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:end}
+.crm-job-form label{display:grid;gap:7px;font-size:13px;font-weight:700;color:#334b63}
+.crm-job-form input,.crm-job-form select{width:100%;box-sizing:border-box;min-height:42px;padding:10px;border:1px solid #cedbe8;border-radius:9px;background:white;color:#24374c;font:inherit}
+.crm-job-form .action{justify-self:start;min-height:42px}@media(max-width:650px){.crm-job-form{grid-template-columns:1fr}}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -142,7 +147,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <button class="action" type="submit">Save Client</button></form></div></div></section>
 <section id="businesses" hidden><h2>Business Accounts</h2><p class="lead">Organization profiles, verified customers, and approved Shopify order associations.</p><div class="panel"><div id="business-account-list" class="crm-business-cards"><p class="info">Sign in to load organizations.</p></div></div></section>
 <section id="quotes" hidden><h2>Quotes & Estimates</h2><p class="lead">New quotes will be managed by this CRM after the quote backend and customer approval flow are verified.</p><div class="panel"><div class="empty">Quote creation is intentionally disabled until AI Apparel's own database and authentication are configured.</div></div></section>
-<section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Track client jobs from approved quote through completion.</p><div class="panel"><div class="empty">Job records will appear here after migration mapping.</div></div></section>
+<section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Blueprint's production stages and automatic completion workflow will be adapted for AI Apparel.</p><div class="panel"><div class="empty">Production stage updates are disabled in staging.</div></div></section>
 <section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Assignments, notifications, task completion and access controls.</p><div class="panel"><div class="empty">Employee accounts and role-based permissions are not configured yet.</div></div></section>
 <section id="matching" hidden><h2>Business Matching Rules</h2><p class="lead">Set up product-title phrases that identify an organization. Rules remain in draft until reviewed and activated in a later phase. They do not change rewards or orders.</p><div class="panel"><h3>Add draft matching rule</h3><div class="quick" style="flex-wrap:wrap"><select id="rule-business" style="padding:10px;min-width:190px"><option value="">Select organization</option></select><input id="rule-phrase" placeholder="Product title contains (e.g., Carolina ENT)" style="padding:10px;min-width:240px;flex:1"><button class="action" type="button" id="add-rule">Save draft rule</button></div><p class="info">Use distinctive organization names. Generic words such as "shirt" or "team" can create incorrect matches.</p><div id="rule-list" class="empty">Sign in to load rules.</div></div></section>
@@ -361,6 +366,30 @@ $("business-account-list").addEventListener("click",async e=>{
  }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
 });
 document.querySelector('button[data-page="businesses"]').addEventListener("click",()=>loadBusinessAccounts().catch(e=>status(e.message)));
+async function loadProductionJobs(){
+ const {data,error}=await db.rpc("ai_apparel_crm_jobs",{p_action:"list",p_payload:{}});
+ if(error)throw Error(error.message);
+ $("crm-jobs-list").innerHTML=data.length?'<table><thead><tr><th>Job</th><th>Customer</th><th>Business</th><th>Status</th><th>Shopify order</th></tr></thead><tbody>'+data.map(j=>`<tr><td><strong>${escapeHtml(j.title)}</strong><div class="info">${escapeHtml(j.job_number||"")}</div></td><td>${escapeHtml(j.customer_name||"Not assigned")}</td><td>${escapeHtml(j.business_name||"Not assigned")}</td><td>${escapeHtml(j.status||"New")}</td><td>${escapeHtml(j.shopify_order_id?String(j.shopify_order_id).split("/").pop():"—")}</td></tr>`).join("")+'</tbody></table>':'<p class="info">No production jobs have been created yet.</p>';
+}
+async function setupJobForm(){
+ if(!businessOptions.length)await loadBusinesses();
+ $("crm-job-business").innerHTML='<option value="">No business selected</option>'+businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
+ const {data,error}=await db.rpc("ai_apparel_crm_customers",{p_search:"",p_limit:200,p_offset:0});
+ if(error)throw Error(error.message);
+ const rows=data.items||[];
+ $("crm-job-customer").innerHTML='<option value="">No customer selected</option>'+rows.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||c.email||"Unnamed customer")} — ${escapeHtml(c.email||"")}</option>`).join("");
+ await loadProductionJobs();
+}
+document.querySelector('button[data-page="jobs"]').addEventListener("click",()=>setupJobForm().catch(e=>status(e.message)));
+$("crm-job-form").addEventListener("submit",async e=>{
+ e.preventDefault();const button=e.currentTarget.querySelector('button[type="submit"]');button.disabled=true;
+ try{
+  const payload=Object.fromEntries(new FormData(e.currentTarget));
+  const {error}=await db.rpc("ai_apparel_crm_jobs",{p_action:"create",p_payload:payload});
+  if(error)throw Error(error.message);
+  e.currentTarget.reset();await loadProductionJobs();status("Production job created and associations saved.");
+ }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
+});
 $("logout").addEventListener("click",async()=>{await db.auth.signOut();location.reload()});
 if(db)db.auth.getSession().then(({data})=>{if(data.session)refresh();else status("Sign in to access AI Apparel CRM.")});
 else status("Authentication library failed to load.");
