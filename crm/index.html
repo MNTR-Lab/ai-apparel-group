@@ -58,6 +58,22 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 #clients .customer-orders-btn:hover{border-color:#7caed4;background:#eff7ff}
 #clients .customer-orders-btn:focus-visible,#clients .business-link-btn:focus-visible{outline:3px solid #a5d5f5;outline-offset:2px}
 #clients #shopify-customers td{vertical-align:middle}
+
+/* Custom searchable business picker; does not rely on native OS select styling */
+#clients .business-select-wrap{overflow:visible;max-width:none;min-width:205px}
+#clients .business-select-wrap::after{display:none}
+#clients .business-picker{position:relative;width:225px;max-width:100%}
+#clients .business-picker-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:42px;padding:9px 13px;background:#fff;border:1px solid #c5d4e3;border-radius:11px;color:#263b53;font:600 13px inherit;cursor:pointer;text-align:left;box-shadow:0 1px 2px #1b355010}
+#clients .business-picker-trigger:hover{border-color:#006fba;background:#f7fbff}
+#clients .business-picker-trigger[aria-expanded="true"]{border-color:#006fba;box-shadow:0 0 0 3px #006fba22}
+#clients .business-chevron{font-size:21px;line-height:12px;color:#006fba}
+#clients .business-picker-menu{position:absolute;top:calc(100% + 5px);left:0;z-index:1000;width:max(245px,100%);padding:9px;border:1px solid #d5e1ee;border-radius:12px;background:white;box-shadow:0 12px 35px #142d4c30}
+#clients .business-picker-menu[hidden],#clients .business-picker-option[hidden]{display:none!important}
+#clients .business-picker-search{width:100%;box-sizing:border-box;padding:10px 11px;margin-bottom:7px;border:1px solid #d5e1ee;border-radius:8px;font-size:13px}
+#clients .business-picker-options{max-height:240px;overflow-y:auto}
+#clients .business-picker-option{display:block;width:100%;padding:11px 10px;border:0;border-radius:8px;background:transparent;color:#25394e;text-align:left;font-size:13px;cursor:pointer}
+#clients .business-picker-option:hover,#clients .business-picker-option:focus{background:#eaf5fc;color:#006fba}
+#clients #shopify-customers td{overflow:visible}
 </style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -195,10 +211,37 @@ $("customer-count").textContent=`${total.toLocaleString()} imported customers �
 const options=businessOptions.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
 $("shopify-customers").innerHTML=rows.length?'<table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Source</th><th>Linked businesses</th><th>Manage association</th><th>Order history</th></tr></thead><tbody>'+rows.map(c=>{
 const links=(c.businesses||[]).map(b=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:4px 7px;border-radius:6px;background:#e9f3fa">${escapeHtml(b.name)} <button type="button" data-unlink="${escapeHtml(c.id)}" data-business="${escapeHtml(b.id)}" title="Remove association" style="border:0;background:transparent;color:#a12b45;font-weight:bold">×</button></span>`).join("")||"Not linked";
-return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><div class="business-association"><div class="business-select-wrap"><select aria-label="Select business for ${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"customer")}" class="business-select" data-customer="${escapeHtml(c.id)}"><option value="">Select business…</option>${options}</select></div><button type="button" data-add-business="${escapeHtml(c.id)}" class="action business-link-btn">Link</button></div></td><td><button type="button" class="customer-orders-btn" data-view-orders="${escapeHtml(c.id)}">View Orders</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
+return `<tr><td>${escapeHtml([c.first_name,c.last_name].filter(Boolean).join(" ")||"Unnamed customer")}</td><td>${escapeHtml(c.email)}</td><td>${escapeHtml(c.phone)}</td><td>${escapeHtml(c.source)}</td><td>${links}</td><td><div class="business-association"><div class="business-select-wrap"><div class="business-picker" data-picker="${escapeHtml(c.id)}"><button type="button" class="business-picker-trigger" data-open-picker="${escapeHtml(c.id)}" aria-expanded="false"><span class="business-picker-label">Select business</span><span class="business-chevron">⌄</span></button><div class="business-picker-menu" hidden><input class="business-picker-search" type="search" placeholder="Search businesses…" aria-label="Search businesses"><div class="business-picker-options">${businessOptions.map(b=>`<button type="button" class="business-picker-option" data-pick-business="${escapeHtml(b.id)}" data-business-name="${escapeHtml(b.name)}">${escapeHtml(b.name)}</button>`).join("")}</div></div><select hidden data-customer="${escapeHtml(c.id)}"><option value="">Select business</option>${options}</select></div></div><button type="button" data-add-business="${escapeHtml(c.id)}" class="action business-link-btn">Link</button></div></td><td><button type="button" class="customer-orders-btn" data-view-orders="${escapeHtml(c.id)}">View Orders</button></td></tr>`}).join("")+'</tbody></table>':'<div class="empty">No matching customers.</div>';
 $("previous-customers").disabled=customerOffset===0;
 $("next-customers").disabled=customerOffset+rows.length>=total;
 }
+$("shopify-customers").addEventListener("click",e=>{
+ const trigger=e.target.closest("[data-open-picker]");
+ const choice=e.target.closest("[data-pick-business]");
+ if(trigger){
+  const picker=trigger.closest(".business-picker"),menu=picker.querySelector(".business-picker-menu"),open=menu.hidden;
+  document.querySelectorAll(".business-picker-menu").forEach(m=>m.hidden=true);
+  document.querySelectorAll(".business-picker-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
+  menu.hidden=!open;trigger.setAttribute("aria-expanded",String(open));
+  if(open){const search=picker.querySelector(".business-picker-search");search.value="";picker.querySelectorAll(".business-picker-option").forEach(b=>b.hidden=false);search.focus()}
+ }else if(choice){
+  const picker=choice.closest(".business-picker");
+  picker.querySelector("select[data-customer]").value=choice.dataset.pickBusiness;
+  picker.querySelector(".business-picker-label").textContent=choice.dataset.businessName;
+  picker.querySelector(".business-picker-menu").hidden=true;
+  picker.querySelector(".business-picker-trigger").setAttribute("aria-expanded","false");
+ }
+});
+$("shopify-customers").addEventListener("input",e=>{
+ if(!e.target.matches(".business-picker-search"))return;
+ const term=e.target.value.toLowerCase().trim();
+ e.target.closest(".business-picker").querySelectorAll(".business-picker-option").forEach(b=>b.hidden=!b.dataset.businessName.toLowerCase().includes(term));
+});
+document.addEventListener("click",e=>{
+ if(e.target.closest(".business-picker"))return;
+ document.querySelectorAll(".business-picker-menu").forEach(m=>m.hidden=true);
+ document.querySelectorAll(".business-picker-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
+});
 $("shopify-customers").addEventListener("click",async e=>{
 const view=e.target.closest("[data-view-orders]");
 if(view){
