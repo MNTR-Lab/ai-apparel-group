@@ -136,6 +136,8 @@ body:has(#app.employee-shell[style*="display: flex"]) #message:empty{display:non
 .employee-job-expanded .employee-job-details{margin-top:0}
 .employee-job-expanded .employee-work-row{padding:12px 0}
 .employee-job-actions{display:flex;gap:10px;margin-top:20px}
+.employee-notification-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.employee-notification-actions .primary{padding:9px 11px}
 </style></head><body><header class="header"><div class="portal-brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group logo"><span>AI APPAREL GROUP <small>EMPLOYEE PORTAL</small></span></div><button id="signout">Sign out</button></header><main class="wrap"><p id="message" role="status"></p>
 <section class="card" id="login"><div class="login-kicker">AI APPAREL GROUP · TEAM ACCESS</div><h1>Welcome back</h1><h2 class="signin-subhead">Employee Sign In</h2><p class="muted">Use the email address associated with your AI Apparel employee invitation.</p><form id="login-form"><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary login-submit" type="submit">Sign In →</button></form><p class="reset-row"><button type="button" id="reset-link">Forgot password? Send reset email</button></p></section>
 <section class="card" id="password-setup"><h1>Set Your Password</h1><p class="muted">Complete your invited account by choosing a password of at least 12 characters.</p><form id="password-form"><label>New password<input name="password" type="password" minlength="12" autocomplete="new-password" required></label><button class="primary" type="submit">Save Password</button></form></section>
@@ -214,6 +216,7 @@ async function loadEmployeeTasks(){
  const {data,error}=await db.rpc("ai_apparel_crm_staff_tasks",{p_action:"list",p_payload:{}});
  if(error){msg("Unable to load tasks: "+error.message,true);return}
  const tasks=data.tasks||[],notifications=data.notifications||[];
+ window.employeeNotifications=notifications;
  window.employeeTaskRecords=tasks;
  const active=tasks.filter(t=>t.status!=="Archived"),archived=tasks.filter(t=>t.status==="Archived");
  const taskHtml=t=>`<div class="employee-task-row"><div><strong>${esc(t.title)}</strong><small>${esc(t.job||"General task")} · Due ${esc(t.due_date||"Not set")}</small><p>${esc(t.instructions||"No additional instructions.")}</p></div><label>Status<select data-employee-task="${esc(t.id)}">${["Not Started","In Progress","Completed"].map(x=>`<option value="${x}" ${t.status===x?"selected":""}>${x}</option>`).join("")}</select></label></div>`;
@@ -225,9 +228,9 @@ async function loadEmployeeTasks(){
  $("task-nav-count").textContent=active.filter(t=>t.status!=="Completed").length||"";
  const unread=notifications.filter(n=>!n.read_at);
  $("metric-notifications").textContent=unread.length;
- $("dashboard-notifications").innerHTML=unread.length?unread.slice(0,5).map(n=>`<div class="employee-work-row"><div><strong>${esc(n.title)}</strong><small>${esc(n.message||"")}</small></div><span class="state">New</span></div>`).join(""):'<div class="employee-empty">No unread notifications.</div>';
+ $("dashboard-notifications").innerHTML=unread.length?unread.slice(0,5).map(n=>`<div class="employee-work-row"><div><strong>${esc(n.title)}</strong><small>${esc(n.message||"")}</small></div><button type="button" class="action secondary" data-employee-open-notification="${esc(n.id)}">Open</button></div>`).join(""):'<div class="employee-empty">No unread notifications.</div>';
  $("notification-nav-count").textContent=unread.length||"";
- $("employee-notification-list").innerHTML=notifications.length?notifications.map(n=>`<div class="employee-task-row ${n.read_at?"":"employee-unread"}"><div><strong>${esc(n.title)}</strong><p>${esc(n.message||"")}</p><small>${esc(new Date(n.created_at).toLocaleString())}</small></div>${n.read_at?'<span class="muted">Read</span>':`<button class="primary" type="button" data-employee-read="${esc(n.id)}">Mark Read</button>`}</div>`).join(""):'<div class="employee-empty">No notifications yet.</div>';
+ $("employee-notification-list").innerHTML=notifications.length?notifications.map(n=>`<div class="employee-task-row ${n.read_at?"":"employee-unread"}"><div><strong>${esc(n.title)}</strong><p>${esc(n.message||"")}</p><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><div class="employee-notification-actions"><button class="action secondary" type="button" data-employee-open-notification="${esc(n.id)}">Open</button>${n.read_at?'<span class="muted">Read</span>':`<button class="primary" type="button" data-employee-read="${esc(n.id)}">Mark Read</button>`}</div></div>`).join(""):'<div class="employee-empty">No notifications yet.</div>';
 }
 document.addEventListener("change",async e=>{
  const select=e.target.closest("[data-employee-task]");if(!select)return;select.disabled=true;
@@ -239,6 +242,42 @@ document.addEventListener("click",async e=>{
  const b=e.target.closest("[data-employee-read]");if(!b)return;b.disabled=true;
  const {error}=await db.rpc("ai_apparel_crm_staff_tasks",{p_action:"read",p_payload:{id:b.dataset.employeeRead}});
  b.disabled=false;if(error)msg(error.message,true);else await loadEmployeeTasks();
+});
+async function openEmployeeNotification(id){
+ const n=(window.employeeNotifications||[]).find(x=>x.id===id);
+ if(!n){msg("Notification not found. Refresh the page and try again.",true);return}
+ if(n.task_id){
+   showEmployeePage("tasks");
+   const select=[...document.querySelectorAll("[data-employee-task]")].find(x=>x.dataset.employeeTask===n.task_id);
+   if(select){select.closest(".employee-task-row")?.scrollIntoView({block:"center",behavior:"smooth"});select.focus()}
+   else msg("This task may have been archived. Check Archived Tasks.");
+ }else if(n.job_id){
+   const groups=window.employeeJobGroups||[];
+   const index=groups.findIndex(g=>g.some(a=>a.job_id===n.job_id));
+   if(index>=0){
+     showEmployeePage("jobs");
+     const button=document.querySelector(`[data-open-job="${index}"]`);
+     if(button){const panel=$("employee-job-expanded-"+index);if(panel?.hidden)button.click();button.scrollIntoView({block:"center",behavior:"smooth"})}
+   }else{
+     showEmployeePage("production");
+     msg("This job is no longer assigned to your account.");
+   }
+ }else{
+   showEmployeePage("notifications");
+ }
+ if(!n.read_at){
+   const {error}=await db.rpc("ai_apparel_crm_staff_tasks",{p_action:"read",p_payload:{id:n.id}});
+   if(error)msg("Opened notification, but could not mark it read: "+error.message,true);
+   else await loadEmployeeTasks();
+ }
+}
+document.addEventListener("click",async e=>{
+ const b=e.target.closest("[data-employee-open-notification]");
+ if(!b)return;
+ b.disabled=true;
+ try{await openEmployeeNotification(b.dataset.employeeOpenNotification)}
+ catch(err){msg("Unable to open notification: "+err.message,true)}
+ finally{b.disabled=false}
 });
 function showEmployeePage(page){
  if(!["dashboard","jobs","production","tasks","notifications"].includes(page))return;
