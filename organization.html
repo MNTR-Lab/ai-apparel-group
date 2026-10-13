@@ -2597,39 +2597,18 @@
 
 
       /*
-      PROMOPLACE STORE
+      PROMOTIONAL STORE — same-origin, authenticated organization showroom.
+      Both dashboard links use the identical destination. We intentionally do
+      not use promotional.store_url because it may point to a different domain.
       */
-
-      if (ORGANIZATION.promoPlace.storeUrl) {
-
-        promoButton.href =
-          ORGANIZATION.promoPlace.storeUrl;
-
-        promoButton.target =
-          "_blank";
-
-        promoButton.rel =
-          "noopener noreferrer";
-
-      } else {
-
-        promoButton.href = "#";
-
-        promoButton.addEventListener(
-          "click",
-          function(event) {
-
-            event.preventDefault();
-
-            alert(
-              ORGANIZATION.name +
-              "'s Promotional connection will be added here."
-            );
-
-          }
-        );
-
+      const promotionalPageUrl = new URL("./promotional.html", window.location.href);
+      if (ORGANIZATION.id) {
+        promotionalPageUrl.searchParams.set("organization_id", ORGANIZATION.id);
       }
+      promoButton.href = promotionalPageUrl.href;
+      promoButton.removeAttribute("target");
+      promoButton.removeAttribute("rel");
+      if (organizationPromoLink) organizationPromoLink.href = promotionalPageUrl.href;
 
 
       /*
