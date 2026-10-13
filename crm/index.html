@@ -302,6 +302,13 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <h2>Revenue &amp; Accounting</h2><p class="lead">Review quote values and invoice activity. Financial figures are labeled by status; quotes are not counted as collected revenue.</p>
 <div class="panel"><div class="quick" style="align-items:end;flex-wrap:wrap;gap:12px"><label>From<input id="rev-from" type="date" style="display:block;padding:10px;margin-top:5px"></label><label>Through<input id="rev-to" type="date" style="display:block;padding:10px;margin-top:5px"></label><button id="rev-refresh" type="button" class="action">Refresh Revenue</button><button id="rev-export" type="button" class="action secondary" disabled>Export CSV</button></div><p id="rev-message" class="info">Sign in and select Revenue to load available records.</p></div>
 <div class="grid"><div class="card"><label>Approved quote value</label><strong id="rev-approved">—</strong><small>Approved estimates, not payments</small></div><div class="card"><label>Open quote value</label><strong id="rev-open">—</strong><small>Unapproved estimates</small></div><div class="card"><label>Shopify draft invoices</label><strong id="rev-drafts">—</strong><small>Count of linked draft orders</small></div><div class="card"><label>Collected revenue</label><strong id="rev-collected">Not connected</strong><small>Requires verified Shopify payments</small></div></div>
+<div class="panel" id="rev-period-panel"><h3>Reporting Periods</h3><p class="info">These summaries are separate reporting views. Estimates are shown for reference only; collected revenue, expenses, profit, and sales tax remain unavailable until verified financial integrations are connected.</p>
+<div class="quick" style="flex-wrap:wrap;align-items:end;gap:12px"><label>Reporting year<select id="rev-report-year" style="display:block;padding:10px;margin-top:5px"></select></label><label>Month<select id="rev-report-month" style="display:block;padding:10px;margin-top:5px"></select></label><label>Quarter<select id="rev-report-quarter" style="display:block;padding:10px;margin-top:5px"><option value="1">Q1 (Jan–Mar)</option><option value="2">Q2 (Apr–Jun)</option><option value="3">Q3 (Jul–Sep)</option><option value="4">Q4 (Oct–Dec)</option></select></label></div>
+<div class="grid" style="margin-top:14px">
+<div class="card"><label>Monthly Status</label><strong id="rev-month-period">—</strong><small id="rev-month-estimates">Approved estimates: —</small><small id="rev-month-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
+<div class="card"><label>Quarterly Status</label><strong id="rev-quarter-period">—</strong><small id="rev-quarter-estimates">Approved estimates: —</small><small id="rev-quarter-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
+<div class="card"><label>Yearly (YTD) Status</label><strong id="rev-ytd-period">—</strong><small id="rev-ytd-estimates">Approved estimates: —</small><small id="rev-ytd-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
+</div><p id="rev-period-message" class="info">Sign in and select Revenue to load period summaries.</p></div>
 <div class="panel"><h3>Quote &amp; Invoice Register</h3><div id="rev-register" style="overflow-x:auto"><p class="info">No records loaded.</p></div></div>
 <div class="columns"><div class="panel"><h3>Job Costs &amp; Gross Profit</h3><p class="info">Awaiting a secured cost ledger for apparel, decoration, labor, packaging, and shipping. Profit figures will not be estimated from sales alone.</p></div><div class="panel"><h3>Sales Tax &amp; Cash Basis</h3><p class="info">Awaiting verified order payment and tax records. Tax collected and cash-basis revenue will be reported only after reconciliation with the AI Apparel store.</p></div></div>
 <div class="notice"><strong>Accounting safeguards:</strong> An approved quote or Shopify draft invoice is not a payment. This page does not create invoices, charge customers, award rewards points, or modify existing jobs.</div>
@@ -1007,6 +1014,25 @@ addItem();
 (function(){
  const el=id=>document.getElementById(id), money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
  let rows=[];
+ let allQuoteRows=[];
+ const now=new Date(), yearSelect=el('rev-report-year'), monthSelect=el('rev-report-month'), quarterSelect=el('rev-report-quarter');
+ for(let y=now.getFullYear();y>=now.getFullYear()-7;y--){const o=document.createElement('option');o.value=String(y);o.textContent=String(y);yearSelect.appendChild(o)}
+ for(let m=0;m<12;m++){const o=document.createElement('option');o.value=String(m);o.textContent=new Intl.DateTimeFormat('en-US',{month:'long'}).format(new Date(2020,m,1));monthSelect.appendChild(o)}
+ monthSelect.value=String(now.getMonth());quarterSelect.value=String(Math.floor(now.getMonth()/3)+1);
+ function updatePeriodSummaries(){
+  const y=Number(yearSelect.value),m=Number(monthSelect.value),q=Number(quarterSelect.value), today=new Date(),isCurrent=y===today.getFullYear();
+  const quarterStart=(q-1)*3;
+  const ranges=[{prefix:'month',label:new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric'}).format(new Date(y,m,1)),start:new Date(y,m,1),end:new Date(y,m+1,1)},
+   {prefix:'quarter',label:'Q'+q+' '+y,start:new Date(y,quarterStart,1),end:new Date(y,quarterStart+3,1)},
+   {prefix:'ytd',label:isCurrent?'YTD '+y:String(y)+' (full year)',start:new Date(y,0,1),end:isCurrent?new Date(today.getFullYear(),today.getMonth(),today.getDate()+1):new Date(y+1,0,1)}];
+  for(const r of ranges){const subset=allQuoteRows.filter(x=>{const d=new Date(String(x.created_at||'').slice(0,10)+'T12:00:00');return !isNaN(d)&&d>=r.start&&d<r.end});
+   el('rev-'+r.prefix+'-period').textContent=r.label;
+   el('rev-'+r.prefix+'-estimates').textContent='Approved estimates: '+money(subset.filter(x=>x.status==='Approved').reduce((a,x)=>a+(Number(x.total)||0),0));
+   el('rev-'+r.prefix+'-count').textContent='Quotes: '+subset.length;
+  }
+  el('rev-period-message').textContent='Quote figures use creation dates, not payment dates. Current-year YTD ends today; prior years show the full year.';
+ }
+ [yearSelect,monthSelect,quarterSelect].forEach(x=>x.addEventListener('change',updatePeriodSummaries));
  const csvCell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
  async function loadRevenue(){
   el('rev-message').textContent='Loading quote and invoice records…';
@@ -1017,6 +1043,7 @@ addItem();
    // This RPC enforces the same CRM administrator authorization as Quotes.
    const {data,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'list',p_payload:{}});
    if(error)throw error;
+   allQuoteRows=data||[];updatePeriodSummaries();
    const start=el('rev-from').value,end=el('rev-to').value;
    if(start&&end&&start>end)throw Error('The start date must not be after the end date.');
    const filtered=(data||[]).filter(x=>{const d=String(x.created_at||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end)});
@@ -1030,7 +1057,7 @@ addItem();
    el('rev-register').innerHTML=rows.length?'<table><thead><tr><th>Quote</th><th>Date</th><th>Customer</th><th>Quote status</th><th>Estimate</th><th>Invoice tracking</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+escapeHtml(x.number)+'</td><td>'+escapeHtml(x.date)+'</td><td>'+escapeHtml(x.customer)+'</td><td>'+escapeHtml(x.status)+'</td><td>'+money(x.amount)+'</td><td>'+(x.invoiceUrl?'<a href="'+escapeHtml(x.invoiceUrl)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(x.invoice)+'</a>':escapeHtml(x.invoice))+'</td></tr>').join('')+'</tbody></table>':'<p class="info">No quotes in the selected date range.</p>';
    el('rev-message').textContent=rows.length+' quote records loaded. Date filters use quote creation dates. Invoice status may lag behind actions taken directly in Shopify.';
    el('rev-export').disabled=!rows.length;
-  }catch(e){el('rev-message').textContent='Revenue unavailable: '+e.message;el('rev-register').textContent='No accounting records loaded.';}
+  }catch(e){el('rev-period-message').textContent='Period summaries unavailable until revenue records load.';el('rev-message').textContent='Revenue unavailable: '+e.message;el('rev-register').textContent='No accounting records loaded.';}
  }
  el('rev-refresh').addEventListener('click',loadRevenue);
  document.querySelector('[data-page="revenue"]').addEventListener('click',loadRevenue);
