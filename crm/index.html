@@ -1765,4 +1765,33 @@ addItem();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 </script>
+
+<style id="ai-crm-clean-layout">
+/* Only display sign-in panel when sign-in form is available. */
+#auth-panel:has(#login-form[hidden]){display:none!important}
+#revenue #ai-accounting-start-note{
+  background:#eaf3ff!important;
+  color:#183b64!important;
+  border:1px solid #a9c9ee!important;
+  border-left:4px solid #2675bd!important;
+  border-radius:9px!important;
+  font-size:13px!important;
+  font-weight:600!important;
+  line-height:1.55!important;
+  padding:14px 18px!important;
+}
+</style>
+<script id="ai-crm-clean-layout-observer">
+(()=>{
+ const start=()=>{
+  const panel=document.getElementById('auth-panel'),form=document.getElementById('login-form');
+  if(panel&&form){
+   const refresh=()=>{panel.hidden=form.hidden;panel.style.display=form.hidden?'none':''};
+   new MutationObserver(refresh).observe(form,{attributes:true,attributeFilter:['hidden','style']});
+   refresh();
+  }
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
 </body></html>
