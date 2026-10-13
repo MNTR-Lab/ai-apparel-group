@@ -877,12 +877,13 @@ async function list(){
  const expiry=workflow?.expires_at?' · Approval deadline: '+new Date(workflow.expires_at).toLocaleDateString('en-US',{timeZone:'America/New_York'}):'';
  const followUp=state==='Expired'?(workflow?.follow_up_needed?'<div style="margin-top:12px;padding:10px;border-radius:9px;background:#fff1f2;color:#9f1239;font-weight:700">● Customer follow-up needed <button type="button" class="ai-expired-followup" data-id="'+esc(x.id)+'" style="margin-left:8px">Mark Follow-Up Complete</button></div>':'<div style="margin-top:12px;color:#166534">✓ Follow-up completed</div>'):'';
  const replaceAction=state==='Expired'?'<div style="margin-top:10px"><button type="button" class="ai-expired-replace" data-id="'+esc(x.id)+'" style="font-weight:700">Create Replacement Quote</button><span style="margin-left:8px;color:#64748b;font-size:12px">Creates a new Draft with the original items and pricing for your review. No invoice is sent.</span></div>':'';
+ const approvalAction=state==='Sent'?'<div style="margin-top:10px"><button type="button" class="ai-generate-approval" data-id="'+esc(x.id)+'">Generate Secure Customer Approval Link</button><span style="margin-left:8px;color:#64748b;font-size:12px">For internal testing; does not send an email or invoice.</span></div>':'';
  const date=x.created_at?new Date(x.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
  const details=(x.items||[]).map(i=>'<div class="ai-sq-line"><span>'+esc(i.description)+(i.variant_title?' · '+esc(i.variant_title):'')+'</span><span>'+esc(i.quantity)+' × '+money(i.unit_price)+'</span></div>').join('');
  return '<article class="ai-sq-card"><div class="ai-sq-top"><div><div class="ai-sq-number">'+esc(x.quote_number)+' <span class="ai-sq-date">'+esc(date+expiry)+'</span></div><h4>'+esc(x.title)+'</h4><div class="ai-sq-customer">'+esc(x.customer_name||x.business_name||'Unassigned customer')+(x.customer_name&&x.business_name?' · '+esc(x.business_name):'')+'</div></div><span class="ai-sq-badge '+badgeClass+'">'+esc(state)+'</span></div>'+ 
  '<div class="ai-sq-middle"><div><span class="ai-sq-caption">ESTIMATE TOTAL</span><strong class="ai-sq-price">'+money(x.total)+'</strong></div><div><span class="ai-sq-caption">PRODUCTION JOB</span><strong class="ai-sq-job">'+esc(x.job_number||'Not created')+'</strong></div></div>'+ 
  '<details class="ai-sq-details"><summary>View '+(x.items||[]).length+' line items &amp; specifications <span>⌄</span></summary><div class="ai-sq-lines">'+(details||'<p>No line items</p>')+(x.notes?'<p class="ai-sq-notes">'+esc(x.notes)+'</p>':'')+'</div></details>'+ 
- '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:['Draft','Sent','Changes Requested','Approved','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
+ '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:['Draft','Sent','Changes Requested','Approved','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
  }).join('');
  const active=data.filter(x=>x.status!=='Approved'&&x.status!=='Expired');
  const expired=data.filter(x=>x.status==='Expired');
@@ -899,6 +900,20 @@ async function list(){
  '<details id="ai-archived-quote-details" class="ai-quote-fold ai-quote-archive-section" '+(openArchive?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Archived Quotes</strong><span class="ai-quote-fold-count">'+archived.length+' approved</span></summary><div class="ai-quote-fold-content"><p class="info">Approved quotes are moved here automatically. Their artwork and production job links remain available.</p><div class="ai-saved-quotes-grid">'+(archived.length?renderCards(archived):'<p class="info">No approved quotes yet.</p>')+'</div></div></details>';
 }
 q('ai-quotes-list').addEventListener('click',async e=>{
+ const approveBtn=e.target.closest('.ai-generate-approval');
+ if(approveBtn){
+  if(!confirm('Generate a NEW secure customer link? Any earlier approval link for this quote will stop working. No email will be sent.'))return;
+  approveBtn.disabled=true;
+  const {data,error}=await db.rpc('ai_apparel_crm_issue_approval_link',{p_quote_id:approveBtn.dataset.id});
+  approveBtn.disabled=false;
+  if(error){alert(error.message);return;}
+  const link=new URL('./quote-approval.html',window.location.href);
+  link.searchParams.set('token',data.token);
+  const value=link.toString();
+  try{await navigator.clipboard.writeText(value);alert('Approval link copied to clipboard. This is a secure, single-use link. Use it for testing only until invoicing is connected.');}
+  catch(_){prompt('Copy this secure customer approval link:',value);}
+  return;
+ }
  const btn=e.target.closest('.ai-expired-replace');
  if(btn){
   if(!confirm('Create a NEW DRAFT quote using the original items and prices? Review pricing before sending.'))return;
