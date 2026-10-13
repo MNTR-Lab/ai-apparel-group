@@ -899,20 +899,21 @@ async function list(){
  '<details id="ai-archived-quote-details" class="ai-quote-fold ai-quote-archive-section" '+(openArchive?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Archived Quotes</strong><span class="ai-quote-fold-count">'+archived.length+' approved</span></summary><div class="ai-quote-fold-content"><p class="info">Approved quotes are moved here automatically. Their artwork and production job links remain available.</p><div class="ai-saved-quotes-grid">'+(archived.length?renderCards(archived):'<p class="info">No approved quotes yet.</p>')+'</div></div></details>';
 }
 q('ai-quotes-list').addEventListener('click',async e=>{
- const btn=e.target.closest('.ai-expired-replace');if(!btn)return;
- if(!confirm('Create a NEW DRAFT quote using the original items and prices? Review pricing before sending.'))return;
- btn.disabled=true;
- const {data,error}=await db.rpc('ai_apparel_crm_replace_expired_quote',{p_quote_id:btn.dataset.id});
- if(error){alert(error.message);btn.disabled=false;return;}
- alert((data?.already_exists?'Replacement quote already exists: ':'New draft quote created: ')+(data?.quote_number||'')+'. Find it under Active Quotes, review pricing, then send when ready.');
- await list();
-});
-
- const btn=e.target.closest('.ai-expired-followup');if(!btn)return;
+ const btn=e.target.closest('.ai-expired-replace');
+ if(btn){
+  if(!confirm('Create a NEW DRAFT quote using the original items and prices? Review pricing before sending.'))return;
+  btn.disabled=true;
+  const {data,error}=await db.rpc('ai_apparel_crm_replace_expired_quote',{p_quote_id:btn.dataset.id});
+  if(error){alert(error.message);btn.disabled=false;return;}
+  alert((data?.already_exists?'Replacement quote already exists: ':'New draft quote created: ')+(data?.quote_number||'')+'. Find it under Active Quotes, review pricing, then send when ready.');
+  await list();
+  return;
+ }
+ const followBtn=e.target.closest('.ai-expired-followup');if(!followBtn)return;
  if(!confirm('Mark customer follow-up complete for this expired quote?'))return;
- btn.disabled=true;
- const {error}=await db.rpc('ai_apparel_crm_expired_quotes',{p_action:'complete_follow_up',p_quote_id:btn.dataset.id});
- if(error){alert(error.message);btn.disabled=false;return;}
+ followBtn.disabled=true;
+ const {error}=await db.rpc('ai_apparel_crm_expired_quotes',{p_action:'complete_follow_up',p_quote_id:followBtn.dataset.id});
+ if(error){alert(error.message);followBtn.disabled=false;return;}
  await list();
 });
 async function load(){
