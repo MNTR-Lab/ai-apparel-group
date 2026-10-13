@@ -860,6 +860,7 @@
     .invoice-badge.show{display:inline-flex}
 
 </style>
+  <style>[hidden]{display:none!important}</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -1411,7 +1412,36 @@
 
   </main>
 
-  <div id="loginGate" style="position:fixed;inset:0;z-index:99999;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:24px;"><div style="width:min(460px,100%);background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:32px;box-shadow:0 24px 70px rgba(15,23,42,.14);"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group" style="max-width:210px;max-height:72px;display:block;margin:0 auto 22px;object-fit:contain;"><h1 style="font-size:28px;text-align:center;margin-bottom:8px;">Organization Portal</h1><p id="loginMessage" style="color:#6b7280;text-align:center;margin-bottom:22px;">Sign in with the email address assigned to your organization.</p><form id="loginForm"><div id="emailStep"><label style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">EMAIL ADDRESS</label><input id="loginEmail" type="email" autocomplete="email" required placeholder="you@company.com" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;margin-bottom:12px;"><button id="loginButton" type="submit" style="width:100%;border:0;border-radius:10px;padding:14px;background:#1d3c7a;color:#fff;font-weight:900;cursor:pointer;">SEND SECURE SIGN-IN CODE</button></div><div id="codeStep" style="display:none;"><label style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">SECURE SIGN-IN CODE</label><input id="loginCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="00000000" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:24px;letter-spacing:5px;text-align:center;margin-bottom:12px;"><button id="verifyButton" type="button" style="width:100%;border:0;border-radius:10px;padding:14px;background:#1d3c7a;color:#fff;font-weight:900;cursor:pointer;">SIGN IN</button><button id="differentEmailButton" type="button" style="width:100%;border:0;background:transparent;color:#1d3c7a;font-weight:800;padding:12px;cursor:pointer;">USE A DIFFERENT EMAIL</button></div></form></div></div>
+  <div id="loginGate" style="position:fixed;inset:0;z-index:99999;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div style="width:min(460px,100%);background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:32px;box-shadow:0 24px 70px rgba(15,23,42,.14);">
+      <img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group" style="max-width:210px;max-height:72px;display:block;margin:0 auto 22px;object-fit:contain;">
+      <h1 id="loginHeading" style="font-size:28px;text-align:center;margin-bottom:8px;">Organization Portal</h1>
+      <p id="loginMessage" role="status" aria-live="polite" style="color:#6b7280;text-align:center;margin-bottom:22px;">Sign in using your assigned email and password.</p>
+      <form id="loginForm">
+        <div id="emailStep">
+          <label for="loginEmail" style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">EMAIL ADDRESS</label>
+          <input id="loginEmail" type="email" autocomplete="username" required placeholder="you@company.com" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;margin-bottom:12px;">
+          <label for="loginPassword" style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">PASSWORD</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Your password" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;margin-bottom:12px;">
+          <button id="loginButton" type="submit" style="width:100%;border:0;border-radius:10px;padding:14px;background:#1d3c7a;color:#fff;font-weight:900;cursor:pointer;">SIGN IN</button>
+        </div>
+      </form>
+      <form id="resetForm" hidden>
+        <label for="resetEmail" style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">EMAIL ADDRESS</label>
+        <input id="resetEmail" type="email" autocomplete="email" required placeholder="you@company.com" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;margin-bottom:12px;">
+        <button id="resetButton" type="submit" style="width:100%;border:0;border-radius:10px;padding:14px;background:#1d3c7a;color:#fff;font-weight:900;cursor:pointer;">SEND RESET LINK</button>
+      </form>
+      <form id="setupForm" hidden>
+        <label for="newPassword" style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">NEW PASSWORD</label>
+        <input id="newPassword" type="password" autocomplete="new-password" minlength="12" required placeholder="At least 12 characters" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;margin-bottom:12px;">
+        <label for="confirmPassword" style="font-weight:800;font-size:13px;display:block;margin-bottom:7px;">CONFIRM PASSWORD</label>
+        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="12" required placeholder="Repeat new password" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;margin-bottom:12px;">
+        <button id="setupButton" type="submit" style="width:100%;border:0;border-radius:10px;padding:14px;background:#1d3c7a;color:#fff;font-weight:900;cursor:pointer;">SAVE PASSWORD</button>
+      </form>
+      <button id="forgotButton" type="button" style="display:block;margin:12px auto 0;background:none;border:0;color:#1d3c7a;font-weight:800;cursor:pointer;">FORGOT PASSWORD?</button>
+      <button id="backButton" type="button" hidden style="margin:12px auto 0;background:none;border:0;color:#1d3c7a;font-weight:800;cursor:pointer;">BACK TO SIGN IN</button>
+    </div>
+  </div>
 
   <footer>
     © <span id="year"></span>
@@ -1442,12 +1472,77 @@
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     let PORTAL_ACCESS_TOKEN = null;
-    const loginGate=document.getElementById("loginGate"),loginForm=document.getElementById("loginForm"),loginEmail=document.getElementById("loginEmail"),loginMessage=document.getElementById("loginMessage"),loginButton=document.getElementById("loginButton"),emailStep=document.getElementById("emailStep"),codeStep=document.getElementById("codeStep"),loginCode=document.getElementById("loginCode"),verifyButton=document.getElementById("verifyButton"),differentEmailButton=document.getElementById("differentEmailButton");
-    let pendingLoginEmail="";
-    async function requirePortalSession(){const {data:{session}}=await supabaseClient.auth.getSession();if(!session){loginGate.style.display="flex";return false;}PORTAL_ACCESS_TOKEN=session.access_token;loginGate.style.display="none";return true;}
-    loginForm.addEventListener("submit",async(e)=>{e.preventDefault();const email=loginEmail.value.trim().toLowerCase();if(!email)return;pendingLoginEmail=email;loginButton.disabled=true;loginButton.textContent="SENDING CODE...";loginMessage.textContent="Sending your secure sign-in code...";const {error}=await supabaseClient.auth.signInWithOtp({email,options:{shouldCreateUser:false}});if(error){loginMessage.textContent=error.message;loginButton.disabled=false;loginButton.textContent="SEND SECURE SIGN-IN CODE";return;}emailStep.style.display="none";codeStep.style.display="block";loginMessage.textContent="Enter the secure sign-in code we emailed to "+email+".";loginCode.focus();});
-    verifyButton.addEventListener("click",async()=>{const token=loginCode.value.trim();if(!/^\d{8}$/.test(token)){loginMessage.textContent="Enter the complete 8-digit sign-in code.";return;}verifyButton.disabled=true;verifyButton.textContent="SIGNING IN...";const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingLoginEmail,token,type:"email"});if(error||!data.session){loginMessage.textContent=error?.message||"That code could not be verified.";verifyButton.disabled=false;verifyButton.textContent="SIGN IN";return;}PORTAL_ACCESS_TOKEN=data.session.access_token;loginGate.style.display="none";await initializeDashboard();});
-    differentEmailButton.addEventListener("click",()=>{pendingLoginEmail="";loginCode.value="";codeStep.style.display="none";emailStep.style.display="block";loginButton.disabled=false;loginButton.textContent="SEND SECURE SIGN-IN CODE";loginMessage.textContent="Sign in with the email address assigned to your organization.";loginEmail.focus();});
+    const loginGate=document.getElementById("loginGate"),loginForm=document.getElementById("loginForm"),loginEmail=document.getElementById("loginEmail"),loginPassword=document.getElementById("loginPassword"),loginMessage=document.getElementById("loginMessage"),loginButton=document.getElementById("loginButton"),resetForm=document.getElementById("resetForm"),setupForm=document.getElementById("setupForm");
+    let passwordSetupMode=false;
+    function loginNotice(text){loginMessage.textContent=text;}
+    function loginView(mode){
+      loginForm.hidden=mode!=="login";resetForm.hidden=mode!=="reset";setupForm.hidden=mode!=="setup";
+      document.getElementById("forgotButton").hidden=mode!=="login";
+      document.getElementById("backButton").hidden=mode!=="reset";
+      document.getElementById("loginHeading").textContent=mode==="setup"?"Set Your Password":mode==="reset"?"Reset Password":"Organization Portal";
+      loginGate.style.display="flex";
+    }
+    async function requirePortalSession(){
+      if(passwordSetupMode){loginView("setup");return false;}
+      const {data:{session},error}=await supabaseClient.auth.getSession();
+      if(error||!session){loginView("login");return false;}
+      PORTAL_ACCESS_TOKEN=session.access_token;loginGate.style.display="none";return true;
+    }
+    async function openDashboardAfterLogin(){
+      if(!(await requirePortalSession()))return;
+      try{await initializeDashboard();}
+      catch(error){
+        console.error("Dashboard load error:",error);
+        if(String(error?.message||"").includes("organization"))await supabaseClient.auth.signOut();
+        PORTAL_ACCESS_TOKEN=null;loginView("login");
+        loginNotice("This account does not currently have access to an organization portal.");
+      }
+    }
+    loginForm.addEventListener("submit",async event=>{
+      event.preventDefault();loginButton.disabled=true;loginNotice("Signing in...");
+      try{
+        const {data,error}=await supabaseClient.auth.signInWithPassword({email:loginEmail.value.trim().toLowerCase(),password:loginPassword.value});
+        if(error||!data.session)throw error||new Error("No session");
+        await openDashboardAfterLogin();
+      }catch(error){loginNotice("Unable to sign in. Check your email and password or reset your password.");}
+      finally{loginButton.disabled=false;}
+    });
+    document.getElementById("forgotButton").addEventListener("click",()=>{
+      document.getElementById("resetEmail").value=loginEmail.value;loginView("reset");loginNotice("Enter your email to request a password reset link.");
+    });
+    document.getElementById("backButton").addEventListener("click",()=>{loginView("login");loginNotice("Sign in using your assigned email and password.");});
+    resetForm.addEventListener("submit",async event=>{
+      event.preventDefault();const button=document.getElementById("resetButton");button.disabled=true;
+      try{
+        const {error}=await supabaseClient.auth.resetPasswordForEmail(document.getElementById("resetEmail").value.trim().toLowerCase(),{redirectTo:new URL("./organization.html",window.location.href).href});
+        if(error)throw error;
+        loginNotice("If this email has an account, a password reset link will arrive shortly.");
+      }catch(error){loginNotice("Unable to request a reset right now. Please try again later.");}
+      finally{button.disabled=false;}
+    });
+    setupForm.addEventListener("submit",async event=>{
+      event.preventDefault();const password=document.getElementById("newPassword").value;
+      if(password.length<12){loginNotice("Use at least 12 characters.");return;}
+      if(password!==document.getElementById("confirmPassword").value){loginNotice("Passwords do not match.");return;}
+      const button=document.getElementById("setupButton");button.disabled=true;
+      try{
+        const {data}=await supabaseClient.auth.getUser();if(!data?.user)throw new Error("Invalid setup link");
+        const {error}=await supabaseClient.auth.updateUser({password});if(error)throw error;
+        passwordSetupMode=false;history.replaceState(null,"",window.location.pathname);
+        await openDashboardAfterLogin();
+      }catch(error){loginNotice("Could not set password. Please request a fresh invitation or reset link.");}
+      finally{button.disabled=false;}
+    });
+    const authHash=new URLSearchParams(window.location.hash.slice(1));
+    const authQuery=new URLSearchParams(window.location.search);
+    if(["recovery","invite"].includes(authHash.get("type"))||authQuery.has("code")){
+      passwordSetupMode=true;loginView("setup");loginNotice("Choose a password to complete account setup.");
+    }
+    supabaseClient.auth.onAuthStateChange(event=>{
+      if(event==="PASSWORD_RECOVERY"){
+        passwordSetupMode=true;loginView("setup");loginNotice("Choose your new password.");
+      }
+    });
 
     const params = new URLSearchParams(window.location.search);
     const requestedOrganizationId = params.get("organization_id") || "";
@@ -2734,14 +2829,8 @@
 
 
     (async()=>{
-      const signedIn=await requirePortalSession();
-      if(!signedIn) return;
-      initializeDashboard().catch(async error => {
-        console.error("Dashboard load error:", error);
-        if(String(error?.message||"").includes("organization")) await supabaseClient.auth.signOut();
-        loginGate.style.display="flex";
-        loginMessage.textContent="This account does not currently have access to an organization portal.";
-      });
+      if(passwordSetupMode)return;
+      await openDashboardAfterLogin();
     })();
 
   </script>
