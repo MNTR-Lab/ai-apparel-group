@@ -162,6 +162,12 @@ const QUOTE_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-appare
 const SHOWROOM_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-showroom";
 const AI_LOGO="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110";
 const qs=new URLSearchParams(location.search);
+// Use one canonical host for dashboard and promotional authentication.
+// Supabase browser sessions cannot be shared across unrelated origins.
+if(location.hostname==="portal.aiapparelgroup.com"){
+ const canonical=new URL(location.pathname.replace(/^\/promotional\/?$/, "/promotional.html")+location.search+location.hash,"https://ai-apparel-group.pages.dev");
+ location.replace(canonical.toString());
+}
 const requestedOrgId=qs.get("organization_id")||"";
 let orgId="";
 let ORG={id:"",name:"Your Organization",shortName:"ORG",logo:"",primaryColor:"#006FBA",secondaryColor:"#1d3c7a"};
@@ -170,7 +176,7 @@ const SUPABASE_PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
 const portalAuth=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 let verifiedOrganization=false;
 function lockShowroom(message){
- document.body.innerHTML='<main style="max-width:620px;margin:12vh auto;padding:32px;font-family:Arial,sans-serif"><h1>Organization access required</h1><p id="accessMessage"></p><p><a href="./organization.html">Return to Organization Dashboard</a></p></main>';
+ document.body.innerHTML='<main style="max-width:620px;margin:12vh auto;padding:32px;font-family:Arial,sans-serif"><h1>Organization access required</h1><p id="accessMessage"></p><p><a href="https://ai-apparel-group.pages.dev/organization.html">Return to Organization Dashboard</a></p></main>';
  document.getElementById("accessMessage").textContent=message;
 }
 let quote=[];
@@ -222,6 +228,8 @@ async function loadOrg(){
    secondaryColor:o.secondaryColor||o.secondary_color||"#1d3c7a"};
   verifiedOrganization=true;
   document.title=ORG.name+" | AI Apparel Group Promotional";
+  const workspaceTitle=document.querySelector(".orgbar strong");
+  if(workspaceTitle)workspaceTitle.textContent=ORG.name+" Promotional Workspace";
   applyOrg();
   renderPrevious(d.promotionalPreviousOrders||[]);
   return true;
