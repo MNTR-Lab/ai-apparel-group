@@ -909,7 +909,10 @@ q('ai-quotes-list').addEventListener('click',async e=>{
   try{
    const {data:sessionData,error:sessionError}=await db.auth.getSession();
    if(sessionError||!sessionData?.session?.access_token)throw Error('Please sign in again.');
-   const response=await fetch(CRM_SUPABASE_URL+'/functions/v1/ai-apparel-crm-invoicing',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionData.session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify({action:'create_draft',quote_id:invoiceBtn.dataset.id})});
+   const testEmail=prompt('DRAFT-ONLY TEST: Enter an email for the Shopify draft. This does not email anyone or change the CRM customer record. Use your own test email.','');
+   if(testEmail===null){invoiceBtn.disabled=false;return;}
+   if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(testEmail.trim()))throw Error('Enter a valid test email.');
+   const response=await fetch(CRM_SUPABASE_URL+'/functions/v1/ai-apparel-crm-invoicing',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionData.session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify({action:'create_draft',quote_id:invoiceBtn.dataset.id,test_email:testEmail.trim()})});
    const payload=await response.json();
    if(!response.ok)throw Error(payload.error+(payload.details?' — '+payload.details:''));
    alert(payload.status==='EXISTS'?'A Shopify draft already exists.':'Shopify draft created successfully. No email was sent.');
