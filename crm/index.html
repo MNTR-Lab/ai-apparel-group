@@ -1647,4 +1647,40 @@ addItem();
  page.append(mk('div','ai-goat-banner','Financial reporting note. Approved quotes are excluded from collected sales. Refunds, payment processing fees, overhead, incomplete order costs and tax obligations require reconciliation before treating these amounts as final accounting profit.'));
 })();
 </script>
+
+<script id="ai-tax-reconciliation-2026">
+(()=>{
+ const mount=()=>{
+  const page=document.getElementById('revenue');
+  if(!page||document.getElementById('ai-tax-reconciliation'))return;
+  const panel=document.createElement('details');panel.id='ai-tax-reconciliation';panel.className='panel';panel.style.margin='18px 0';
+  const summary=document.createElement('summary');summary.textContent='Tax Reconciliation · Shopify + Historical Orders';summary.style.cssText='cursor:pointer;padding:18px;font-weight:700;color:#193956';panel.append(summary);
+  const body=document.createElement('div');body.style.cssText='padding:14px 18px 20px';panel.append(body);
+  const desc=document.createElement('p');desc.className='info';desc.textContent='Monthly comparison of collected sales tax by source. Taxable and nontaxable sales are shown only after individual orders are reviewed. This is not a filing-ready liability calculation.';body.append(desc);
+  const controls=document.createElement('div');controls.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px';
+  const year=document.createElement('select');year.setAttribute('aria-label','Tax reporting year');[new Date().getFullYear(),2026,2025].filter((x,i,a)=>a.indexOf(x)===i).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;year.append(o)});
+  const refresh=document.createElement('button');refresh.type='button';refresh.className='action secondary';refresh.textContent='Refresh tax reconciliation';controls.append(year,refresh);body.append(controls);
+  const output=document.createElement('div');output.setAttribute('aria-live','polite');body.append(output);
+  const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)||0);
+  const load=async()=>{
+   output.textContent='Loading tax reconciliation…';
+   try{
+    if(!db)throw new Error('CRM database connection unavailable');
+    const {data,error}=await db.rpc('ai_financial_tax_summary',{p_year:Number(year.value)});
+    if(error)throw error;
+    output.replaceChildren();const rows=data?.periods||[];
+    if(!rows.length){output.textContent='No tax records for this year.';return}
+    const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';
+    const head=document.createElement('thead');const hr=document.createElement('tr');['Month','Source','Orders','Reviewed','Awaiting review','Tax collected','Tax refunded','Taxable sales (reviewed)','Nontaxable sales (reviewed)'].forEach(x=>{const th=document.createElement('th');th.textContent=x;th.style.cssText='padding:9px 6px;text-align:left;border-bottom:2px solid #dce6f0';hr.append(th)});head.append(hr);table.append(head);
+    const tbody=document.createElement('tbody');rows.forEach(x=>{const tr=document.createElement('tr');const vals=[new Date(Number(year.value),Number(x.mth)-1,1).toLocaleString('en-US',{month:'long'}),x.source==='manual'?'Historical / Manual':x.source,x.orders,x.reviewed_orders,x.pending_orders,money(x.tax_collected),money(x.tax_refunded),Number(x.reviewed_orders)?money(x.taxable_sales):'Not reviewed',Number(x.reviewed_orders)?money(x.nontaxable_sales):'Not reviewed'];vals.forEach(v=>{const td=document.createElement('td');td.textContent=String(v);td.style.cssText='padding:9px 6px;border-bottom:1px solid #e9eef4';tr.append(td)});tbody.append(tr)});table.append(tbody);
+    const wrap=document.createElement('div');wrap.style.overflowX='auto';wrap.append(table);output.append(wrap);
+    const note=document.createElement('p');note.className='info';note.textContent=data.warning||'';output.append(note);
+   }catch(e){output.textContent='Unable to load tax reconciliation: '+(e?.message||String(e))}
+  };
+  refresh.addEventListener('click',load);year.addEventListener('change',load);panel.addEventListener('toggle',()=>{if(panel.open)load()});
+  const existing=document.getElementById('rev-tax-panel');if(existing)existing.after(panel);else page.append(panel);
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+})();
+</script>
 </body></html>
