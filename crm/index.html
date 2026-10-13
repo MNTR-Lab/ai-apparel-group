@@ -1684,7 +1684,7 @@ addItem();
     output.replaceChildren();const rows=data?.periods||[];
     if(!rows.length){output.textContent='No tax records for this year.';return}
     const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';
-    const head=document.createElement('thead');const hr=document.createElement('tr');['Month','Source','Orders','Reviewed','Awaiting review','Tax collected','Tax refunded','Taxable sales (reviewed)','Nontaxable sales (reviewed)'].forEach(x=>{const th=document.createElement('th');th.textContent=x;th.style.cssText='padding:9px 6px;text-align:left;border-bottom:2px solid #dce6f0';hr.append(th)});head.append(hr);table.append(head);
+    const head=document.createElement('thead');const hr=document.createElement('tr');['Month','Source','Orders','Reviewed','Awaiting review','Order-date tax evidence (not verified cash)','Order-date tax refunds','Taxable sales (reviewed)','Nontaxable sales (reviewed)'].forEach(x=>{const th=document.createElement('th');th.textContent=x;th.style.cssText='padding:9px 6px;text-align:left;border-bottom:2px solid #dce6f0';hr.append(th)});head.append(hr);table.append(head);
     const tbody=document.createElement('tbody');rows.forEach(x=>{const tr=document.createElement('tr');const vals=[new Date(Number(year.value),Number(x.mth)-1,1).toLocaleString('en-US',{month:'long'}),x.source==='manual'?'Historical / Manual':x.source,x.orders,x.reviewed_orders,x.pending_orders,money(x.tax_collected),money(x.tax_refunded),Number(x.reviewed_orders)?money(x.taxable_sales):'Not reviewed',Number(x.reviewed_orders)?money(x.nontaxable_sales):'Not reviewed'];vals.forEach(v=>{const td=document.createElement('td');td.textContent=String(v);td.style.cssText='padding:9px 6px;border-bottom:1px solid #e9eef4';tr.append(td)});tbody.append(tr)});table.append(tbody);
     const wrap=document.createElement('div');wrap.style.overflowX='auto';wrap.append(table);output.append(wrap);
     const note=document.createElement('p');note.className='info';note.textContent=data.warning||'';output.append(note);
@@ -1908,7 +1908,7 @@ addItem();
     if(error)throw error;
     const summary=data?.summary||{},orders=Array.isArray(data?.orders)?data.orders:[];
     output.replaceChildren();
-    const stats=document.createElement('p');stats.style.cssText='line-height:1.7;font-size:14px';
+    const stats=document.createElement('p');stats.style.cssText='line-height:1.7;font-size:14px;font-weight:600';
     stats.textContent=`Verified paid orders: ${summary.paid_orders??0} | Verified cash: ${money(summary.verified_cash)} | Paid-order tax evidence: ${money(summary.paid_order_tax_evidence)} | Unclassified paid orders: ${summary.unclassified_paid_orders??0} | Missing tax records: ${summary.missing_tax_records??0}`;
     output.append(stats);
     if(orders.length){
