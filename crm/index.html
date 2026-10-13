@@ -1465,6 +1465,7 @@ addItem();
   set('rev-cost-period-revenue',money(revenue));set('rev-cost-period-expenses',money(expenses));set('rev-cost-period-profit',money(profit));set('rev-cost-period-margin',revenue>0?(profit/revenue*100).toFixed(1)+'%':'N/A');set('rev-cost-period-pending',String(pending.length));
   set('rev-cost-period-note',complete.length+' completed cost records; '+pending.length+' awaiting costs. Payment-based figures may include collected tax and shipping.');
   set('rev-cost-status',sales.length+' verified paid orders loaded.');
+  document.dispatchEvent(new CustomEvent('ai-apparel-cost-ledger-updated',{detail:{sales:sales.map(x=>({date:x.date,net_paid:x.net_paid,costs:x.costs?Object.fromEntries(fields.map(k=>[k,Number(x.costs[k]||0)])):null}))}}));
   const f=$('rev-cost-filter').value,items=subset.filter(x=>f==='all'||(f==='pending'?!x.costs:!!x.costs));
   $('rev-cost-list').innerHTML=items.length?items.map(x=>'<div class="rev-acc-item"><div><strong>'+esc(x.name||x.order_id)+'</strong><small>'+esc(String(x.date||'').slice(0,10))+' · Net paid '+money(x.net_paid)+(x.costs?' · Costs recorded':' · Awaiting costs')+'</small></div><button type="button" class="action secondary" data-cost="'+esc(x.order_id)+'">'+(x.costs?'Edit':'Enter costs')+'</button></div>').join(''):'<p class="info">No orders match this filter.</p>';
  }
@@ -1605,19 +1606,35 @@ addItem();
  page.querySelectorAll(':scope > .notice').forEach(moveHidden);
  const periodHeading=mk('h3','ai-goat-title','Reporting periods'),grid=mk('div','ai-goat-grid ai-goat-period-grid');page.append(periodHeading,grid);
  const moneyFormat=s=>s.replace(/^Collected revenue:\s*/i,'').replace(/^Approved estimates:\s*/i,'').replace(/^Order tax recorded:\s*/i,'').replace(/^Quotes:\s*/i,'');
+ const costSlots={};
  [['month','Current Month'],['quarter','Quarterly'],['ytd','YTD']].forEach(([key,label])=>{
   const card=mk('div','ai-goat-tile ai-goat-period');card.append(mk('small','',label.toUpperCase()),mk('h3','',label));
   [['Collected order revenue','rev-'+key+'-collected'],['Approved quote value','rev-'+key+'-estimates'],['Quotes created','rev-'+key+'-count']].forEach(([name,id])=>{
    const row=mk('div','ai-goat-row'),value=mk('b','','—');row.append(mk('span','',name),value);bind(value,id,moneyFormat);card.append(row);
   });
-  [['COGS + shipping costs','—'],['Profit after costs','—'],['Approved quotes','—'],['Open quote value','—']].forEach(([name,value])=>{const row=mk('div','ai-goat-row');row.append(mk('span','',name),mk('b','',value));card.append(row)});
-  card.append(mk('small','note','Additional cost and quote breakdowns are not available from the current AI period summaries.'));grid.append(card);
+  costSlots[key]={};
+  [['COGS + shipping costs','costs'],['Profit after costs','profit'],['Approved quotes','approved'],['Open quote value','open']].forEach(([name,field])=>{const row=mk('div','ai-goat-row'),value=mk('b','','—');row.append(mk('span','',name),value);card.append(row);costSlots[key][field]=value});
+  const note=mk('small','note','Cost figures load from completed orders; pending orders are excluded.');card.append(note);costSlots[key].note=note;grid.append(card);
  });
  const profitHeading=mk('h3','ai-goat-title','Profit Margin Overview'),profitGrid=mk('div','ai-goat-grid');page.append(profitHeading,profitGrid);
- [['01 · Subtotal + customer-paid shipping','rev-collected','Paid Shopify transactions, net of refunds; tax excluded'],['02 · Cost of goods sold','rev-cost-period-expenses','Recorded job costs (includes apparel, decoration, labor and other costs)'],['03 · Shipping label costs',null,'Not separately available in current AI accounting totals'],['04 · Profit after COGS & shipping','rev-cost-period-profit','Provisional gross profit from completed cost entries']].forEach(([label,id,note])=>{
-  const card=mk('div','ai-goat-tile'),val=mk('strong','','—');card.append(mk('small','',label),val,mk('span','note',note));if(id)bind(val,id);profitGrid.append(card);
+ const profitSlots={};
+ [['01 · Revenue from costed orders','revenue','Revenue for orders with completed cost records'],['02 · Cost of goods & production','production','Apparel, decoration, labor and other recorded expenses'],['03 · Shipping / packaging costs','shipping','Manually recorded shipping and packaging'],['04 · Profit after recorded costs','profit','Revenue less all recorded costs on completed orders']].forEach(([label,field,note])=>{
+  const card=mk('div','ai-goat-tile'),val=mk('strong','','—');card.append(mk('small','',label),val,mk('span','note',note));profitSlots[field]=val;profitGrid.append(card);
  });
- const banner=mk('div','ai-goat-banner','Profit is provisional when order costs are incomplete. The AI Apparel cost ledger includes additional job costs, so its figures are not directly equivalent to GOAT’s COGS-only calculations.');page.append(banner);
+ const banner=mk('div','ai-goat-banner','Profit reporting is limited to orders with completed cost entries. Orders awaiting costs are excluded from profit calculations. Payment-based revenue may include sales tax and customer-paid shipping; verify before using for tax filing or final accounting.');page.append(banner);
+ const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+ const totals=rows=>rows.reduce((a,x)=>{if(!x.costs){a.pending++;return a}const c=x.costs;a.complete++;a.revenue+=Number(x.net_paid||0);a.shipping+=Number(c.shipping||0);a.production+=Number(c.apparel||0)+Number(c.decoration||0)+Number(c.labor||0)+Number(c.other||0);return a},{revenue:0,production:0,shipping:0,complete:0,pending:0});
+ const periodMatches=(x,key)=>{const d=String(x.date||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;const today=new Date(),y=today.getFullYear(),m=today.getMonth()+1,q=Math.ceil(m/3);const yy=Number(d.slice(0,4)),mm=Number(d.slice(5,7));if(yy!==y)return false;if(key==='month')return mm===m;if(key==='quarter')return Math.ceil(mm/3)===q;return d<=today.getFullYear()+'-'+String(m).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0')};
+ document.addEventListener('ai-apparel-cost-ledger-updated',e=>{
+  const rows=Array.isArray(e.detail?.sales)?e.detail.sales:[];
+  for(const key of ['month','quarter','ytd']){
+   const t=totals(rows.filter(x=>periodMatches(x,key))),slots=costSlots[key];
+   slots.costs.textContent=money(t.production+t.shipping);slots.profit.textContent=money(t.revenue-t.production-t.shipping);
+   slots.note.textContent=t.complete+' completed order(s) included · '+t.pending+' awaiting costs. Profit uses completed orders only.';
+  }
+  const t=totals(rows);profitSlots.revenue.textContent=money(t.revenue);profitSlots.production.textContent=money(t.production);profitSlots.shipping.textContent=money(t.shipping);profitSlots.profit.textContent=money(t.revenue-t.production-t.shipping);
+  banner.textContent=t.complete+' completed order(s) included; '+t.pending+' awaiting costs and excluded from profit. Payment-based revenue may include sales tax and customer-paid shipping; figures are provisional.';
+ });
  const detail=(name,desc,content)=>{const d=mk('details','panel ai-goat-detail'),summary=mk('summary');summary.append(mk('strong','',name),mk('small','',desc));d.append(summary);if(content){const body=mk('div','ai-goat-detail-body');body.append(content);d.append(body)}page.append(d);return d};
  if(costs){const d=detail('Order Cost Management','Open to enter costs for paid orders',costs);costs.open=true}
  // Manual sales cannot be written to the Shopify payment ledger without a verified backend route.
