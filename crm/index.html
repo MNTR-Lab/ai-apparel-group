@@ -193,7 +193,44 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-prod-progress-fill{height:100%;background:#268d80;border-radius:999px;transition:width .25s ease}
 .crm-prod-progress-stats{display:flex;gap:8px 18px;flex-wrap:wrap;color:#526b84;font-size:12px}
 </style>
-<style>.crm-prod-progress-help{display:block;margin-top:10px;color:#64748b;font-size:11px}</style></head>
+<style>.crm-prod-progress-help{display:block;margin-top:10px;color:#64748b;font-size:11px}</style><style>
+/* Revenue & Accounting visual refresh — scoped; existing app and behavior untouched */
+#revenue{--rev-ink:#15263b;--rev-muted:#718298;--rev-border:#e4ebf3;--rev-accent:#0876b9;--rev-bg:#f7f9fc;color:var(--rev-ink)}
+#revenue .rev-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:31px 34px;margin-bottom:23px;border-radius:20px;background:linear-gradient(112deg,#101f32 0%,#193956 72%,#17577d 100%);color:#fff;box-shadow:0 16px 32px rgba(13,34,55,.12);overflow:hidden}
+#revenue .rev-hero:after{content:"";position:absolute;width:240px;height:240px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-78px;top:-95px;box-shadow:0 0 0 55px rgba(255,255,255,.035)}
+#revenue .rev-eyebrow{font-size:10px;font-weight:800;letter-spacing:2px;color:#80c7f4}
+#revenue .rev-hero h2{color:white;font-size:clamp(25px,3vw,34px);line-height:1.15;margin:10px 0}
+#revenue .rev-hero p{color:#cadbea;margin:0;max-width:580px;font-size:14px;line-height:1.6}
+#revenue .rev-hero-mark{font-size:52px;font-weight:200;color:#89ccef;opacity:.65;padding-right:35px}
+#revenue .panel{border:1px solid var(--rev-border);border-radius:17px;box-shadow:0 6px 22px rgba(19,41,68,.035)}
+#revenue .rev-toolbar{padding:19px 22px;margin-bottom:25px;background:white}
+#revenue .rev-toolbar label,#revenue #rev-period-panel label{font-size:12px;font-weight:750;color:#4e627a}
+#revenue input[type=date],#revenue select{border:1px solid #dbe4ed;border-radius:10px;background:#fbfcfe;color:#233850;min-height:42px;outline-color:#4aa4d6}
+#revenue .action{border-radius:10px;min-height:42px;box-shadow:none}
+#revenue .rev-section-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:6px 0 16px}
+#revenue .rev-section-heading h3{font-size:21px;margin:5px 0 0;color:var(--rev-ink);letter-spacing:-.45px}
+#revenue .rev-kicker{font-size:10px;font-weight:800;letter-spacing:1.65px;color:var(--rev-accent)}
+#revenue .rev-pill{border:1px solid #deebf4;border-radius:100px;padding:7px 12px;color:#4a7795;background:#f1f7fb;font-size:11px;font-weight:700;white-space:nowrap}
+#revenue .rev-metrics{margin-bottom:25px}
+#revenue .rev-metrics .card{border:1px solid var(--rev-border);border-radius:15px;background:#fff;box-shadow:0 7px 22px rgba(19,41,68,.045);padding:20px;min-height:142px}
+#revenue .rev-metrics .card:before{content:"";display:block;width:32px;height:4px;background:linear-gradient(90deg,#1388c9,#5fc3de);border-radius:10px;margin-bottom:17px}
+#revenue .rev-metrics .card label{font-size:12px;color:#64758b;font-weight:700}
+#revenue .rev-metrics .card strong{font-size:clamp(20px,2vw,29px);letter-spacing:-.8px;color:#182f48;line-height:1.4}
+#revenue .rev-metrics .card small{color:#8290a1}
+#revenue #rev-period-panel{padding:25px;margin-bottom:24px}
+#revenue #rev-period-panel>.info{line-height:1.6;color:#78889b}
+#revenue .rev-period-grid{gap:16px}
+#revenue .rev-period-card{border:1px solid #e0eaf3;border-radius:15px;padding:20px;background:linear-gradient(180deg,#fff,#fbfdff);box-shadow:none;min-width:0}
+#revenue .rev-period-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:20px}
+#revenue .rev-period-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#e8f3fa;color:#0876b9;font-weight:800;font-size:15px}
+#revenue .rev-period-type{font-size:10px;letter-spacing:1.15px;color:#8497a8;font-weight:800}
+#revenue .rev-period-card>label{font-size:12px;color:#61758b}
+#revenue .rev-period-card>strong{display:block;font-size:21px;color:#162e47;margin:7px 0 14px;letter-spacing:-.45px}
+#revenue .rev-period-card>small{display:block;color:#74879a;margin:7px 0;line-height:1.45}
+#revenue .rev-period-card>small:nth-last-child(-n+2){color:#a0aebb;font-size:11px}
+#revenue .notice{border-radius:12px;line-height:1.6}
+@media(max-width:760px){#revenue .rev-hero{padding:25px 22px}#revenue .rev-hero-mark{display:none}#revenue .rev-section-heading{align-items:flex-start;flex-direction:column}#revenue #rev-period-panel{padding:18px}#revenue .rev-period-grid{grid-template-columns:1fr}}
+</style></head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
@@ -299,15 +336,15 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="quick"><a class="action" href="https://portal.aiapparelgroup.com" target="_blank" rel="noopener noreferrer">Open Existing Rewards Portal ↗</a><a class="action secondary" href="https://portal.aiapparelgroup.com/admin" target="_blank" rel="noopener noreferrer">Open Rewards Admin ↗</a></div></div>
 <div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
 <section id="revenue" hidden>
-<h2>Revenue &amp; Accounting</h2><p class="lead">Review quote values and invoice activity. Financial figures are labeled by status; quotes are not counted as collected revenue.</p>
-<div class="panel"><div class="quick" style="align-items:end;flex-wrap:wrap;gap:12px"><label>From<input id="rev-from" type="date" style="display:block;padding:10px;margin-top:5px"></label><label>Through<input id="rev-to" type="date" style="display:block;padding:10px;margin-top:5px"></label><button id="rev-refresh" type="button" class="action">Refresh Revenue</button><button id="rev-export" type="button" class="action secondary" disabled>Export CSV</button></div><p id="rev-message" class="info">Sign in and select Revenue to load available records.</p></div>
-<div class="grid"><div class="card"><label>Approved quote value</label><strong id="rev-approved">—</strong><small>Approved estimates, not payments</small></div><div class="card"><label>Open quote value</label><strong id="rev-open">—</strong><small>Unapproved estimates</small></div><div class="card"><label>Shopify draft invoices</label><strong id="rev-drafts">—</strong><small>Count of linked draft orders</small></div><div class="card"><label>Collected revenue</label><strong id="rev-collected">Not connected</strong><small>Requires verified Shopify payments</small></div></div>
-<div class="panel" id="rev-period-panel"><h3>Reporting Periods</h3><p class="info">These summaries are separate reporting views. Estimates are shown for reference only; collected revenue, expenses, profit, and sales tax remain unavailable until verified financial integrations are connected.</p>
+<div class="rev-hero"><div><span class="rev-eyebrow">FINANCIAL OVERVIEW</span><h2>Revenue &amp; Accounting</h2><p>Track your pipeline, review reporting periods, and manage financial visibility in one place.</p></div><span class="rev-hero-mark" aria-hidden="true">↗</span></div>
+<div class="panel rev-toolbar"><div class="quick" style="align-items:end;flex-wrap:wrap;gap:12px"><label>From<input id="rev-from" type="date" style="display:block;padding:10px;margin-top:5px"></label><label>Through<input id="rev-to" type="date" style="display:block;padding:10px;margin-top:5px"></label><button id="rev-refresh" type="button" class="action">Refresh Revenue</button><button id="rev-export" type="button" class="action secondary" disabled>Export CSV</button></div><p id="rev-message" class="info">Sign in and select Revenue to load available records.</p></div>
+<div class="rev-section-heading"><div><span class="rev-kicker">OVERVIEW</span><h3>Financial snapshot</h3></div><span class="rev-pill">Quote activity</span></div><div class="grid rev-metrics"><div class="card"><label>Approved quote value</label><strong id="rev-approved">—</strong><small>Approved estimates, not payments</small></div><div class="card"><label>Open quote value</label><strong id="rev-open">—</strong><small>Unapproved estimates</small></div><div class="card"><label>Shopify draft invoices</label><strong id="rev-drafts">—</strong><small>Count of linked draft orders</small></div><div class="card"><label>Collected revenue</label><strong id="rev-collected">Not connected</strong><small>Requires verified Shopify payments</small></div></div>
+<div class="panel" id="rev-period-panel"><div class="rev-section-heading"><div><span class="rev-kicker">PERFORMANCE</span><h3>Reporting periods</h3></div><span class="rev-pill">Monthly · Quarterly · YTD</span></div><p class="info">These summaries are separate reporting views. Estimates are shown for reference only; collected revenue, expenses, profit, and sales tax remain unavailable until verified financial integrations are connected.</p>
 <div class="quick" style="flex-wrap:wrap;align-items:end;gap:12px"><label>Reporting year<select id="rev-report-year" style="display:block;padding:10px;margin-top:5px"></select></label><label>Month<select id="rev-report-month" style="display:block;padding:10px;margin-top:5px"></select></label><label>Quarter<select id="rev-report-quarter" style="display:block;padding:10px;margin-top:5px"><option value="1">Q1 (Jan–Mar)</option><option value="2">Q2 (Apr–Jun)</option><option value="3">Q3 (Jul–Sep)</option><option value="4">Q4 (Oct–Dec)</option></select></label></div>
-<div class="grid" style="margin-top:14px">
-<div class="card"><label>Monthly Status</label><strong id="rev-month-period">—</strong><small id="rev-month-estimates">Approved estimates: —</small><small id="rev-month-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
-<div class="card"><label>Quarterly Status</label><strong id="rev-quarter-period">—</strong><small id="rev-quarter-estimates">Approved estimates: —</small><small id="rev-quarter-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
-<div class="card"><label>Yearly (YTD) Status</label><strong id="rev-ytd-period">—</strong><small id="rev-ytd-estimates">Approved estimates: —</small><small id="rev-ytd-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
+<div class="grid rev-period-grid" style="margin-top:14px">
+<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">M</span><span class="rev-period-type">01 / MONTHLY</span></div><label>Monthly Status</label><strong id="rev-month-period">—</strong><small id="rev-month-estimates">Approved estimates: —</small><small id="rev-month-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
+<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">Q</span><span class="rev-period-type">02 / QUARTERLY</span></div><label>Quarterly Status</label><strong id="rev-quarter-period">—</strong><small id="rev-quarter-estimates">Approved estimates: —</small><small id="rev-quarter-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
+<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">Y</span><span class="rev-period-type">03 / YEAR TO DATE</span></div><label>Yearly (YTD) Status</label><strong id="rev-ytd-period">—</strong><small id="rev-ytd-estimates">Approved estimates: —</small><small id="rev-ytd-count">Quotes: —</small><small>Collected revenue: Not connected</small><small>Expenses / Profit / Tax: Not connected</small></div>
 </div><p id="rev-period-message" class="info">Sign in and select Revenue to load period summaries.</p></div>
 <div class="panel"><h3>Quote &amp; Invoice Register</h3><div id="rev-register" style="overflow-x:auto"><p class="info">No records loaded.</p></div></div>
 <div class="columns"><div class="panel"><h3>Job Costs &amp; Gross Profit</h3><p class="info">Awaiting a secured cost ledger for apparel, decoration, labor, packaging, and shipping. Profit figures will not be estimated from sales alone.</p></div><div class="panel"><h3>Sales Tax &amp; Cash Basis</h3><p class="info">Awaiting verified order payment and tax records. Tax collected and cash-basis revenue will be reported only after reconciliation with the AI Apparel store.</p></div></div>
