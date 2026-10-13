@@ -1284,9 +1284,9 @@ addItem();
   return out;
  }
  async function loadFinancial(){
-  try{const out=await financialRequest();financialMonths=out.months;financialYear=out.year;updatePeriodSummaries();
+  try{const out=await financialRequest();financialMonths=out.months;financialYear=out.year;financialComplete=out.sync_status?.complete===true;updatePeriodSummaries();
    el('rev-tax-note').textContent=(out.tax_orders||0)+' Shopify order tax records loaded for '+out.year+'. Figures are based on order dates; tax refunds and line-item taxability still require reconciliation.';
-   el('rev-period-message').textContent=(financialComplete?'Historical sync complete. ':'Shopify history may be incomplete until full synchronization. ')+out.transactions+' payment/refund transactions recorded for '+out.year+'. Figures use payment dates (UTC).';
+   el('rev-period-message').textContent=(financialComplete?'Shopify payment and tax history synchronized. ':'Shopify payment or tax history is still synchronizing. ')+(out.sync_status?.sources||[]).map(x=>x.slug.replace('ai-apparel-','').replace('financial-report','Payments').replace('tax-jurisdictions','Tax')+': '+Number(x.total_scanned||0)+' orders scanned'+(x.complete?' (complete)':' (in progress)')).join(' · ')+'. '+out.transactions+' qualifying payment/refund transactions for '+out.year+'. Accounting starts October 1, 2026; tax classification still requires review.';
   }catch(e){financialMonths=null;financialYear=null;updatePeriodSummaries();el('rev-tax-note').textContent='Tax records unavailable: '+e.message;el('rev-period-message').textContent='Financial totals unavailable: '+e.message;}
  }
  async function syncFinancial(){
