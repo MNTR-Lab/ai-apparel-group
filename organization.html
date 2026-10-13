@@ -860,6 +860,13 @@
     .invoice-badge.show{display:inline-flex}
 
 </style>
+  <style>
+    /* Super-admin organization switcher; hidden for customers */
+    .super-admin-org-picker{display:none;align-items:center;gap:9px;margin-right:12px;font-size:12px;font-weight:700;color:#1d3c7a}
+    .super-admin-org-picker.show{display:flex}
+    .super-admin-org-picker select{max-width:230px;min-width:150px;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#111827;font:inherit}
+    @media(max-width:700px){.header-inner{height:auto;min-height:75px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}.header-right{flex-wrap:wrap;justify-content:flex-end}.super-admin-org-picker{width:100%;margin:8px 0;flex-wrap:wrap}.super-admin-org-picker select{max-width:100%;flex:1}}
+</style>
   <style>[hidden]{display:none!important}</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -887,6 +894,9 @@
       </a>
 
       <div class="header-right">
+        <label class="super-admin-org-picker" id="superAdminOrgPicker" for="superAdminOrgSelect">Organization:
+          <select id="superAdminOrgSelect" aria-label="Switch organization"></select>
+        </label>
         <a href="./" class="back-home">
           ← AI APPAREL HOME
         </a>
@@ -2730,6 +2740,42 @@
     ============================================================
     */
 
+    async function configureSuperAdminOrganizationPicker(profilePayload) {
+      const picker = document.getElementById("superAdminOrgPicker");
+      const select = document.getElementById("superAdminOrgSelect");
+      if (!profilePayload?.isSuperAdmin) {
+        picker.classList.remove("show");
+        return;
+      }
+      try {
+        const response = await fetch(SUPABASE_URL + "/functions/v1/ai-apparel-org-feed?list_organizations=1", {
+          headers: { Authorization: "Bearer " + PORTAL_ACCESS_TOKEN }
+        });
+        if (!response.ok) throw new Error("Unable to load organization list");
+        const payload = await response.json();
+        select.replaceChildren();
+        for (const org of (payload.organizations || [])) {
+          const option = document.createElement("option");
+          option.value = org.id;
+          option.textContent = org.name;
+          select.appendChild(option);
+        }
+        select.value = ORGANIZATION.id;
+        select.onchange = () => {
+          const target = select.value;
+          if (!target || target === ORGANIZATION.id) return;
+          const url = new URL(window.location.href);
+          url.searchParams.set("organization_id", target);
+          url.searchParams.set("admin_preview", "1");
+          window.location.assign(url.toString());
+        };
+        picker.classList.add("show");
+      } catch (error) {
+        console.error("Super admin organization selector unavailable:", error);
+        picker.classList.remove("show");
+      }
+    }
+
     async function initializeDashboard() {
 
       document.getElementById(
@@ -2760,6 +2806,7 @@
 
       const profilePayload = await loadOrganizationProfile();
       renderOrganization();
+      await configureSuperAdminOrganizationPicker(profilePayload);
       await loadQuoteApprovalAction();
 
 
