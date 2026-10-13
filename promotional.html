@@ -7,7 +7,7 @@
 <style>
 :root{
   --ai-blue:#006FBA;--ai-pink:#FF06EB;--ink:#101114;--muted:#6d7178;
-  --line:#e8e8ea;--soft:#f7f7f5;--org:#F07723;--org2:#1175BC;--white:#fff;
+  --line:#e8e8ea;--soft:#f7f7f5;--org:#006FBA;--org2:#1d3c7a;--white:#fff;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -104,6 +104,7 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 
 .quote-success{margin-top:14px;padding:14px;border-radius:12px;background:#eef8ee;font-size:12px;line-height:1.5}.quote-error{margin-top:14px;padding:14px;border-radius:12px;background:#fff0f0;color:#8b1e1e;font-size:12px}.currentquote{border:1px solid var(--line);border-radius:16px;padding:16px;margin:10px 0}.currentquote-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.currentquote strong{font-size:13px}.statuspill{font-size:9px;font-weight:900;padding:6px 9px;border-radius:999px;background:#f1f1f1;text-transform:uppercase}.currentquote p{font-size:11px;color:var(--muted);margin:7px 0 0}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="topline">Your dedicated AI Apparel promotional showroom · Products are quoted with current pricing & availability</div>
@@ -131,7 +132,7 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 </section>
 
 <section class="section" id="approvedShowroom" style="display:none">
-<div class="head"><div><div class="eyebrow" style="color:var(--org1)">ORGANIZATION COLLECTION</div><h2 id="approvedTitle">Approved Products</h2><p>Products selected specifically for your organization. All quote requests are handled through AI Apparel.</p></div><div class="view">APPROVED COLLECTION</div></div>
+<div class="head"><div><div class="eyebrow" style="color:var(--org2)">ORGANIZATION COLLECTION</div><h2 id="approvedTitle">Approved Products</h2><p>Products selected specifically for your organization. All quote requests are handled through AI Apparel.</p></div><div class="view">APPROVED COLLECTION</div></div>
 <div class="products" id="approvedGrid"><div class="loading">Loading approved products…</div></div>
 </section>
 
@@ -147,7 +148,7 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 
 <div class="banner"><div class="bannerin"><div><h2>Can't find exactly what you need?</h2><p>Tell AI Apparel what you're planning and we'll help source the right promotional product.</p></div><button>START A PRODUCT REQUEST</button></div></div>
 
-<footer><div><strong>AI APPAREL GROUP</strong> · Promotional Showroom Concept</div><div>Company Store · Promotional · Rewards · Account</div></footer>
+<footer><div><strong>AI APPAREL GROUP</strong> · Promotional Showroom</div><div>Company Store · Promotional · Rewards · Account</div></footer>
 <button class="quote-float" id="quoteFloat">QUOTE REQUEST · <span id="quoteCount">0</span> ITEMS</button>
 
 <div class="modal" id="quotesModal"><div class="modalcard"><button class="modalclose" id="quotesClose">×</button><div style="padding:38px"><div class="detailmeta">PROMOTIONAL</div><h2 style="font-size:34px;margin:6px 0 20px">Current Quotes</h2><div id="currentQuotes"><div class="loading">Loading quotes…</div></div></div></div></div>
@@ -161,8 +162,17 @@ const QUOTE_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-appare
 const SHOWROOM_API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-showroom";
 const AI_LOGO="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110";
 const qs=new URLSearchParams(location.search);
-const orgId=qs.get("organization_id")||"org_erx";
-let ORG={id:orgId,name:"Emergency Restoration Xperts",shortName:"ERX",logo:"https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ERX.png?v=1791225892",primaryColor:"#F07723",secondaryColor:"#1175BC"};
+const requestedOrgId=qs.get("organization_id")||"";
+let orgId="";
+let ORG={id:"",name:"Your Organization",shortName:"ORG",logo:"",primaryColor:"#006FBA",secondaryColor:"#1d3c7a"};
+const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
+const portalAuth=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let verifiedOrganization=false;
+function lockShowroom(message){
+ document.body.innerHTML='<main style="max-width:620px;margin:12vh auto;padding:32px;font-family:Arial,sans-serif"><h1>Organization access required</h1><p id="accessMessage"></p><p><a href="./organization.html">Return to Organization Dashboard</a></p></main>';
+ document.getElementById("accessMessage").textContent=message;
+}
 let quote=[];
 
 const $=s=>document.querySelector(s);
@@ -198,13 +208,27 @@ function applyOrg(){
 }
 async function loadOrg(){
  try{
-  const r=await fetch(`${FEED}?organization_id=${encodeURIComponent(orgId)}`);
+  const {data:{session},error}=await portalAuth.auth.getSession();
+  if(error||!session?.access_token)throw new Error("Please sign in through your organization dashboard first.");
+  const url=FEED+(requestedOrgId?"?organization_id="+encodeURIComponent(requestedOrgId):"");
+  const r=await fetch(url,{headers:{Authorization:"Bearer "+session.access_token}});
   const d=await r.json();
-  const o=d.organization||{};
-  ORG={...ORG,id:o.id||ORG.id,name:o.name||ORG.name,shortName:o.shortName||o.short_name||ORG.shortName,logo:o.logo||o.logo_url||ORG.logo,primaryColor:o.primaryColor||ORG.primaryColor,secondaryColor:o.secondaryColor||ORG.secondaryColor};
+  if(!r.ok||!d.organization?.id)throw new Error(d.error||"Unable to verify your organization.");
+  const o=d.organization;
+  if(requestedOrgId&&o.id!==requestedOrgId)throw new Error("This organization is not available to your account.");
+  orgId=o.id;
+  ORG={id:o.id,name:o.name||"Your Organization",shortName:o.shortName||o.short_name||o.name||"ORG",
+   logo:o.logo||o.logo_url||"",primaryColor:o.primaryColor||o.primary_color||"#006FBA",
+   secondaryColor:o.secondaryColor||o.secondary_color||"#1d3c7a"};
+  verifiedOrganization=true;
+  document.title=ORG.name+" | AI Apparel Group Promotional";
   applyOrg();
   renderPrevious(d.promotionalPreviousOrders||[]);
- }catch(e){applyOrg();$("#previousOrders").innerHTML='<div class="loading">Previous orders are unavailable right now.</div>'}
+  return true;
+ }catch(e){
+  lockShowroom(e.message||"Unable to load organization.");
+  return false;
+ }
 }
 function renderPrevious(orders){
  const items=[];
@@ -337,7 +361,7 @@ async function loadCurrentQuotes(){
  try{
   const r=await fetch(`${QUOTE_API}?organization_id=${encodeURIComponent(orgId)}`),d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||"Could not load quotes");
-  const quotes=d.quotes||[];
+  const quotes=(d.quotes||[]).filter(q=>["request_received","pricing","quote_ready","approved"].includes(String(q.status||"").toLowerCase()));
   $("#currentQuotes").innerHTML=quotes.map(q=>renderCustomerQuote(q)).join("")||'<div class="loading">No current quote requests yet.</div>';
   document.querySelectorAll("[data-approve-quote]").forEach(b=>b.onclick=()=>approveCustomerQuote(b.dataset.approveQuote));
   const requestedQuoteId=new URLSearchParams(location.search).get("quote_id");
@@ -345,7 +369,7 @@ async function loadCurrentQuotes(){
     const target=document.querySelector(`[data-quote-id="${CSS.escape(requestedQuoteId)}"]`);
     if(target){
       target.scrollIntoView({behavior:"smooth",block:"center"});
-      target.style.boxShadow="0 0 0 3px var(--org1)";
+      target.style.boxShadow="0 0 0 3px var(--org2)";
     }
   }
 
@@ -355,12 +379,11 @@ $("#prepareRequest").onclick=submitQuoteRequest;
 $("#quotesBtn").onclick=loadCurrentQuotes;
 $("#quotesClose").onclick=()=>$("#quotesModal").classList.remove("open");
 $("#quotesModal").onclick=e=>{if(e.target.id==="quotesModal")e.currentTarget.classList.remove("open")};
-loadOrg().then(async()=>{await loadApprovedShowroom();
+loadOrg().then(async(ok)=>{if(!ok)return;await loadApprovedShowroom();await loadVariedProducts();
   if(new URLSearchParams(location.search).get("open_quotes")==="1"){
     await loadCurrentQuotes();
   }
 });
-loadVariedProducts();
 </script>
 
 </body>
