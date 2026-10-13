@@ -1686,4 +1686,83 @@ addItem();
 <script id="ai-accounting-cutoff-banner">
 (()=>{const mount=()=>{const page=document.getElementById('revenue');if(!page||document.getElementById('ai-accounting-start-note'))return;const note=document.createElement('div');note.id='ai-accounting-start-note';note.className='ai-goat-banner';note.style.cssText='margin:14px 0;padding:14px 18px;border-left:4px solid #2675bd';note.textContent='CURRENT COMPANY ACCOUNTING START: OCTOBER 1, 2026. Revenue and profit include verified payments/refunds from that date forward, regardless of original order date. Historical records remain stored separately. Shopify sync may still be incomplete. Tax reconciliation currently uses order dates and is not filing-ready.';const heading=page.querySelector('h1,h2,.ai-goat-header,.ai-goat-hero');if(heading)heading.after(note);else page.prepend(note);};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount()})();
 </script>
+
+<style>
+#ai-sidebar-account{margin-top:16px;padding:14px 9px;border-top:1px solid #ffffff44;color:#fff}
+#ai-sidebar-account small{display:block;color:#ddd;overflow-wrap:anywhere;margin:6px 0 12px}
+#ai-sidebar-account #logout{width:100%;padding:11px;background:#fff;color:#15283d;border:0;border-radius:8px;font-weight:700}
+#ai-accounting-export{margin:18px 0}
+#ai-accounting-export .ai-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#ai-accounting-export select{padding:10px;border:1px solid #ccd8e4;border-radius:8px}
+@media(max-width:700px){#ai-sidebar-account{display:block}.foot{display:block}}
+</style>
+<script id="ai-accounting-export-sidebar">
+(()=>{
+ const start=()=>{
+  const aside=document.querySelector('aside'),logout=document.getElementById('logout');
+  if(aside&&logout&&!document.getElementById('ai-sidebar-account')){
+   const panel=document.createElement('div');panel.id='ai-sidebar-account';
+   const label=document.createElement('strong');label.textContent='Account';
+   const email=document.createElement('small');email.textContent='Administrator';
+   panel.append(label,email,logout);
+   const foot=aside.querySelector('.foot');foot?aside.insertBefore(panel,foot):aside.append(panel);
+   const update=()=>{panel.hidden=logout.hidden};
+   new MutationObserver(update).observe(logout,{attributes:true,attributeFilter:['hidden']});update();
+   if(typeof db!=='undefined'&&db){
+    db.auth.getUser().then(({data})=>{if(data?.user?.email)email.textContent=data.user.email}).catch(()=>{});
+    db.auth.onAuthStateChange((_event,session)=>{email.textContent=session?.user?.email||'Administrator'});
+   }
+  }
+  const page=document.getElementById('revenue');
+  if(!page||document.getElementById('ai-accounting-export'))return;
+  const panel=document.createElement('div');panel.id='ai-accounting-export';panel.className='panel';
+  const heading=document.createElement('h3');heading.textContent='Accounting Exports — October 1, 2026 Forward';
+  const note=document.createElement('p');note.className='info';
+  note.textContent='Download verified payment/refund orders and recorded costs. Profit is blank when costs are pending. Tax amounts require separate review.';
+  const controls=document.createElement('div');controls.className='ai-controls';
+  const period=document.createElement('select');period.setAttribute('aria-label','Accounting export period');
+  [['month','Current month'],['quarter','Current quarter'],['ytd','Year to date'],['all','All since October 1, 2026']].forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;period.append(option)});
+  const button=document.createElement('button');button.className='action';button.type='button';button.textContent='Download CSV';
+  const status=document.createElement('p');status.className='info';status.setAttribute('role','status');
+  controls.append(period,button);panel.append(heading,note,controls,status);
+  const tax=document.getElementById('ai-tax-reconciliation');tax?tax.after(panel):page.append(panel);
+  const csv=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  button.addEventListener('click',async()=>{
+   button.disabled=true;status.textContent='Preparing export…';
+   try{
+    if(typeof db==='undefined'||!db)throw Error('CRM database connection unavailable');
+    const now=new Date(),year=now.getFullYear();
+    const years=period.value==='all'?Array.from({length:year-2026+1},(_,i)=>2026+i):[year];
+    const orders=[];
+    for(const y of years){const {data,error}=await db.rpc('ai_financial_accounting_export',{p_year:y});if(error)throw error;orders.push(...(data?.orders||[]))}
+    const cutoff=new Date('2026-10-01T00:00:00-04:00');
+    const filtered=orders.filter(x=>{
+     const date=new Date(x.first_payment);
+     if(!Number.isFinite(date.getTime())||date<cutoff)return false;
+     if(period.value==='all')return true;
+     if(date.getFullYear()!==year)return false;
+     if(period.value==='month')return date.getMonth()===now.getMonth();
+     if(period.value==='quarter')return Math.floor(date.getMonth()/3)===Math.floor(now.getMonth()/3);
+     return date<=now;
+    });
+    const headers=['Source','Order ID','Order Name','First Payment Date','Net Collected','Costs Complete','Apparel','Decoration','Labor','Shipping','Other','Total Costs','Provisional Profit'];
+    const lines=[headers.map(csv).join(',')];
+    for(const x of filtered){
+     const complete=x.costs_complete===true;
+     const costs=['apparel','decoration','labor','shipping','other'].map(k=>complete?Number(x[k]||0):'');
+     const total=complete?costs.reduce((a,b)=>a+b,0):'';
+     lines.push([x.source,x.order_id,x.name,x.first_payment,x.net_collected,complete?'Yes':'No',...costs,total,complete?(Number(x.net_collected)-total).toFixed(2):''].map(csv).join(','));
+    }
+    const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='AI_Apparel_Accounting_'+period.value+'_'+now.toISOString().slice(0,10)+'.csv';
+    document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    status.textContent=filtered.length+' orders exported. Figures remain provisional pending synchronization and tax reconciliation.';
+   }catch(e){status.textContent='Export unavailable: '+(e?.message||String(e))}
+   finally{button.disabled=false}
+  });
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
 </body></html>
