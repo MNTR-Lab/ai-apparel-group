@@ -110,7 +110,7 @@ footer{max-width:1400px;margin:65px auto 0;padding:35px 30px;border-top:1px soli
 <div class="topline">Your dedicated AI Apparel promotional showroom · Products are quoted with current pricing & availability</div>
 <header><div class="nav">
 <div class="logo"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group"></div>
-<div class="navlinks"><a>APPAREL</a><a>PROMOTIONAL</a><a>REWARDS</a><a>ORDERS</a></div>
+<div class="navlinks"><a id="apparelNav" href="#" aria-label="Organization apparel store">APPAREL</a><a id="promotionalNav" href="./promotional.html" aria-current="page">PROMOTIONAL</a><a id="rewardsNav" href="./organization.html">REWARDS</a></div>
 <form class="navsearch" id="navSearch">⌕ <input id="navSearchInput" placeholder="Search promotional products"></form>
 <div class="account" id="accountBadge"><img id="accountLogo" alt="Organization logo"></div>
 </div></header>
@@ -227,6 +227,23 @@ async function loadOrg(){
    logo:o.logo||o.logo_url||"",primaryColor:o.primaryColor||o.primary_color||"#006FBA",
    secondaryColor:o.secondaryColor||o.secondary_color||"#1d3c7a"};
   verifiedOrganization=true;
+  const promoUrl=new URL("./promotional.html",window.location.href);
+  promoUrl.searchParams.set("organization_id",ORG.id);
+  document.getElementById("promotionalNav").href=promoUrl.href;
+  const rewardsUrl=new URL("./organization.html",window.location.href);
+  rewardsUrl.searchParams.set("organization_id",ORG.id);
+  document.getElementById("rewardsNav").href=rewardsUrl.href;
+  const apparelNav=document.getElementById("apparelNav");
+  const apparelUrl=ORG.id==="org_carolina_ent"
+    ?"https://carolina-ent.aiapparelgroup.com/"
+    :(o.apparel_store_url||o.shopify_store_url||o.company_store_url||o.companyStore?.store_url||"");
+  if(apparelUrl && /^https:\/\//i.test(apparelUrl)){
+    apparelNav.href=apparelUrl;
+  }else{
+    apparelNav.removeAttribute("href");
+    apparelNav.title="Apparel store link has not been configured for this organization";
+    apparelNav.style.opacity=".45";
+  }
   document.title=ORG.name+" | AI Apparel Group Promotional";
   const workspaceTitle=document.querySelector(".orgbar strong");
   if(workspaceTitle)workspaceTitle.textContent=ORG.name+" Promotional Workspace";
