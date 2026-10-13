@@ -492,12 +492,12 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <details class="panel" id="rev-csv-import" style="margin:12px 0"><summary style="cursor:pointer;font-weight:700;list-style-position:inside">Historical CSV Import <span style="font-size:12px;font-weight:400;color:#64748b">▾ Upload, preview &amp; stage missing records</span></summary><div style="padding-top:12px"><p class="info">Import Shopify Orders CSV exports without changing existing revenue totals. Imported records are staged for duplicate review and reconciliation before posting to accounting.</p><label style="display:block;margin:10px 0">Choose Shopify Orders CSV <input type="file" id="rev-csv-file" accept=".csv,text/csv" style="display:block;margin-top:6px"></label><p id="rev-csv-status" class="info">No file selected.</p><div id="rev-csv-preview" style="overflow:auto;max-height:260px"></div><div class="quick" style="margin-top:12px"><button id="rev-csv-upload" type="button" class="action" disabled>Stage validated records</button><button id="rev-csv-clear" type="button" class="action secondary">Clear</button></div></div></details>
 <div class="info" id="rev-tax-note" style="margin:10px 0">Shopify tax reconciliation status will appear here.</div><div class="info" style="margin:8px 0">Order tax recorded (YTD): <strong id="rev-tax-total">Not loaded</strong></div>
 <div class="rev-section-heading"><div><span class="rev-kicker">OVERVIEW</span><h3>Financial snapshot</h3></div><span class="rev-pill">Quote activity</span></div><div class="grid rev-metrics"><div class="card"><label>Approved quote value</label><strong id="rev-approved">—</strong><small>Approved estimates, not payments</small></div><div class="card"><label>Open quote value</label><strong id="rev-open">—</strong><small>Unapproved estimates</small></div><div class="card"><label>Shopify draft invoices</label><strong id="rev-drafts">—</strong><small>Count of linked draft orders</small></div><div class="card"><label>Collected revenue</label><strong id="rev-collected">Awaiting sync</strong><small>Net payments less refunds (YTD)</small></div></div>
-<div class="panel" id="rev-period-panel"><div class="rev-section-heading"><div><span class="rev-kicker">PERFORMANCE</span><h3>Reporting periods</h3></div><span class="rev-pill">Monthly · Quarterly · YTD</span></div><p class="info">Estimates are shown for reference only. Collected revenue is based on synchronized successful Shopify payment transactions, net of refunds. Expenses and profit are not yet connected. Order-level sales tax is preliminary until refunds and taxable classifications are reconciled.</p>
+<div class="panel" id="rev-period-panel"><div class="rev-section-heading"><div><span class="rev-kicker">PERFORMANCE</span><h3>Reporting periods</h3></div><span class="rev-pill">Monthly · Quarterly · YTD</span></div><p class="info">Estimates are shown for reference only. Collected revenue is based on synchronized successful Shopify payment transactions, net of refunds. Recorded job costs and payment-based gross profit are summarized below for orders with completed cost entries. Uncosted orders are excluded from profit figures; taxes and shipping collected may still be included in the payment basis. Order-level sales tax is preliminary until refunds and taxable classifications are reconciled.</p>
 <div class="quick" style="flex-wrap:wrap;align-items:end;gap:12px"><label>Reporting year<select id="rev-report-year" style="display:block;padding:10px;margin-top:5px"></select></label><label>Month<select id="rev-report-month" style="display:block;padding:10px;margin-top:5px"></select></label><label>Quarter<select id="rev-report-quarter" style="display:block;padding:10px;margin-top:5px"><option value="1">Q1 (Jan–Mar)</option><option value="2">Q2 (Apr–Jun)</option><option value="3">Q3 (Jul–Sep)</option><option value="4">Q4 (Oct–Dec)</option></select></label></div>
 <div class="grid rev-period-grid" style="margin-top:14px">
-<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">M</span><span class="rev-period-type">01 / MONTHLY</span></div><label>Monthly Status</label><strong id="rev-month-period">—</strong><small id="rev-month-estimates">Approved estimates: —</small><small id="rev-month-count">Quotes: —</small><small id="rev-month-collected">Collected revenue: Awaiting sync</small><small id="rev-month-tax">Order tax recorded: Awaiting sync</small><small>Expenses / Profit: Not connected</small></div>
-<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">Q</span><span class="rev-period-type">02 / QUARTERLY</span></div><label>Quarterly Status</label><strong id="rev-quarter-period">—</strong><small id="rev-quarter-estimates">Approved estimates: —</small><small id="rev-quarter-count">Quotes: —</small><small id="rev-quarter-collected">Collected revenue: Awaiting sync</small><small id="rev-quarter-tax">Order tax recorded: Awaiting sync</small><small>Expenses / Profit: Not connected</small></div>
-<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">Y</span><span class="rev-period-type">03 / YEAR TO DATE</span></div><label>Yearly (YTD) Status</label><strong id="rev-ytd-period">—</strong><small id="rev-ytd-estimates">Approved estimates: —</small><small id="rev-ytd-count">Quotes: —</small><small id="rev-ytd-collected">Collected revenue: Awaiting sync</small><small id="rev-ytd-tax">Order tax recorded: Awaiting sync</small><small>Expenses / Profit: Not connected</small></div>
+<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">M</span><span class="rev-period-type">01 / MONTHLY</span></div><label>Monthly Status</label><strong id="rev-month-period">—</strong><small id="rev-month-estimates">Approved estimates: —</small><small id="rev-month-count">Quotes: —</small><small id="rev-month-collected">Collected revenue: Awaiting sync</small><small id="rev-month-tax">Order tax recorded: Awaiting sync</small><small id="rev-month-cost-profit">Recorded costs / gross profit: Loading…</small><small id="rev-month-cost-coverage">Cost coverage: —</small></div>
+<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">Q</span><span class="rev-period-type">02 / QUARTERLY</span></div><label>Quarterly Status</label><strong id="rev-quarter-period">—</strong><small id="rev-quarter-estimates">Approved estimates: —</small><small id="rev-quarter-count">Quotes: —</small><small id="rev-quarter-collected">Collected revenue: Awaiting sync</small><small id="rev-quarter-tax">Order tax recorded: Awaiting sync</small><small id="rev-quarter-cost-profit">Recorded costs / gross profit: Loading…</small><small id="rev-quarter-cost-coverage">Cost coverage: —</small></div>
+<div class="card rev-period-card"><div class="rev-period-top"><span class="rev-period-icon">Y</span><span class="rev-period-type">03 / YEAR TO DATE</span></div><label>Yearly (YTD) Status</label><strong id="rev-ytd-period">—</strong><small id="rev-ytd-estimates">Approved estimates: —</small><small id="rev-ytd-count">Quotes: —</small><small id="rev-ytd-collected">Collected revenue: Awaiting sync</small><small id="rev-ytd-tax">Order tax recorded: Awaiting sync</small><small id="rev-ytd-cost-profit">Recorded costs / gross profit: Loading…</small><small id="rev-ytd-cost-coverage">Cost coverage: —</small></div>
 </div><p id="rev-period-message" class="info">Sign in and select Revenue to load period summaries.</p></div>
 <div class="panel"><h3>Quote &amp; Invoice Register</h3><div id="rev-register" style="overflow-x:auto"><p class="info">No records loaded.</p></div></div>
 <div class="rev-accounting-grid">
@@ -1474,6 +1474,51 @@ addItem();
  function csv(){const rows=[['Paid date','Order','Transaction ID','Transaction type','Shipping location','Shopify tax authority','Rate','Cash movement','Allocated tax','Exempt flag','Allocation warning']];for(const r of records){if(!r.lines.length)rows.push([r.date.toISOString().slice(0,10),r.name,r.tx,r.kind,r.location,'No tax collected','',r.paid.toFixed(2),'0.00',r.exempt?'Yes':'No',r.estimated?'Review':'']);else for(const l of r.lines)rows.push([r.date.toISOString().slice(0,10),r.name,r.tx,r.kind,r.location,l.title,l.rate??'',r.paid.toFixed(2),l.amount.toFixed(2),r.exempt?'Yes':'No',r.estimated?'Proportional estimate':''])}const contents=rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),url=URL.createObjectURL(new Blob([contents],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='ai-apparel-shopify-tax-jurisdictions-'+currentYear+'-'+$('tax-period').value+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
  $('tax-sync').addEventListener('click',sync);$('tax-refresh').addEventListener('click',refresh);$('tax-export').addEventListener('click',csv);document.querySelectorAll('[data-tax-period]').forEach(card=>{const activate=()=>{$('tax-period').value=card.dataset.taxPeriod;$('tax-period').dispatchEvent(new Event('change'));document.querySelectorAll('[data-tax-period]').forEach(c=>c.setAttribute('aria-pressed',String(c===card)));$('tax-jurisdiction-list').scrollIntoView({behavior:'smooth',block:'nearest'});};card.addEventListener('click',activate);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});});
   $('tax-period').addEventListener('change',render);monthSelect.addEventListener('change',render);$('rev-report-year').addEventListener('change',refresh);$('rev-tax-panel').addEventListener('toggle',()=>{if($('rev-tax-panel').open)refresh()});
+})();
+</script>
+
+<script>
+/* Financial snapshot: read-only job cost summaries, tied to the existing period controls. */
+(function(){
+ const $=id=>document.getElementById(id), money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
+ const panel=$('revenue');if(!panel)return;
+ let sales=[],busy=false,lastLoad=0;
+ function dateOf(x){const d=String(x.date||'').slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(d)?d:'';}
+ function calculate(kind){
+  const y=Number($('rev-report-year')?.value)||new Date().getFullYear(),m=Number($('rev-report-month')?.value),q=Number($('rev-report-quarter')?.value);
+  const now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+  const rows=sales.filter(x=>{const d=dateOf(x);if(!d||Number(d.slice(0,4))!==y)return false;
+   if(kind==='month')return Number(d.slice(5,7))===m+1;
+   if(kind==='quarter')return Math.ceil(Number(d.slice(5,7))/3)===q;
+   return y<now.getFullYear()||(y===now.getFullYear()&&d<=today);
+  });
+  const done=rows.filter(x=>x.costs),pending=rows.length-done.length;
+  const revenue=done.reduce((a,x)=>a+Number(x.net_paid||0),0);
+  const costs=done.reduce((a,x)=>a+['apparel','decoration','labor','shipping','other'].reduce((b,k)=>b+Number(x.costs[k]||0),0),0);
+  $('rev-'+kind+'-cost-profit').textContent='Recorded costs: '+money(costs)+' · Payment-based gross profit: '+money(revenue-costs);
+  $('rev-'+kind+'-cost-coverage').textContent='Cost coverage: '+done.length+' of '+rows.length+' paid orders; '+pending+' awaiting costs'+(done.length?' · Margin '+(revenue>0?((revenue-costs)/revenue*100).toFixed(1)+'%':'N/A'):'');
+ }
+ function render(){['month','quarter','ytd'].forEach(calculate);}
+ async function refresh(force=false){
+  if(panel.hidden||busy)return;
+  if(!force&&Date.now()-lastLoad<60000){render();return;}
+  busy=true;
+  try{
+   const {data:{session},error}=await db.auth.getSession();if(error||!session)throw Error('Sign in to load accounting records');
+   const {data,error:rpcError}=await db.rpc('ai_financial_accounting',{p_action:'list',p_payload:{}});
+   if(rpcError)throw Error(rpcError.message);
+   sales=Array.isArray(data?.sales)?data.sales:[];lastLoad=Date.now();render();
+  }catch(err){for(const k of ['month','quarter','ytd']){
+   $('rev-'+k+'-cost-profit').textContent='Cost reporting unavailable';
+   $('rev-'+k+'-cost-coverage').textContent=err.message||'Unable to load';
+  }}finally{busy=false;}
+ }
+ for(const id of ['rev-report-year','rev-report-month','rev-report-quarter'])$(id)?.addEventListener('change',()=>refresh());
+ $('rev-refresh')?.addEventListener('click',()=>refresh(true));
+ $('rev-cost-reload')?.addEventListener('click',()=>setTimeout(()=>refresh(true),400));
+ $('rev-cost-form')?.addEventListener('submit',()=>setTimeout(()=>refresh(true),1200));
+ new MutationObserver(()=>{if(!panel.hidden)refresh();}).observe(panel,{attributes:true,attributeFilter:['hidden']});
+ if(!panel.hidden)refresh();
 })();
 </script>
 </body></html>
