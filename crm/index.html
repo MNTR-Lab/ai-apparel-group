@@ -1386,27 +1386,16 @@ addItem();
 })();
 </script>
 <script>
-/* Secure accounting RPC. No demo data or browser-local financial writes. */
+/* Temporary accounting isolation during blank-page recovery. No financial data is changed. */
 (function(){
- const $=id=>document.getElementById(id), usd=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
- let sales=[],taxOrders=[];
- const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- async function call(action,payload={}){const {data,error}=await db.rpc('ai_financial_accounting',{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data||{};}
- function status(id,msg){$(id).textContent=msg;}
- async function loadCosts(){status('rev-cost-status','Loading verified payments…');try{sales=(await call('list')).sales||[];renderCosts();}catch(e){status('rev-cost-status','Cost ledger unavailable: '+e.message);}}
- function refreshCostPeriods(){const sel=$('rev-cost-period'),previous=sel.value,dates=[...new Set(sales.map(x=>String(x.date||'').slice(0,7)).filter(x=>/^\d{4}-\d{2}$/.test(x)))].sort().reverse(),years=[...new Set(dates.map(x=>x.slice(0,4)))].sort().reverse();let options='<option value="all">All available dates</option>';for(const y of years){options+='<option value="'+y+'-YTD">'+y+' year to date</option>';for(let q=4;q>=1;q++)if(dates.some(m=>Number(m.slice(5))>=3*q-2&&Number(m.slice(5))<=3*q))options+='<option value="'+y+'-Q'+q+'">'+y+' Q'+q+'</option>';for(const m of dates.filter(m=>m.startsWith(y)))options+='<option value="'+m+'">'+new Date(m+'-01T12:00:00').toLocaleString('en-US',{month:'long',year:'numeric'})+'</option>';}sel.innerHTML=options;if([...sel.options].some(o=>o.value===previous))sel.value=previous;}
- function costPeriodMatch(x,period){if(period==='all')return true;const d=String(x.date||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;if(period.endsWith('-YTD'))return d.startsWith(period.slice(0,4))&&d<=((now)=>[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'))(new Date());if(/-Q[1-4]$/.test(period)){const y=period.slice(0,4),q=Number(period.slice(-1));return d.startsWith(y)&&Math.ceil(Number(d.slice(5,7))/3)===q;}return d.startsWith(period);}
- function renderCosts(){refreshCostPeriods();const period=$('rev-cost-period').value,subset=sales.filter(x=>costPeriodMatch(x,period)),pending=subset.filter(x=>!x.costs),complete=subset.filter(x=>!!x.costs),sumCosts=x=>['apparel','decoration','labor','shipping','other'].reduce((a,k)=>a+Number(x.costs?.[k]||0),0),revenue=complete.reduce((a,x)=>a+Number(x.net_paid),0),expenses=complete.reduce((a,x)=>a+sumCosts(x),0),totalProfit=revenue-expenses; $('rev-cost-period-revenue').textContent=usd(revenue);$('rev-cost-period-expenses').textContent=usd(expenses);$('rev-cost-period-profit').textContent=usd(totalProfit);$('rev-cost-period-margin').textContent=revenue>0?(totalProfit/revenue*100).toFixed(1)+'%':'N/A';$('rev-cost-period-pending').textContent=String(pending.length);$('rev-cost-period-note').textContent=complete.length+' order(s) have recorded costs; '+pending.length+' order(s) await cost entry for this period. Figures are payment-based, not accounting net profit; collected tax or shipping may need exclusion.';
- $('rev-cost-count').textContent=pending.length+' pending ▾';$('rev-cost-pending').textContent=pending.length;$('rev-cost-completed').textContent=complete.length;$('rev-cost-profit').textContent=usd(totalProfit);status('rev-cost-status',sales.length+' verified paid orders found since August 15, 2026. Period totals cover completed cost records only; refunds may change paid totals.');
- const f=$('rev-cost-filter').value,items=subset.filter(x=>f==='all'||(f==='pending'?!x.costs:!!x.costs));$('rev-cost-list').innerHTML=items.length?items.map(x=>'<div class="rev-acc-item"><div><strong>'+safe(x.name||x.order_id)+'</strong><small>'+safe(String(x.date||'').slice(0,10))+' · Net paid '+usd(x.net_paid)+(x.costs?' · Costs recorded':' · Awaiting costs')+'</small></div><button type="button" class="action secondary" data-cost="'+safe(x.order_id)+'">'+(x.costs?'Edit':'Enter costs')+'</button></div>').join(''):'<p class="info">No records in this view.</p>';
- $('rev-cost-list').querySelectorAll('[data-cost]').forEach(b=>b.addEventListener('click',()=>editCost(b.dataset.cost)));
- }
- function editCost(id){const x=sales.find(x=>x.order_id===id);if(!x)return;$('rev-cost-order').value=id;$('rev-cost-form-title').textContent=(x.costs?'Edit costs — ':'Enter costs — ')+(x.name||id);for(const k of ['apparel','decoration','labor','shipping','other'])$('rev-cost-'+k).value=x.costs?.[k]??'0.00';$('rev-cost-monday').value=x.costs?.monday_item_id||'';$('rev-cost-notes').value=x.costs?.notes||'';$('rev-cost-form').hidden=false;$('rev-cost-form').scrollIntoView({block:'nearest',behavior:'smooth'});previewCost();}
- function previewCost(){const x=sales.find(x=>x.order_id===$('rev-cost-order').value);if(!x)return;const cost=['apparel','decoration','labor','shipping','other'].reduce((a,k)=>a+(Number($('rev-cost-'+k).value)||0),0);const profit=Number(x.net_paid)-cost;$('rev-cost-preview').textContent='Total costs: '+usd(cost)+' · Gross profit (payment basis): '+usd(profit)+' · Margin: '+(Number(x.net_paid)>0?(profit/Number(x.net_paid)*100).toFixed(1)+'%':'N/A')+'. Verify whether collected tax/shipping should be excluded from your profit basis.';}
- for(const k of ['apparel','decoration','labor','shipping','other'])$('rev-cost-'+k).addEventListener('input',previewCost);
- $('rev-cost-form').addEventListener('submit',async e=>{e.preventDefault();const b=$('rev-cost-save');b.disabled=true;try{const id=$('rev-cost-order').value,p={source:'shopify',order_id:id,monday_item_id:$('rev-cost-monday').value.trim(),notes:$('rev-cost-notes').value};for(const k of ['apparel','decoration','labor','shipping','other'])p[k]=Number($('rev-cost-'+k).value).toFixed(2);await call('save_cost',p);$('rev-cost-form').hidden=true;await loadCosts();status('rev-cost-status','Costs saved securely. The transaction is now in Completed Accounting. Monday.com write-back is not enabled yet.');}catch(err){status('rev-cost-status','Could not save: '+err.message);}finally{b.disabled=false;}});
- $('rev-cost-cancel').addEventListener('click',()=>{$('rev-cost-form').hidden=true});$('rev-cost-reload').addEventListener('click',loadCosts);$('rev-cost-filter').addEventListener('change',renderCosts);$('rev-cost-period').addEventListener('change',renderCosts);$('rev-costs-panel').addEventListener('toggle',()=>{if($('rev-costs-panel').open)loadCosts()});
-
+  const panel=document.getElementById('rev-costs-panel');
+  if(panel){
+    panel.open=false;
+    const status=panel.querySelector('#rev-cost-status');
+    if(status)status.textContent='Job-cost controls temporarily paused while the CRM is being stabilized. Existing records are safe.';
+    const controls=panel.querySelectorAll('button,select,input,textarea');
+    controls.forEach(el=>el.disabled=true);
+  }
 })();
 </script><script>
 /* AI Apparel Group: cash-basis jurisdiction tax reports, Shopify-sourced; never estimate tax jurisdictions. */
