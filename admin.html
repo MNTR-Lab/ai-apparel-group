@@ -54,6 +54,21 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 <div class="admin-primary-actions"><button class="create-quote-btn" id="showCreateQuoteBtn">+ CREATE PROMOTIONAL QUOTE</button></div>
 </div>
 
+
+<div class="card" id="organizationUsersCard">
+ <h2>Organization Users</h2>
+ <p class="muted">Assign customer access to the selected organization. Invitations are sent by email. Only Super Admins can manage users.</p>
+ <div class="grid3">
+  <div><label>ORGANIZATION</label><select id="usersOrg"></select></div>
+  <div><label>FIRST NAME</label><input id="userFirstName" autocomplete="off" placeholder="First name"></div>
+  <div><label>LAST NAME</label><input id="userLastName" autocomplete="off" placeholder="Last name"></div>
+  <div style="grid-column:1/-1"><label>CUSTOMER EMAIL</label><input id="userEmail" type="email" autocomplete="off" placeholder="name@company.com"></div>
+ </div>
+ <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px"><button class="teal" id="inviteOrgUserBtn" type="button">SEND CUSTOMER INVITATION</button><button type="button" id="refreshOrgUsersBtn">REFRESH USERS</button></div>
+ <div id="orgUsersStatus" class="status" role="status"></div>
+ <h3>Assigned Users</h3><div id="orgUsersList" class="quote-list"><div class="muted">Sign in to load organization users.</div></div>
+</div>
+
 <div class="card create-quote-card hidden" id="createQuoteCard">
 <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start"><div><h2>Create Promotional Quote</h2><p class="muted">Create a quote on behalf of a customer. It will enter the same Promotional Quote Activity workflow as customer-submitted requests.</p></div><button type="button" id="closeCreateQuoteBtn">CLOSE</button></div>
 <div class="grid3">
@@ -122,6 +137,7 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 const SUPABASE_URL="https://qpavspvpdebtbbffdcmo.supabase.co";
 const PUBLISHABLE_KEY="sb_publishable_NoP_3R4R1WeoM7tivVJPAA_i4flKD1b";
 const ADMIN_API=SUPABASE_URL+"/functions/v1/ai-apparel-admin";
+const ORG_USERS_API=SUPABASE_URL+"/functions/v1/ai-apparel-organization-users";
 const sb=supabase.createClient(SUPABASE_URL,PUBLISHABLE_KEY);
 let organizations=[];let promotionalQuotes=[];
 
@@ -141,9 +157,13 @@ async function loadAdmin(){
  const quoteOrg=document.getElementById("quoteOrg");
  if(quoteOrg) quoteOrg.innerHTML='<option value="">SELECT ORGANIZATION…</option>'+organizations.filter(o=>String(o.status||"").toLowerCase()==="active").map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
  renderOrg(); renderQuotes();
+ const usersOrg=document.getElementById("usersOrg");
+ usersOrg.innerHTML=organizations.filter(o=>String(o.status||"").toLowerCase()==="active").map(o=>`<option value="${esc(o.id)}">${esc(o.name)}</option>`).join("");
+ usersOrg.value=document.getElementById("organizationSelect").value;
+ await loadOrganizationUsers();
 }
 function renderOrg(){const id=document.getElementById("organizationSelect").value;const o=organizations.find(x=>x.id===id);document.getElementById("orgBanner").innerHTML=o?`<div class="muted" style="color:#9ca3af">CURRENT ORGANIZATION</div><b>${o.name}</b><div>${o.tag} • ${o.status}</div><div class="org-actions"><a class="view-customer" href="./organization.html?organization_id=${encodeURIComponent(o.id)}&admin_preview=1" target="_blank">VIEW AS CUSTOMER ↗</a></div>`:"No organizations available";}
-document.getElementById("organizationSelect").onchange=renderOrg;
+document.getElementById("organizationSelect").onchange=()=>{renderOrg();const userSel=document.getElementById("usersOrg");userSel.value=document.getElementById("organizationSelect").value;renderOrganizationUsers();};
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 function statusLabel(s){return ({request_received:"Request Received",pricing:"Pricing",quote_ready:"Quote Ready",approved:"Approved",invoiced:"Invoiced",completed:"Completed",cancelled:"Cancelled"})[s]||s;}
 function fmtDate(v){if(!v)return "—";return new Date(v).toLocaleString([], {year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}
@@ -411,6 +431,53 @@ document.getElementById("resetBtn").onclick=async()=>{const email=document.getEl
 document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const password=document.getElementById("password").value;const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}if(!password){st.textContent="Enter your password.";return}st.textContent="Signing in…";const {error}=await sb.auth.signInWithPassword({email,password});if(error){st.textContent=error.message;return}try{await loadAdmin();st.textContent=""}catch(e){st.textContent=e.message;await sb.auth.signOut()}};document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("loginBtn").click()});
 document.getElementById("logoutBtn").onclick=async()=>{await sb.auth.signOut();location.reload()};
 document.getElementById("addBtn").onclick=async()=>{const st=document.getElementById("saveStatus");try{const txOrg=document.getElementById("txOrg").value;if(!txOrg){st.textContent="Select the organization that should receive this transaction and Rewards credit.";return;}st.textContent="Saving…";const points=document.getElementById("pointsOverride").value;const data=await api("POST",{action:"add_transaction",organization_id:txOrg,order_number:document.getElementById("orderNumber").value.trim(),order_type:document.getElementById("orderType").value,ordered_at:document.getElementById("orderedAt").value,customer_name:document.getElementById("customerName").value.trim(),customer_email:document.getElementById("customerEmail").value.trim(),subtotal:document.getElementById("subtotal").value,discount_code:document.getElementById("discountCode").value.trim(),discount_amount:document.getElementById("discountAmount").value,rewards_points:points===""?null:Number(points),note:document.getElementById("note").value.trim()});st.textContent="Saved. "+data.order.order_number+" added with "+data.points+" points."; }catch(e){st.textContent=e.message}};
+
+let organizationMembers=[];
+async function orgUsersApi(method,body){
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session)throw new Error("Sign in as Super Admin first.");
+ const response=await fetch(ORG_USERS_API,{method,headers:{Authorization:"Bearer "+session.access_token,apikey:PUBLISHABLE_KEY,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+ const data=await response.json();
+ if(!response.ok)throw new Error(data.error||"Unable to manage organization users.");
+ return data;
+}
+async function loadOrganizationUsers(){
+ const status=document.getElementById("orgUsersStatus");
+ status.textContent="Loading assigned users…";
+ try{
+  const data=await orgUsersApi("GET");organizationMembers=data.members||[];
+  status.textContent="";renderOrganizationUsers();
+ }catch(e){status.textContent="User management unavailable: "+e.message;document.getElementById("orgUsersList").textContent="Deploy the secure ai-apparel-organization-users Edge Function to enable this section.";}
+}
+function renderOrganizationUsers(){
+ const id=document.getElementById("usersOrg").value;
+ const list=document.getElementById("orgUsersList");
+ const rows=organizationMembers.filter(m=>m.organization_id===id);
+ if(!rows.length){list.innerHTML='<div class="empty">No assigned users for this organization.</div>';return;}
+ list.innerHTML=rows.map(m=>`<div class="quote-row" style="grid-template-columns:1.4fr 1.6fr .7fr auto"><div><b>${esc([m.first_name,m.last_name].filter(Boolean).join(" ")||"Customer")}</b></div><div>${esc(m.email)}</div><div><span class="pill">${m.active?"ACTIVE":"INACTIVE"}</span></div><div><button type="button" data-member-id="${Number(m.id)}" data-new-active="${!m.active}" style="background:${m.active?"#b91c1c":"#0f766e"}">${m.active?"REVOKE ACCESS":"RESTORE ACCESS"}</button></div></div>`).join("");
+ list.querySelectorAll("button[data-member-id]").forEach(btn=>btn.onclick=()=>changeOrganizationUser(Number(btn.dataset.memberId),btn.dataset.newActive==="true"));
+}
+async function changeOrganizationUser(id,active){
+ const m=organizationMembers.find(x=>Number(x.id)===id);if(!m)return;
+ if(!confirm((active?"Restore":"Revoke")+" organization access for "+m.email+"?"))return;
+ const status=document.getElementById("orgUsersStatus");status.textContent="Updating access…";
+ try{await orgUsersApi("POST",{action:"set_active",id,active});status.textContent="Access updated.";await loadOrganizationUsers();}
+ catch(e){status.textContent=e.message;}
+}
+document.getElementById("usersOrg").onchange=renderOrganizationUsers;
+document.getElementById("refreshOrgUsersBtn").onclick=loadOrganizationUsers;
+document.getElementById("inviteOrgUserBtn").onclick=async()=>{
+ const btn=document.getElementById("inviteOrgUserBtn"),status=document.getElementById("orgUsersStatus");
+ const organization_id=document.getElementById("usersOrg").value,email=document.getElementById("userEmail").value.trim().toLowerCase();
+ const first_name=document.getElementById("userFirstName").value.trim(),last_name=document.getElementById("userLastName").value.trim();
+ if(!organization_id||!email||!email.includes("@")){status.textContent="Select an organization and enter a valid email.";return;}
+ if(!confirm("Grant access to "+email+" for the selected organization?"))return;
+ btn.disabled=true;status.textContent="Creating customer invitation…";
+ try{const data=await orgUsersApi("POST",{action:"invite",organization_id,email,first_name,last_name});status.textContent=data.message||"Customer access assigned.";document.getElementById("userEmail").value="";document.getElementById("userFirstName").value="";document.getElementById("userLastName").value="";await loadOrganizationUsers();}
+ catch(e){status.textContent=e.message;}
+ finally{btn.disabled=false;}
+};
+
 let recoveryMode=false;
 sb.auth.onAuthStateChange(async(event,session)=>{if(event==="PASSWORD_RECOVERY"){recoveryMode=true;showRecovery();}});
 (async()=>{const hash=new URLSearchParams(location.hash.replace(/^#/,""));const query=new URLSearchParams(location.search);if(hash.get("type")==="recovery"||query.get("type")==="recovery"){recoveryMode=true;showRecovery();}
