@@ -1386,16 +1386,87 @@ addItem();
 })();
 </script>
 <script>
-/* Temporary accounting isolation during blank-page recovery. No financial data is changed. */
+/* Isolated Job Costs module. No automatic requests or page-wide observers. */
 (function(){
-  const panel=document.getElementById('rev-costs-panel');
-  if(panel){
-    panel.open=false;
-    const status=panel.querySelector('#rev-cost-status');
-    if(status)status.textContent='Job-cost controls temporarily paused while the CRM is being stabilized. Existing records are safe.';
-    const controls=panel.querySelectorAll('button,select,input,textarea');
-    controls.forEach(el=>el.disabled=true);
-  }
+ 'use strict';
+ const panel=document.getElementById('rev-costs-panel');
+ if(!panel)return;
+ const $=id=>document.getElementById(id);
+ const fields=['apparel','decoration','labor','shipping','other'];
+ const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const set=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
+ const sumCosts=x=>fields.reduce((n,k)=>n+Number(x.costs?.[k]||0),0);
+ let sales=[],loading=false,loaded=false;
+ const timed=(promise)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Accounting request timed out. Try Refresh cost queue.')),12000))]);
+ function matching(x){
+  const p=$('rev-cost-period').value,d=String(x.date||'').slice(0,10);
+  if(p==='all')return true;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;
+  if(p.endsWith('-YTD'))return d.slice(0,4)===p.slice(0,4)&&d<=new Date().toLocaleDateString('en-CA');
+  if(/-Q[1-4]$/.test(p))return d.slice(0,4)===p.slice(0,4)&&Math.ceil(Number(d.slice(5,7))/3)===Number(p.slice(-1));
+  return d.startsWith(p);
+ }
+ function periods(){
+  const select=$('rev-cost-period'),previous=select.value;
+  const months=[...new Set(sales.map(x=>String(x.date||'').slice(0,7)).filter(x=>/^\d{4}-\d{2}$/.test(x)))].sort().reverse();
+  const years=[...new Set(months.map(x=>x.slice(0,4)))];
+  select.replaceChildren(new Option('All available dates','all'));
+  years.forEach(y=>{
+   select.add(new Option(y+' year to date',y+'-YTD'));
+   for(let q=4;q>=1;q--)if(months.some(m=>m.startsWith(y)&&Math.ceil(Number(m.slice(5))/3)===q))select.add(new Option(y+' Q'+q,y+'-Q'+q));
+   months.filter(m=>m.startsWith(y)).forEach(m=>select.add(new Option(new Date(m+'-01T12:00:00').toLocaleString('en-US',{month:'long',year:'numeric'}),m)));
+  });
+  if([...select.options].some(o=>o.value===previous))select.value=previous;
+ }
+ function render(){
+  periods();const subset=sales.filter(matching),pending=subset.filter(x=>!x.costs),complete=subset.filter(x=>x.costs);
+  const revenue=complete.reduce((n,x)=>n+Number(x.net_paid||0),0),expenses=complete.reduce((n,x)=>n+sumCosts(x),0),profit=revenue-expenses;
+  set('rev-cost-count',pending.length+' pending ▾');set('rev-cost-pending',String(pending.length));set('rev-cost-completed',String(complete.length));set('rev-cost-profit',money(profit));
+  set('rev-cost-period-revenue',money(revenue));set('rev-cost-period-expenses',money(expenses));set('rev-cost-period-profit',money(profit));set('rev-cost-period-margin',revenue>0?(profit/revenue*100).toFixed(1)+'%':'N/A');set('rev-cost-period-pending',String(pending.length));
+  set('rev-cost-period-note',complete.length+' completed cost records; '+pending.length+' awaiting costs. Payment-based figures may include collected tax and shipping.');
+  set('rev-cost-status',sales.length+' verified paid orders loaded.');
+  const f=$('rev-cost-filter').value,items=subset.filter(x=>f==='all'||(f==='pending'?!x.costs:!!x.costs));
+  $('rev-cost-list').innerHTML=items.length?items.map(x=>'<div class="rev-acc-item"><div><strong>'+esc(x.name||x.order_id)+'</strong><small>'+esc(String(x.date||'').slice(0,10))+' · Net paid '+money(x.net_paid)+(x.costs?' · Costs recorded':' · Awaiting costs')+'</small></div><button type="button" class="action secondary" data-cost="'+esc(x.order_id)+'">'+(x.costs?'Edit':'Enter costs')+'</button></div>').join(''):'<p class="info">No orders match this filter.</p>';
+ }
+ async function rpc(action,payload={}){
+  if(typeof db==='undefined'||!db)throw Error('Supabase connection is not ready.');
+  const {data,error}=await timed(db.rpc('ai_financial_accounting',{p_action:action,p_payload:payload}));
+  if(error)throw Error(error.message);return data||{};
+ }
+ async function load(){
+  if(loading)return;loading=true;const b=$('rev-cost-reload');b.disabled=true;set('rev-cost-status','Loading verified payments…');
+  try{const out=await rpc('list');sales=Array.isArray(out.sales)?out.sales:[];loaded=true;render();}
+  catch(e){set('rev-cost-status','Could not load cost records: '+e.message);}
+  finally{loading=false;b.disabled=false;}
+ }
+ function preview(){const x=sales.find(x=>String(x.order_id)===$('rev-cost-order').value);if(!x)return;
+  const cost=fields.reduce((n,k)=>n+Number($('rev-cost-'+k).value||0),0),paid=Number(x.net_paid||0);
+  set('rev-cost-preview','Total costs: '+money(cost)+' · Payment-based gross profit: '+money(paid-cost)+' · Margin: '+(paid>0?((paid-cost)/paid*100).toFixed(1)+'%':'N/A'));
+ }
+ $('rev-cost-list').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-cost]');if(!b)return;
+  const x=sales.find(x=>String(x.order_id)===b.dataset.cost);if(!x)return;
+  $('rev-cost-order').value=String(x.order_id);set('rev-cost-form-title',(x.costs?'Edit costs — ':'Enter costs — ')+(x.name||x.order_id));
+  fields.forEach(k=>$('rev-cost-'+k).value=x.costs?.[k]??'0.00');
+  $('rev-cost-monday').value=x.costs?.monday_item_id||'';$('rev-cost-notes').value=x.costs?.notes||'';
+  $('rev-cost-form').hidden=false;preview();
+ });
+ $('rev-cost-form').addEventListener('submit',async e=>{
+  e.preventDefault();const b=$('rev-cost-save');if(b.disabled)return;b.disabled=true;
+  try{
+   const payload={source:'shopify',order_id:$('rev-cost-order').value,monday_item_id:$('rev-cost-monday').value.trim(),notes:$('rev-cost-notes').value};
+   for(const k of fields){const n=Number($('rev-cost-'+k).value);if(!Number.isFinite(n)||n<0)throw Error('Invalid '+k+' cost');payload[k]=n.toFixed(2);}
+   await rpc('save_cost',payload);$('rev-cost-form').hidden=true;await load();
+  }catch(err){set('rev-cost-status','Unable to save costs: '+err.message);}finally{b.disabled=false;}
+ });
+ fields.forEach(k=>$('rev-cost-'+k).addEventListener('input',preview));
+ $('rev-cost-cancel').addEventListener('click',()=>{$('rev-cost-form').hidden=true;});
+ $('rev-cost-reload').addEventListener('click',load);
+ $('rev-cost-filter').addEventListener('change',()=>{if(loaded)render();});
+ $('rev-cost-period').addEventListener('change',()=>{if(loaded)render();});
+ panel.addEventListener('toggle',()=>{if(panel.open&&!loaded)load();});
+ set('rev-cost-status','Ready. Open this section to load verified paid orders.');
 })();
 </script><script>
 /* AI Apparel Group: cash-basis jurisdiction tax reports, Shopify-sourced; never estimate tax jurisdictions. */
