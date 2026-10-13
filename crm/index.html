@@ -203,6 +203,8 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <button class="nav" data-page="quotes">▤ &nbsp; Quotes & Estimates</button>
 <button class="nav" data-page="jobs">▣ &nbsp; Jobs & Projects</button>
 <button class="nav" data-page="production">⚙ &nbsp; Production</button>
+<button class="nav" data-page="shipping">♧ &nbsp; Shipping/Delivery</button>
+<button class="nav" data-page="archivedjobs">▤ &nbsp; Archived Jobs</button>
 <button class="nav" data-page="employees">♧ &nbsp; Employees & Tasks</button>
 <button class="nav" data-page="matching">◇ &nbsp; Business Matching</button>
 <button class="nav" data-page="orderreviews">☷ &nbsp; Order Match Review</button>
@@ -277,6 +279,8 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <button class="action" type="submit">Save Draft Quote</button>
 </form></div><div class="panel ai-quote-panel"><div id="ai-quotes-list">Loading…</div></div></section>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<input type="search" id="crm-job-customer-search" placeholder="Search customer name or email…" autocomplete="off"><select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select><small id="crm-job-customer-help" style="font-weight:400;color:#65788c">Type a name or email to find a customer.</small></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
+<section id="shipping" hidden><h2>Shipping/Delivery</h2><p class="lead">Jobs move here automatically after every active production stage is completed. Confirm shipment or delivery to archive them.</p><div id="crm-shipping-jobs" class="panel">Loading…</div></section>
+<section id="archivedjobs" hidden><h2>Archived Jobs</h2><p class="lead">Completed shipments and deliveries. Historical records remain available in Jobs &amp; Projects.</p><div id="crm-archived-jobs" class="panel">Loading…</div></section>
 <section id="production" hidden><h2>Production Management</h2><p class="lead">Track real jobs through production stages, assignments, due dates, and notes.</p><div class="panel"><h3>Production Overview</h3><div id="crm-production-overview" class="crm-business-summary">Loading…</div></div><div id="crm-production-jobs"></div></section>
 <section id="employees" hidden><h2>Employees & Tasks</h2><p class="lead">Invite employees by email and manage their access to assigned production work.</p><div class="panel"><h3>Invite Employee</h3><form id="crm-employee-invite" class="crm-employee-invite"><label>Full name<input name="name" required maxlength="150" placeholder="Employee name"></label><label>Email address<input name="email" type="email" required placeholder="employee@example.com"></label><label>Role<select name="role"><option value="employee">Employee</option><option value="manager">Manager</option></select></label><button type="submit" class="action">Send Invitation</button></form><p class="info">The employee receives an email to activate their account. They can access only their assigned production stages. No password is shared with administrators.</p></div><div class="panel"><div class="crm-business-summary" id="crm-employee-metrics">Loading…</div></div><div class="panel"><h3>Employee Directory</h3><div id="crm-employee-directory">Loading employee records…</div></div><div class="panel"><h3>Production Assignments</h3><div id="crm-employee-assignments">Loading assignments…</div></div><div class="panel" id="crm-task-manager"><h3>Assign Employee Tasks</h3><p class="info">Create a task for an employee. New assignments automatically appear in their portal and notifications.</p>
 <form id="crm-task-create" class="crm-task-form">
@@ -295,7 +299,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
 </div></main></div>
 <script>
-const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts"};
+const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",shipping:"Shipping/Delivery",archivedjobs:"Archived Jobs",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts"};
 document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
 const page=button.dataset.page;
 document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
@@ -653,7 +657,7 @@ document.addEventListener("click",async e=>{
 async function loadProductionManagement(){
  const {data,error}=await db.rpc("ai_apparel_crm_production",{p_action:"list",p_payload:{}});
  if(error)throw Error(error.message);
- const jobs=data.jobs||[],stages=data.stages||[],staff=data.staff||[];
+ const jobs=(data.jobs||[]).filter(j=>!(["Shipping/Delivery","Completed","Closed"].includes(j.status))),stages=data.stages||[],staff=data.staff||[];
  const {data:approvedQuotes, error:quoteError}=await db.rpc("ai_apparel_crm_quotes",{p_action:"list",p_payload:{}});
  const quoteByJob=new Map((quoteError?[]:(approvedQuotes||[])).filter(x=>x.status==="Approved"&&x.job_id).map(x=>[String(x.job_id),x]));
  const expandedJobIds=new Set([...document.querySelectorAll("details[data-prod-job-details][open]")].map(el=>el.dataset.prodJobDetails));
@@ -717,6 +721,30 @@ document.addEventListener("submit",async e=>{
  if(error)throw Error(error.message);
  status("Production update saved.");await loadProductionManagement();
  }catch(err){status(err.message);alert(err.message);btn.disabled=false}
+});
+// Shipping/Delivery and Archived Jobs. Requires the companion Supabase migration.
+async function loadFulfillmentPage(archive=false){
+ const target=$(archive?"crm-archived-jobs":"crm-shipping-jobs");
+ target.textContent="Loading jobs…";
+ const {data,error}=await db.rpc("ai_apparel_crm_fulfillment",{p_action:"list",p_payload:{}});
+ if(error){target.textContent="Shipping/Delivery backend not installed yet: "+error.message;return;}
+ const jobs=(data?.jobs||[]).filter(j=>archive?j.status==="Completed":j.status==="Shipping/Delivery");
+ target.innerHTML=jobs.length?jobs.map(j=>`<article style="padding:15px 0;border-bottom:1px solid #e4e9f0"><h3>${escapeHtml(j.job_number||"")} — ${escapeHtml(j.title||"")}</h3><p class="info">${escapeHtml(j.customer_name||"No customer")} · ${escapeHtml(j.business_name||"No business")} · ${escapeHtml(j.status||"")}</p>${archive?`<p>Method: ${escapeHtml(j.shipping_method||"Not specified")} · Tracking/reference: ${escapeHtml(j.tracking_number||"—")}</p><p>${escapeHtml(j.fulfillment_notes||"")}</p><small>Completed: ${escapeHtml(j.fulfilled_at||"—")}</small>`:`<form data-fulfill-job="${escapeHtml(j.id)}" class="crm-prod-form"><label>Fulfillment method<select name="shipping_method" required><option value="">Choose method</option><option value="Shipped">Shipped</option><option value="Delivered">Delivered</option><option value="Customer Pickup">Customer Pickup</option></select></label><label>Tracking / delivery reference<input name="tracking_number" maxlength="200" placeholder="Optional tracking or delivery reference"></label><label>Shipping / delivery notes<textarea name="fulfillment_notes" rows="2" maxlength="2000"></textarea></label><button type="submit">Confirm fulfillment &amp; archive job</button></form>`}</article>`).join(""):'<p class="info">'+(archive?'No archived jobs yet.':'No jobs awaiting shipping or delivery.')+'</p>';
+}
+document.querySelector('button[data-page="shipping"]').addEventListener("click",()=>loadFulfillmentPage(false).catch(e=>status(e.message)));
+document.querySelector('button[data-page="archivedjobs"]').addEventListener("click",()=>loadFulfillmentPage(true).catch(e=>status(e.message)));
+document.addEventListener("submit",async e=>{
+ const form=e.target;if(!form.matches("[data-fulfill-job]"))return;
+ e.preventDefault();
+ const method=form.elements.shipping_method.value;
+ if(!confirm("Confirm "+method+" and move this job to Archived Jobs?"))return;
+ const button=form.querySelector('button[type="submit"]');button.disabled=true;
+ try{
+  const payload={job_id:form.dataset.fulfillJob,shipping_method:method,tracking_number:form.elements.tracking_number.value,fulfillment_notes:form.elements.fulfillment_notes.value};
+  const {error}=await db.rpc("ai_apparel_crm_fulfillment",{p_action:"complete",p_payload:payload});
+  if(error)throw Error(error.message);
+  status("Job fulfillment confirmed and archived.");await loadFulfillmentPage(false);
+ }catch(err){status(err.message);alert(err.message);button.disabled=false;}
 });
 async function loadProductionJobs(){
  const {data,error}=await db.rpc("ai_apparel_crm_jobs",{p_action:"list",p_payload:{}});
