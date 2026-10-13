@@ -1055,9 +1055,27 @@ addItem();
  let financialMonths=null,financialYear=null,financialComplete=false,syncCursor=null;
  const FINANCIAL_ENDPOINT=CRM_SUPABASE_URL+'/functions/v1/ai-apparel-financial-report';
  async function financialRequest(method='GET',payload){
-  const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Please sign in again.');
-  const res=await fetch(FINANCIAL_ENDPOINT+(method==='GET'?'?year='+encodeURIComponent(yearSelect.value):''),{method,headers:{'authorization':'Bearer '+session.access_token,'apikey':CRM_PUBLISHABLE_KEY,'content-type':'application/json'},...(method==='POST'?{body:JSON.stringify(payload||{})}:{})});
-  const out=await res.json();if(!res.ok||out.error)throw Error(out.error||'Financial request failed');return out;
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError||!session)throw Error('Your login session has expired. Please sign in again.');
+  let res;
+  try{
+   res=await fetch(FINANCIAL_ENDPOINT+(method==='GET'?'?year='+encodeURIComponent(yearSelect.value):''),{
+    method,headers:{'authorization':'Bearer '+session.access_token,'apikey':CRM_PUBLISHABLE_KEY,'content-type':'application/json'},
+    ...(method==='POST'?{body:JSON.stringify(payload||{})}:{})
+   });
+  }catch(networkError){throw Error('Could not connect to the financial service. Check your connection and try again.');}
+  const raw=await res.text();
+  let out;
+  try{out=raw?JSON.parse(raw):{};}catch(parseError){
+   throw Error('Financial service returned an unexpected response (HTTP '+res.status+'). Check that the ai-apparel-financial-report Edge Function is deployed and responding.');
+  }
+  if(!res.ok||out.error){
+   const detail=typeof out.error==='string'?out.error:(out.error?.message||out.message||'Financial request failed');
+   if(res.status===404)throw Error('Financial reporting function was not found (404). Deploy ai-apparel-financial-report in Supabase.');
+   if(res.status===401||res.status===403)throw Error('Financial reporting access was denied (HTTP '+res.status+'). Verify your Supabase login and function permissions. '+detail);
+   throw Error(detail+' (HTTP '+res.status+').');
+  }
+  return out;
  }
  async function loadFinancial(){
   try{const out=await financialRequest();financialMonths=out.months;financialYear=out.year;updatePeriodSummaries();
