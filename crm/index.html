@@ -274,42 +274,39 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-prod-stage-status{font-size:12px;font-weight:600;color:#53657a;white-space:nowrap}
 .crm-prod-stage>.crm-prod-form{padding:14px 16px;margin:0}
 </style>
-
 <style>
-/* GOAT reporting STRUCTURE, using AI Apparel's existing blue/navy identity. */
-#revenue .rev-layout-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:17px 0 24px}
-#revenue .rev-layout-summary .card{padding:20px;border-radius:15px;background:white;border:1px solid #dfe6ef}
-#revenue .rev-layout-summary label{display:block;font-size:13px;color:#65758a;font-weight:650}
-#revenue .rev-layout-summary strong{display:block;font-size:clamp(21px,2.4vw,29px);color:#006fba;margin:11px 0}
-#revenue .rev-layout-summary small{color:#65758a;font-size:12px}
-#revenue .rev-layout-periods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:15px 0 24px}
-#revenue .rev-layout-period{background:#fff;border:1px solid #dfe6ef;border-top:4px solid #006fba;border-radius:15px;padding:21px;min-width:0}
-#revenue .rev-layout-period:nth-child(2){border-top-color:#cc338b}
-#revenue .rev-layout-period:nth-child(3){border-top-color:#193956}
-#revenue .rev-layout-period .rev-period-top{margin-bottom:10px}
-#revenue .rev-layout-period .rev-period-top .rev-period-icon{display:none}
-#revenue .rev-layout-period .rev-period-type{font-size:11px;letter-spacing:.09em;font-weight:800}
-#revenue .rev-layout-period>label{display:block;font-size:13px;color:#65758a;margin:7px 0}
-#revenue .rev-layout-period>strong{display:block;font-size:23px;color:#193956;margin:9px 0 16px}
-#revenue .rev-layout-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid #e8edf3;padding:10px 0;font-size:13px}
-#revenue .rev-layout-row:last-child{border-bottom:0}
-#revenue .rev-layout-row span{color:#64748b}
-#revenue .rev-layout-row b{font-weight:750;color:#193956;text-align:right;overflow-wrap:anywhere}
-#revenue .rev-layout-tax{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:14px 0 24px}
-#revenue .rev-layout-tax .rev-tax-tile{border:1px solid #dfe6ef;border-radius:15px;background:white;padding:20px;min-width:0}
-#revenue .rev-tax-tile small{display:block;color:#64748b;font-size:13px}
-#revenue .rev-tax-tile strong{display:block;color:#006fba;font-size:clamp(19px,2.2vw,27px);margin:11px 0}
-#revenue .rev-tax-tile span{color:#64748b;font-size:12px}
-#revenue .rev-layout-detail{margin:16px 0;border-radius:15px;overflow:hidden}
-#revenue .rev-layout-detail>summary{cursor:pointer;padding:20px 22px;font-weight:800;color:#193956}
-#revenue .rev-layout-detail>div{padding:0 20px 20px}
-#revenue .rev-layout-detail .rev-accounting-grid{display:block}
-#revenue .rev-layout-detail .rev-accounting-grid>details{margin:14px 0}
-#revenue .rev-layout-tax-note{padding:15px 18px;background:#f4f8fc;border:1px solid #dfe6ef;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:20px}
-#revenue .rev-toolbar{margin-bottom:18px}
-@media(max-width:1050px){#revenue .rev-layout-summary,#revenue .rev-layout-tax{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:850px){#revenue .rev-layout-periods{grid-template-columns:1fr}}
-@media(max-width:550px){#revenue .rev-layout-summary,#revenue .rev-layout-tax{grid-template-columns:1fr}}
+/* Revenue & Tax layout modeled on GOAT, branded for AI Apparel. */
+#revenue .ai-goat-head{padding:25px 27px;border-radius:19px;background:linear-gradient(112deg,#193956,#006fba);color:white;margin-bottom:18px}
+#revenue .ai-goat-head .eyebrow{font-size:12px;letter-spacing:.08em;font-weight:800;color:#d5eafa}
+#revenue .ai-goat-head h2{font-size:29px;margin:9px 0}
+#revenue .ai-goat-head p{color:#e3effa;margin:0}
+#revenue .ai-goat-tools{margin:0 0 24px;padding:17px 20px}
+#revenue .ai-goat-tools .quick{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+#revenue .ai-goat-title{font-size:19px;color:#193956;margin:26px 0 12px;font-weight:800}
+#revenue .ai-goat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:14px 0 24px}
+#revenue .ai-goat-tile{background:#fff;border:1px solid #dce6f0;border-radius:16px;padding:20px;min-width:0}
+#revenue .ai-goat-tile>small{display:block;color:#64748b;font-size:12px;margin-bottom:10px}
+#revenue .ai-goat-tile>strong{display:block;color:#006fba;font-size:clamp(20px,2.3vw,27px);margin:7px 0;overflow-wrap:anywhere}
+#revenue .ai-goat-tile>.note{display:block;color:#66768a;font-size:12px;line-height:1.45;margin-top:9px}
+#revenue .ai-goat-period{border-top:4px solid #006fba}
+#revenue .ai-goat-period:nth-child(2){border-top-color:#006fba}
+#revenue .ai-goat-period:nth-child(3){border-top-color:#006fba}
+#revenue .ai-goat-period h3{font-size:18px;color:#193956;margin:2px 0 12px}
+#revenue .ai-goat-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #e9eef4;font-size:13px}
+#revenue .ai-goat-row:last-child{border:0}
+#revenue .ai-goat-row span{color:#627286}
+#revenue .ai-goat-row b{color:#193956;text-align:right;overflow-wrap:anywhere}
+#revenue .ai-goat-banner{background:#f3f8fc;border:1px solid #dce6f0;border-radius:13px;padding:16px 19px;margin:17px 0;font-size:13px;line-height:1.6}
+#revenue .ai-goat-detail{margin:13px 0;border-radius:15px;overflow:hidden}
+#revenue .ai-goat-detail>summary{cursor:pointer;padding:19px 21px;font-weight:800;color:#193956;display:flex;justify-content:space-between;gap:15px}
+#revenue .ai-goat-detail>summary small{font-weight:400;color:#64748b}
+#revenue .ai-goat-detail>.ai-goat-detail-body{padding:0 20px 20px}
+#revenue .ai-goat-detail .rev-acc-panel{margin:0}
+#revenue .ai-goat-compact{margin:0 0 15px}
+#revenue .ai-goat-hidden-source{display:none!important}
+#revenue .ai-goat-tax-panel{margin-top:10px}
+@media(max-width:1050px){#revenue .ai-goat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){#revenue .ai-goat-grid{grid-template-columns:1fr}#revenue .ai-goat-detail>summary{flex-direction:column}}
 </style>
 </head>
 <body><div class="shell">
@@ -1573,81 +1570,59 @@ addItem();
   $('tax-period').addEventListener('change',render);monthSelect.addEventListener('change',render);$('rev-report-year').addEventListener('change',refresh);$('rev-tax-panel').addEventListener('toggle',()=>{if($('rev-tax-panel').open)refresh()});
 })();
 </script>
-
 <script>
-/* Layout-only adaptation of GOAT Revenue. No Supabase, Shopify, or business logic changes. */
+/* GOAT Revenue & Tax presentation, retaining AI Apparel's existing data sources. */
 (()=>{
  const page=document.getElementById('revenue');if(!page)return;
- const get=id=>document.getElementById(id);
- const metrics=page.querySelector('.rev-metrics');
- if(metrics){metrics.classList.add('rev-layout-summary');}
- const periodPanel=get('rev-period-panel');
- const periodGrid=periodPanel?.querySelector('.rev-period-grid');
- if(periodGrid){
-   periodGrid.classList.add('rev-layout-periods');
-   periodGrid.querySelectorAll('.rev-period-card').forEach(card=>{
-     card.classList.add('rev-layout-period');
-     const ids=[['estimates','Approved estimates'],['count','Quotes created'],['collected','Collected revenue'],['tax','Order tax recorded']];
-     const prefix=card.querySelector('[id$="-period"]')?.id.replace(/^rev-/,'').replace(/-period$/,'');
-     if(!prefix)return;
-     const last=card.querySelector('small:last-child');
-     const rows=document.createElement('div');rows.className='rev-layout-rows';
-     ids.forEach(([suffix,label])=>{
-       const item=get('rev-'+prefix+'-'+suffix);if(!item)return;
-       const row=document.createElement('div');row.className='rev-layout-row';
-       const name=document.createElement('span');name.textContent=label;
-       const value=document.createElement('b');value.append(item);
-       row.append(name,value);rows.append(row);
-     });
-     if(last&&last.textContent.includes('Expenses / Profit')){
-       const row=document.createElement('div');row.className='rev-layout-row';
-       const name=document.createElement('span');name.textContent='Expenses / profit';
-       const value=document.createElement('b');value.append(last);
-       row.append(name,value);rows.append(row);
-     }
-     card.append(rows);
-   });
- }
- // Move reporting controls above the three period panels, just as on GOAT.
- if(periodPanel&&periodGrid){
-   const heading=periodPanel.querySelector('.rev-section-heading');
-   if(heading)heading.remove();
-   periodPanel.classList.add('rev-layout-period-panel');
- }
- // GOAT's four-card tax overview, backed by AI Apparel's actual existing figures.
- const taxHeading=document.createElement('h3');taxHeading.textContent='Sales tax reporting';
- const taxGrid=document.createElement('div');taxGrid.className='rev-layout-tax';
- const taxTiles=[
-   ['Taxable sales','tax-sales','Calculated from synced tax details'],
-   ['Non-taxable sales',null,'See detailed tax reconciliation'],
-   ['Sales tax collected','tax-collected','Before allocated refunds'],
-   ['Net sales tax collected','tax-net','Not necessarily tax due or remitted']
- ];
- const mirrors=[];
- taxTiles.forEach(([label,id,note])=>{
-   const tile=document.createElement('div');tile.className='rev-tax-tile';
-   const small=document.createElement('small');small.textContent=label;
-   const strong=document.createElement('strong');strong.textContent='—';
-   const caption=document.createElement('span');caption.textContent=note;
-   tile.append(small,strong,caption);taxGrid.append(tile);
-   if(id){const source=get(id);if(source)mirrors.push([source,strong]);}
+ const $=id=>document.getElementById(id);
+ const mk=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n};
+ const bind=(target,id,transform)=>{const src=$(id);if(!src)return;const update=()=>{const value=src.textContent.trim();target.textContent=transform?transform(value):value||'—'};update();new MutationObserver(update).observe(src,{subtree:true,childList:true,characterData:true})};
+ const title=mk('div','ai-goat-head');title.append(mk('span','rev-pill','AI APPAREL GROUP · ACCOUNTING'),mk('h2','','Revenue & Tax'),mk('p','','Company-wide order profit, costs and tax reporting'));
+ page.querySelector('.rev-hero')?.replaceWith(title);
+ const toolbar=page.querySelector('.rev-toolbar');toolbar?.classList.add('ai-goat-tools');
+ // GOAT uses a reporting-period selector. Keep AI's actual selectors and sync buttons.
+ const period=$('rev-period-panel');const controls=period?.querySelector('.quick');if(controls){toolbar?.append(controls);controls.classList.add('ai-goat-compact')}
+ // Retain data-bearing legacy elements in the DOM, but remove all extra AI sections from view.
+ const hidden=mk('div','ai-goat-hidden-source');page.append(hidden);
+ const moveHidden=node=>{if(node)hidden.append(node)};
+ page.querySelectorAll('.rev-section-heading').forEach(moveHidden);
+ moveHidden(page.querySelector('.rev-metrics'));
+ moveHidden($('rev-csv-import'));
+ moveHidden($('rev-register')?.closest('.panel'));
+ moveHidden($('rev-tax-note'));
+ const taxTotal=$('rev-tax-total');if(taxTotal)moveHidden(taxTotal.parentElement);
+ if(period)moveHidden(period);
+ const oldAccounting=page.querySelector('.rev-accounting-grid');
+ const costs=$('rev-costs-panel'),tax=$('rev-tax-panel');
+ if(costs)page.append(costs);
+ if(tax)moveHidden(tax);
+ if(oldAccounting)oldAccounting.remove();
+ page.querySelectorAll(':scope > .notice').forEach(moveHidden);
+ const periodHeading=mk('h3','ai-goat-title','Reporting periods'),grid=mk('div','ai-goat-grid');page.append(periodHeading,grid);
+ const moneyFormat=s=>s.replace(/^Collected revenue:\s*/i,'').replace(/^Approved estimates:\s*/i,'').replace(/^Order tax recorded:\s*/i,'').replace(/^Quotes:\s*/i,'');
+ [['month','Current Month'],['quarter','Quarterly'],['ytd','YTD']].forEach(([key,label])=>{
+  const card=mk('div','ai-goat-tile ai-goat-period');card.append(mk('small','',label.toUpperCase()),mk('h3','',label));
+  [['Collected order revenue','rev-'+key+'-collected'],['Approved quote value','rev-'+key+'-estimates'],['Quotes created','rev-'+key+'-count']].forEach(([name,id])=>{
+   const row=mk('div','ai-goat-row'),value=mk('b','','—');row.append(mk('span','',name),value);bind(value,id,moneyFormat);card.append(row);
+  });
+  [['COGS + shipping costs','—'],['Profit after costs','—'],['Approved quotes','—'],['Open quote value','—']].forEach(([name,value])=>{const row=mk('div','ai-goat-row');row.append(mk('span','',name),mk('b','',value));card.append(row)});
+  card.append(mk('small','note','Additional cost and quote breakdowns are not available from the current AI period summaries.'));grid.append(card);
  });
- const taxNote=document.createElement('div');taxNote.className='rev-layout-tax-note';
- taxNote.textContent='Tax figures require synchronized Shopify tax detail. Non-taxable sales and tax due cannot be determined from quote estimates; use the detailed filing report for reconciled classifications.';
- const update=()=>mirrors.forEach(([from,to])=>{to.textContent=from.textContent||'—'});
- update();
- const observer=new MutationObserver(update);
- mirrors.forEach(([source])=>observer.observe(source,{childList:true,characterData:true,subtree:true}));
- if(periodPanel){periodPanel.after(taxHeading,taxGrid,taxNote);}
- // Keep all detailed accounting tools intact and accessible, but declutter the main page.
- const details=document.createElement('details');details.className='panel rev-layout-detail';
- const summary=document.createElement('summary');summary.textContent='Detailed accounting, sales tax filings, costs & historical imports';
- const body=document.createElement('div');details.append(summary,body);
- const register=get('rev-register')?.closest('.panel');
- const accounting=page.querySelector('.rev-accounting-grid');
- const csv=get('rev-csv-import');
- [register,accounting,csv].forEach(node=>{if(node)body.append(node)});
- page.append(details);
+ const profitHeading=mk('h3','ai-goat-title','Profit Margin Overview'),profitGrid=mk('div','ai-goat-grid');page.append(profitHeading,profitGrid);
+ [['01 · Subtotal + customer-paid shipping','rev-collected','Paid Shopify transactions, net of refunds; tax excluded'],['02 · Cost of goods sold','rev-cost-period-expenses','Recorded job costs (includes apparel, decoration, labor and other costs)'],['03 · Shipping label costs',null,'Not separately available in current AI accounting totals'],['04 · Profit after COGS & shipping','rev-cost-period-profit','Provisional gross profit from completed cost entries']].forEach(([label,id,note])=>{
+  const card=mk('div','ai-goat-tile'),val=mk('strong','','—');card.append(mk('small','',label),val,mk('span','note',note));if(id)bind(val,id);profitGrid.append(card);
+ });
+ const banner=mk('div','ai-goat-banner','Profit is provisional when order costs are incomplete. The AI Apparel cost ledger includes additional job costs, so its figures are not directly equivalent to GOAT’s COGS-only calculations.');page.append(banner);
+ const detail=(name,desc,content)=>{const d=mk('details','panel ai-goat-detail'),summary=mk('summary');summary.append(mk('strong','',name),mk('small','',desc));d.append(summary);if(content){const body=mk('div','ai-goat-detail-body');body.append(content);d.append(body)}page.append(d);return d};
+ if(costs){const d=detail('Order Cost Management','Open to enter costs for paid orders',costs);costs.open=true}
+ // Manual sales cannot be written to the Shopify payment ledger without a verified backend route.
+ const manual=detail('Add a Non-Shopify Sale','Open to record a separate sale');const note=mk('p','info','Manual non-Shopify sale entry is not connected to the AI Apparel payment ledger. No sale will be created from this panel until a dedicated backend is configured.');manual.append(note);
+ page.append(mk('h3','ai-goat-title','Sales Tax Reporting'));
+ const taxGrid=mk('div','ai-goat-grid');page.append(taxGrid);
+ [['Taxable sales',null,'Classification not connected'],['Non-taxable sales',null,'Classification not connected'],['Recorded sales tax','rev-tax-total','Imported paid-order tax; not tax due'],['Sales tax due',null,'Requires tax reconciliation']].forEach(([label,id,note])=>{
+  const tile=mk('div','ai-goat-tile'),val=mk('strong','','—');tile.append(mk('small','',label),val,mk('span','note',note));if(id)bind(val,id);taxGrid.append(tile);
+ });
+ page.append(mk('div','ai-goat-banner','Financial reporting note. Approved quotes are excluded from collected sales. Refunds, payment processing fees, overhead, incomplete order costs and tax obligations require reconciliation before treating these amounts as final accounting profit.'));
 })();
 </script>
 </body></html>
