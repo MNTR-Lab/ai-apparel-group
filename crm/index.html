@@ -559,6 +559,15 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 </div></details>
 </div>
 <div class="notice"><strong>Accounting safeguards:</strong> An approved quote or Shopify draft invoice is not a payment. This page does not create invoices, charge customers, award rewards points, or modify existing jobs.</div>
+
+<section id="ai-reconciliation-review" aria-label="Accounting Reconciliation">
+<h3>Accounting Reconciliation — October 1, 2026 Forward</h3>
+<p>Read-only verification of paid orders, production-cost status, and original Shopify tax evidence. Tax warnings require review and are not automatically corrected liabilities.</p>
+<button type="button" id="ai-audit-refresh">Refresh reconciliation</button>
+<p id="ai-audit-status" role="status">Select Refresh reconciliation to check verified payments and tax evidence.</p>
+<div id="ai-audit-summary" class="ai-audit-summary"></div>
+<div id="ai-audit-table-wrap" class="ai-audit-table-wrap"></div>
+</section>
 </section>
 </div></main></div>
 <script>
@@ -1818,18 +1827,12 @@ addItem();
 <script id="ai-reconciliation-review-script">
 (()=>{
  const start=()=>{
-  const page=document.getElementById('revenue');
-  if(!page||document.getElementById('ai-reconciliation-review'))return;
-  const panel=document.createElement('section');panel.id='ai-reconciliation-review';
-  const title=document.createElement('h3');title.textContent='Accounting Reconciliation — October 1, 2026 Forward';
-  const info=document.createElement('p');info.textContent='Read-only verification of paid orders, production-cost status, and original Shopify tax evidence. Tax warnings are review items, not automatically corrected liabilities.';
-  const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Refresh reconciliation';
-  const status=document.createElement('p');status.setAttribute('role','status');
-  const summary=document.createElement('div');summary.className='ai-audit-summary';
-  const tableWrap=document.createElement('div');tableWrap.className='ai-audit-table-wrap';
-  panel.append(title,info,refresh,status,summary,tableWrap);
-  const exportPanel=document.getElementById('ai-accounting-export');
-  exportPanel?exportPanel.before(panel):page.append(panel);
+  const panel=document.getElementById('ai-reconciliation-review');
+  if(!panel)return;
+  const refresh=document.getElementById('ai-audit-refresh');
+  const status=document.getElementById('ai-audit-status');
+  const summary=document.getElementById('ai-audit-summary');
+  const tableWrap=document.getElementById('ai-audit-table-wrap');
   const cell=(row,value,tag='td')=>{const el=document.createElement(tag);el.textContent=String(value??'—');row.append(el);return el};
   const metric=(label,value)=>{const item=document.createElement('div');item.className='ai-audit-metric';const number=document.createElement('strong');number.textContent=String(value??0);const caption=document.createElement('span');caption.textContent=label;item.append(number,caption);summary.append(item)};
   const money=value=>Number(value||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
@@ -1862,14 +1865,11 @@ addItem();
       body.append(row);
     }
     table.append(body);tableWrap.append(table);
-    status.textContent='Audit updated. Shopify history may still be synchronizing; do not use this report as a finalized tax return.';
+    status.textContent='Audit updated. Shopify history may still be synchronizing; this is not a finalized tax return.';
    }catch(e){status.textContent='Unable to load reconciliation: '+(e?.message||String(e))}
    finally{refresh.disabled=false}
   };
   refresh.addEventListener('click',load);
-  const revenueNav=document.querySelector('[data-page="revenue"]');
-  if(revenueNav)revenueNav.addEventListener('click',()=>{if(!summary.children.length)load()});
-  // Avoid automatic repeated queries; the user can refresh after signing in.
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
