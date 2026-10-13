@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>AI Apparel Group | Quote Approval</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17283f;background:#f3f6fa}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:760px;margin:48px auto;padding:0 18px}
+header{padding:24px 30px;background:#092d50;color:white;border-radius:16px 16px 0 0}header small{letter-spacing:.12em;opacity:.8}
+main{padding:30px;background:#fff;border-radius:0 0 16px 16px;box-shadow:0 12px 35px #10283d12}
+h1{margin:6px 0 8px;font-size:28px}h2{font-size:19px}p{line-height:1.6}
+.muted{color:#5d7086}.line{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #e6ecf2;padding:14px 0}
+.line small{display:block;color:#637589;margin-top:5px}.total{display:flex;justify-content:space-between;font-size:23px;font-weight:750;padding:20px 0}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}button{background:#006fba;color:white;border:0;border-radius:9px;padding:13px 18px;font:inherit;font-weight:700;cursor:pointer}button.secondary{background:#eaf0f7;color:#20364d}button:disabled{opacity:.5;cursor:not-allowed}
+.notice{padding:14px;border-radius:9px;background:#eff5fb;margin:16px 0}.error{background:#fff0f0;color:#9b1c1c}.success{background:#eaf8ee;color:#176b36}
+</style></head><body><div class="wrap"><header><small>AI APPAREL GROUP</small><h1>Quote Review &amp; Approval</h1></header><main id="content"><p>Loading your quote securely…</p></main></div>
+<script>
+"use strict";
+const API="https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-crm-approval";
+const token=new URLSearchParams(location.search).get("token")||"";
+const root=document.getElementById("content");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(n)||0);
+async function action(name){
+ const response=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,action:name}),cache:"no-store"});
+ const result=await response.json();
+ if(!response.ok)throw Error(result.error||"This approval link is unavailable.");
+ return result.result;
+}
+function error(message){root.innerHTML='<div class="notice error">'+esc(message)+'</div><p class="muted">Contact AI Apparel Group to request a new quote or approval link.</p>'}
+async function init(){
+ if(!/^[0-9a-f]{64}$/.test(token)){error("Invalid quote approval link.");return}
+ try{
+  const q=await action("view");
+  const deadline=new Date(q.expires_at).toLocaleString("en-US",{timeZone:"America/New_York",month:"long",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"});
+  root.innerHTML='<h2>'+esc(q.title||"Quote")+'</h2><p class="muted">Quote '+esc(q.quote_number)+' · Approval deadline: '+esc(deadline)+'</p>'+
+   '<div class="notice">Review the details below before approving. Approval starts your production job. A payment invoice will be handled separately while invoice automation is being finalized.</div>'+
+   (q.items||[]).map(i=>'<div class="line"><div><strong>'+esc(i.description)+'</strong><small>'+esc(i.quantity)+' × '+money(i.unit_price)+'</small></div><strong>'+money(i.line_total??Number(i.quantity)*Number(i.unit_price))+'</strong></div>').join('')+
+   '<div class="total"><span>Quote total</span><span>'+money(q.total)+'</span></div>'+
+   (q.notes?'<h2>Specifications</h2><p>'+esc(q.notes)+'</p>':'')+
+   '<div class="actions"><button id="approve">Approve Quote</button><button class="secondary" id="changes">Request Changes</button></div>';
+  async function submit(which){
+   if(!confirm(which==="approve"?"Approve this quote and begin production?":"Request changes to this quote?"))return;
+   document.querySelectorAll("button").forEach(b=>b.disabled=true);
+   try{const result=await action(which);root.innerHTML='<div class="notice success"><strong>'+(which==="approve"?"Quote approved":"Change request received")+'</strong><p>'+(which==="approve"?"Your production job has been created. AI Apparel Group will provide payment details.":"AI Apparel Group will review your request and follow up.")+'</p><p>Quote '+esc(result.quote_number)+'</p></div>';}
+   catch(e){error(e.message)}
+  }
+  document.getElementById("approve").onclick=()=>submit("approve");
+  document.getElementById("changes").onclick=()=>submit("request_changes");
+ }catch(e){error(e.message)}
+}
+init();
+</script></body></html>
