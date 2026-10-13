@@ -1744,8 +1744,15 @@ addItem();
    button.disabled=true;status.textContent='Preparing export…';
    try{
     if(typeof db==='undefined'||!db)throw Error('CRM database connection unavailable');
-    const now=new Date(),year=now.getFullYear();
-    const years=period.value==='all'?Array.from({length:year-2026+1},(_,i)=>2026+i):[year];
+    // Always apply the company's Eastern Time accounting calendar, independent of browser location.
+    const easternParts=date=>{
+      const values=Object.fromEntries(new Intl.DateTimeFormat('en-US',{
+        timeZone:'America/New_York',year:'numeric',month:'numeric',day:'numeric'
+      }).formatToParts(date).filter(p=>p.type!=='literal').map(p=>[p.type,Number(p.value)]));
+      return {year:values.year,month:values.month,day:values.day};
+    };
+    const now=new Date(),today=easternParts(now),year=today.year;
+    const years=period.value==='all'?Array.from({length:Math.max(0,year-2026+1)},(_,i)=>2026+i):[year];
     const transactions=[];
     for(const y of years){
       const {data,error}=await db.rpc('ai_financial_accounting_transactions_export',{p_year:y});
@@ -1757,9 +1764,10 @@ addItem();
       const date=new Date(x.transaction_date);
       if(!Number.isFinite(date.getTime())||date<cutoff)return false;
       if(period.value==='all')return true;
-      if(date.getFullYear()!==year)return false;
-      if(period.value==='month')return date.getMonth()===now.getMonth();
-      if(period.value==='quarter')return Math.floor(date.getMonth()/3)===Math.floor(now.getMonth()/3);
+      const local=easternParts(date);
+      if(local.year!==year)return false;
+      if(period.value==='month')return local.month===today.month;
+      if(period.value==='quarter')return Math.floor((local.month-1)/3)===Math.floor((today.month-1)/3);
       return date<=now;
     });
     const headers=['Source','Order ID','Order Name','Transaction Date','Transaction Type','Verified Cash Amount (+ Payment / - Refund)','Cost Status','Order Apparel Cost (Reference)','Order Decoration Cost (Reference)','Order Labor Cost (Reference)','Order Shipping Cost (Reference)','Order Other Cost (Reference)','Order Total Costs (Reference)'];
