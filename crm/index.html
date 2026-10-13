@@ -1624,9 +1624,9 @@ addItem();
  const banner=mk('div','ai-goat-banner','Profit reporting is limited to orders with completed cost entries. Orders awaiting costs are excluded from profit calculations. Payment-based revenue may include sales tax and customer-paid shipping; verify before using for tax filing or final accounting.');page.append(banner);
  const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
  const totals=rows=>rows.reduce((a,x)=>{if(!x.costs){a.pending++;return a}const c=x.costs;a.complete++;a.revenue+=Number(x.net_paid||0);a.shipping+=Number(c.shipping||0);a.production+=Number(c.apparel||0)+Number(c.decoration||0)+Number(c.labor||0)+Number(c.other||0);return a},{revenue:0,production:0,shipping:0,complete:0,pending:0});
- const periodMatches=(x,key)=>{const d=String(x.date||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;const today=new Date(),y=today.getFullYear(),m=today.getMonth()+1,q=Math.ceil(m/3);const yy=Number(d.slice(0,4)),mm=Number(d.slice(5,7));if(yy!==y)return false;if(key==='month')return mm===m;if(key==='quarter')return Math.ceil(mm/3)===q;return d<=today.getFullYear()+'-'+String(m).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0')};
+ const periodMatches=(x,key)=>{const d=String(x.date||'').slice(0,10);if(d<'2026-10-01')return false;if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;const today=new Date(),y=today.getFullYear(),m=today.getMonth()+1,q=Math.ceil(m/3);const yy=Number(d.slice(0,4)),mm=Number(d.slice(5,7));if(yy!==y)return false;if(key==='month')return mm===m;if(key==='quarter')return Math.ceil(mm/3)===q;return d<=today.getFullYear()+'-'+String(m).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0')};
  document.addEventListener('ai-apparel-cost-ledger-updated',e=>{
-  const rows=Array.isArray(e.detail?.sales)?e.detail.sales:[];
+  const rows=(Array.isArray(e.detail?.sales)?e.detail.sales:[]).filter(x=>String(x.date||'').slice(0,10)>='2026-10-01');
   for(const key of ['month','quarter','ytd']){
    const t=totals(rows.filter(x=>periodMatches(x,key))),slots=costSlots[key];
    slots.costs.textContent=money(t.production+t.shipping);slots.profit.textContent=money(t.revenue-t.production-t.shipping);
@@ -1654,9 +1654,9 @@ addItem();
   const page=document.getElementById('revenue');
   if(!page||document.getElementById('ai-tax-reconciliation'))return;
   const panel=document.createElement('details');panel.id='ai-tax-reconciliation';panel.className='panel';panel.style.margin='18px 0';
-  const summary=document.createElement('summary');summary.textContent='Tax Reconciliation · Shopify + Historical Orders';summary.style.cssText='cursor:pointer;padding:18px;font-weight:700;color:#193956';panel.append(summary);
+  const summary=document.createElement('summary');summary.textContent='Tax Reconciliation · Since October 1, 2026';summary.style.cssText='cursor:pointer;padding:18px;font-weight:700;color:#193956';panel.append(summary);
   const body=document.createElement('div');body.style.cssText='padding:14px 18px 20px';panel.append(body);
-  const desc=document.createElement('p');desc.className='info';desc.textContent='Monthly comparison of collected sales tax by source. Taxable and nontaxable sales are shown only after individual orders are reviewed. This is not a filing-ready liability calculation.';body.append(desc);
+  const desc=document.createElement('p');desc.className='info';desc.textContent='Orders dated October 1, 2026 onward only. Tax figures currently follow ORDER dates, not payment dates. Taxable and nontaxable sales require individual review; this is not a filing-ready liability calculation.';body.append(desc);
   const controls=document.createElement('div');controls.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px';
   const year=document.createElement('select');year.setAttribute('aria-label','Tax reporting year');[new Date().getFullYear(),2026,2025].filter((x,i,a)=>a.indexOf(x)===i).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;year.append(o)});
   const refresh=document.createElement('button');refresh.type='button';refresh.className='action secondary';refresh.textContent='Refresh tax reconciliation';controls.append(year,refresh);body.append(controls);
@@ -1682,5 +1682,8 @@ addItem();
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 })();
+</script>
+<script id="ai-accounting-cutoff-banner">
+(()=>{const mount=()=>{const page=document.getElementById('revenue');if(!page||document.getElementById('ai-accounting-start-note'))return;const note=document.createElement('div');note.id='ai-accounting-start-note';note.className='ai-goat-banner';note.style.cssText='margin:14px 0;padding:14px 18px;border-left:4px solid #2675bd';note.textContent='CURRENT COMPANY ACCOUNTING START: OCTOBER 1, 2026. Revenue and profit include verified payments/refunds from that date forward, regardless of original order date. Historical records remain stored separately. Shopify sync may still be incomplete. Tax reconciliation currently uses order dates and is not filing-ready.';const heading=page.querySelector('h1,h2,.ai-goat-header,.ai-goat-hero');if(heading)heading.after(note);else page.prepend(note);};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount()})();
 </script>
 </body></html>
