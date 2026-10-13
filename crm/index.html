@@ -338,6 +338,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <section id="revenue" hidden>
 <div class="rev-hero"><div><span class="rev-eyebrow">FINANCIAL OVERVIEW</span><h2>Revenue &amp; Accounting</h2><p>Track your pipeline, review reporting periods, and manage financial visibility in one place.</p></div><span class="rev-hero-mark" aria-hidden="true">↗</span></div>
 <div class="panel rev-toolbar"><div class="quick" style="align-items:end;flex-wrap:wrap;gap:12px"><label>From<input id="rev-from" type="date" style="display:block;padding:10px;margin-top:5px"></label><label>Through<input id="rev-to" type="date" style="display:block;padding:10px;margin-top:5px"></label><button id="rev-refresh" type="button" class="action">Refresh Revenue</button><button id="rev-sync-payments" type="button" class="action secondary">Sync Shopify Payments</button><button id="rev-export" type="button" class="action secondary" disabled>Export CSV</button></div><p id="rev-message" class="info">Sign in and select Revenue to load available records.</p></div>
+<details class="panel" id="rev-csv-import" style="margin:12px 0"><summary style="cursor:pointer;font-weight:700;list-style-position:inside">Historical CSV Import <span style="font-size:12px;font-weight:400;color:#64748b">▾ Upload, preview &amp; stage missing records</span></summary><div style="padding-top:12px"><p class="info">Import Shopify Orders CSV exports without changing existing revenue totals. Imported records are staged for duplicate review and reconciliation before posting to accounting.</p><label style="display:block;margin:10px 0">Choose Shopify Orders CSV <input type="file" id="rev-csv-file" accept=".csv,text/csv" style="display:block;margin-top:6px"></label><p id="rev-csv-status" class="info">No file selected.</p><div id="rev-csv-preview" style="overflow:auto;max-height:260px"></div><div class="quick" style="margin-top:12px"><button id="rev-csv-upload" type="button" class="action" disabled>Stage validated records</button><button id="rev-csv-clear" type="button" class="action secondary">Clear</button></div></div></details>
 <div class="rev-section-heading"><div><span class="rev-kicker">OVERVIEW</span><h3>Financial snapshot</h3></div><span class="rev-pill">Quote activity</span></div><div class="grid rev-metrics"><div class="card"><label>Approved quote value</label><strong id="rev-approved">—</strong><small>Approved estimates, not payments</small></div><div class="card"><label>Open quote value</label><strong id="rev-open">—</strong><small>Unapproved estimates</small></div><div class="card"><label>Shopify draft invoices</label><strong id="rev-drafts">—</strong><small>Count of linked draft orders</small></div><div class="card"><label>Collected revenue</label><strong id="rev-collected">Awaiting sync</strong><small>Net payments less refunds (YTD)</small></div></div>
 <div class="panel" id="rev-period-panel"><div class="rev-section-heading"><div><span class="rev-kicker">PERFORMANCE</span><h3>Reporting periods</h3></div><span class="rev-pill">Monthly · Quarterly · YTD</span></div><p class="info">Estimates are shown for reference only. Collected revenue is based on synchronized successful Shopify payment transactions, net of refunds. Expenses and profit are not yet connected. Order-level sales tax is preliminary until refunds and taxable classifications are reconciled.</p>
 <div class="quick" style="flex-wrap:wrap;align-items:end;gap:12px"><label>Reporting year<select id="rev-report-year" style="display:block;padding:10px;margin-top:5px"></select></label><label>Month<select id="rev-report-month" style="display:block;padding:10px;margin-top:5px"></select></label><label>Quarter<select id="rev-report-quarter" style="display:block;padding:10px;margin-top:5px"><option value="1">Q1 (Jan–Mar)</option><option value="2">Q2 (Apr–Jun)</option><option value="3">Q3 (Jul–Sep)</option><option value="4">Q4 (Oct–Dec)</option></select></label></div>
@@ -1152,6 +1153,69 @@ addItem();
   const lines=[['Quote','Date','Customer','Quote status','Quote estimate','Invoice tracking','Invoice URL'],...rows.map(x=>[x.number,x.date,x.customer,x.status,x.amount.toFixed(2),x.invoice,x.invoiceUrl])];
   const blob=new Blob([lines.map(r=>r.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ai-apparel-revenue-register.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ });
+})();
+</script>
+<script>
+/* Historical CSV staging; isolated from revenue posting and existing CRM workflows. */
+(()=>{
+ const get=id=>document.getElementById(id), input=get('rev-csv-file'), status=get('rev-csv-status'), preview=get('rev-csv-preview'), upload=get('rev-csv-upload');
+ let records=[];
+ function parseCSV(text){
+  const result=[];let row=[],field='',quoted=false;
+  for(let i=0;i<text.length;i++){
+   const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){field+='"';i++}else quoted=!quoted}
+   else if(c===','&&!quoted){row.push(field);field=''}
+   else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(field);if(row.some(v=>v.trim()))result.push(row);row=[];field=''}
+   else field+=c;
+  }
+  if(quoted)throw Error('CSV contains an unclosed quoted field.');
+  row.push(field);if(row.some(v=>v.trim()))result.push(row);return result;
+ }
+ const norm=s=>String(s||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+ const cleanMoney=s=>{const n=Number(String(s??'').replace(/[$, ]/g,''));return Number.isFinite(n)?n:NaN};
+ const dateValue=s=>{const d=new Date(s);return Number.isFinite(d.getTime())?d.toISOString():null};
+ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ input.addEventListener('change',async()=>{
+  records=[];upload.disabled=true;preview.innerHTML='';const file=input.files?.[0];if(!file){status.textContent='No file selected.';return}
+  if(file.size>8*1024*1024){status.textContent='CSV too large (8 MB limit). Export smaller date ranges.';return}
+  try{
+   const raw=parseCSV((await file.text()).replace(/^\uFEFF/,''));if(raw.length<2)throw Error('CSV has no data rows.');
+   const headers=raw.shift(),map=new Map(headers.map((h,i)=>[norm(h),i]));
+   const pick=(r,...keys)=>{for(const key of keys){const i=map.get(norm(key));if(i!==undefined)return r[i]??''}return ''};
+   if(!['name','orderid','id'].some(k=>map.has(k)))throw Error('Missing Shopify order Name / ID column.');
+   if(!['createdat','created','paidat','processedat'].some(k=>map.has(k)))throw Error('Missing order date column.');
+   if(!['total','totalprice','totalamount'].some(k=>map.has(k)))throw Error('Missing Total amount column.');
+   const seen=new Set(),errors=[];
+   raw.forEach((r,i)=>{
+    const order=String(pick(r,'Name','Order ID','ID')).trim(),dt=dateValue(pick(r,'Created at','Created','Paid at','Processed at'));
+    const amount=cleanMoney(pick(r,'Total','Total Price','Total Amount'));
+    const taxRaw=pick(r,'Taxes','Tax','Total Tax');const tax=taxRaw===''?0:cleanMoney(taxRaw);
+    if(!order||!dt||!Number.isFinite(amount)||!Number.isFinite(tax)){errors.push(i+2);return}
+    if(seen.has(order))return;seen.add(order);
+    records.push({external_id:order,order_name:order,transaction_date:dt,gross_amount:amount,tax_amount:tax,currency:pick(r,'Currency')||'USD',financial_status:pick(r,'Financial Status','Payment Status')||'unknown',row_data:{csv_source:file.name}});
+   });
+   if(errors.length)throw Error(errors.length+' rows have invalid IDs, dates, or amounts (first CSV line '+errors[0]+'). Correct the file before importing.');
+   if(!records.length)throw Error('No valid rows found.');
+   status.textContent=records.length+' unique orders ready for staging. This does not add them to revenue until reconciled.';
+   preview.innerHTML='<table><thead><tr><th>Order</th><th>Date</th><th>Total</th><th>Tax</th><th>Status</th></tr></thead><tbody>'+records.slice(0,12).map(r=>'<tr><td>'+escape(r.order_name)+'</td><td>'+escape(r.transaction_date.slice(0,10))+'</td><td>'+escape(r.gross_amount.toFixed(2))+'</td><td>'+escape(r.tax_amount.toFixed(2))+'</td><td>'+escape(r.financial_status)+'</td></tr>').join('')+'</tbody></table>'+(records.length>12?'<p class="info">Previewing first 12 of '+records.length+' orders.</p>':'');
+   upload.disabled=false;
+  }catch(e){records=[];status.textContent='CSV validation: '+e.message}
+ });
+ get('rev-csv-clear').addEventListener('click',()=>{records=[];input.value='';preview.innerHTML='';status.textContent='No file selected.';upload.disabled=true});
+ upload.addEventListener('click',async()=>{
+  if(!records.length)return;upload.disabled=true;
+  try{
+   const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Sign in again to upload.');
+   const batch=crypto.randomUUID();let inserted=0,duplicates=0;
+   for(let i=0;i<records.length;i+=250){
+    status.textContent='Staging '+Math.min(i+250,records.length)+' / '+records.length+'…';
+    const response=await fetch(CRM_SUPABASE_URL+'/functions/v1/ai-apparel-financial-report?action=csv_stage',{method:'POST',headers:{'authorization':'Bearer '+session.access_token,'apikey':CRM_PUBLISHABLE_KEY,'content-type':'application/json'},body:JSON.stringify({batch_id:batch,rows:records.slice(i,i+250)})});
+    const out=await response.json();if(!response.ok||out.error)throw Error(out.error||'HTTP '+response.status);
+    inserted+=out.inserted||0;duplicates+=out.duplicates||0;
+   }
+   status.textContent='Staged '+inserted+' historical orders; skipped '+duplicates+' existing CSV entries. Records are awaiting reconciliation; revenue totals were not changed.';
+  }catch(e){status.textContent='Import failed: '+e.message}finally{upload.disabled=false}
  });
 })();
 </script>
