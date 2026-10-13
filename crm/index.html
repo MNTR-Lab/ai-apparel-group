@@ -209,6 +209,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <button class="nav" data-page="matching">◇ &nbsp; Business Matching</button>
 <button class="nav" data-page="orderreviews">☷ &nbsp; Order Match Review</button>
 <button class="nav" data-page="rewards">★ &nbsp; Rewards Integration</button>
+<button class="nav" data-page="revenue">＄ &nbsp; Revenue & Accounting</button>
 </nav><div class="foot"><div style="border-top:1px solid rgba(255,255,255,.25);padding-top:15px"><span style="font-size:11px;letter-spacing:.7px;color:#FFFFFF">POWERED BY:</span><img src="https://cdn.shopify.com/s/files/1/0719/1966/5231/files/Blueprint_Collective-white.png?v=1791560539" alt="Blueprint Collective" style="width:100%;max-width:190px;height:auto;max-height:85px;object-fit:contain;object-position:left center;margin-top:10px"></div></div></aside>
 <main><div class="top"><h1 id="page-title">Dashboard</h1><span class="pill" id="connection-status">SIGN IN REQUIRED</span></div>
 <div class="content">
@@ -297,9 +298,17 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="panel"><h3>Existing Rewards Portal</h3><p class="info">We will connect organization records to the CRM without modifying the current rewards calculations or Shopify order import.</p>
 <div class="quick"><a class="action" href="https://portal.aiapparelgroup.com" target="_blank" rel="noopener noreferrer">Open Existing Rewards Portal ↗</a></div></div>
 <div class="notice">Rewards data is not imported or displayed in this staging build. CRM-to-organization mapping and access controls must be tested before enabling it.</div></section>
+<section id="revenue" hidden>
+<h2>Revenue &amp; Accounting</h2><p class="lead">Review quote values and invoice activity. Financial figures are labeled by status; quotes are not counted as collected revenue.</p>
+<div class="panel"><div class="quick" style="align-items:end;flex-wrap:wrap;gap:12px"><label>From<input id="rev-from" type="date" style="display:block;padding:10px;margin-top:5px"></label><label>Through<input id="rev-to" type="date" style="display:block;padding:10px;margin-top:5px"></label><button id="rev-refresh" type="button" class="action">Refresh Revenue</button><button id="rev-export" type="button" class="action secondary" disabled>Export CSV</button></div><p id="rev-message" class="info">Sign in and select Revenue to load available records.</p></div>
+<div class="grid"><div class="card"><label>Approved quote value</label><strong id="rev-approved">—</strong><small>Approved estimates, not payments</small></div><div class="card"><label>Open quote value</label><strong id="rev-open">—</strong><small>Unapproved estimates</small></div><div class="card"><label>Shopify draft invoices</label><strong id="rev-drafts">—</strong><small>Count of linked draft orders</small></div><div class="card"><label>Collected revenue</label><strong id="rev-collected">Not connected</strong><small>Requires verified Shopify payments</small></div></div>
+<div class="panel"><h3>Quote &amp; Invoice Register</h3><div id="rev-register" style="overflow-x:auto"><p class="info">No records loaded.</p></div></div>
+<div class="columns"><div class="panel"><h3>Job Costs &amp; Gross Profit</h3><p class="info">Awaiting a secured cost ledger for apparel, decoration, labor, packaging, and shipping. Profit figures will not be estimated from sales alone.</p></div><div class="panel"><h3>Sales Tax &amp; Cash Basis</h3><p class="info">Awaiting verified order payment and tax records. Tax collected and cash-basis revenue will be reported only after reconciliation with the AI Apparel store.</p></div></div>
+<div class="notice"><strong>Accounting safeguards:</strong> An approved quote or Shopify draft invoice is not a payment. This page does not create invoices, charge customers, award rewards points, or modify existing jobs.</div>
+</section>
 </div></main></div>
 <script>
-const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",shipping:"Shipping/Delivery",archivedjobs:"Archived Jobs",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts"};
+const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",shipping:"Shipping/Delivery",archivedjobs:"Archived Jobs",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts",revenue:"Revenue & Accounting"};
 document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
 const page=button.dataset.page;
 document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
@@ -993,4 +1002,44 @@ q('ai-quotes-list').addEventListener('change',async e=>{
 document.querySelector('button[data-page="quotes"]').addEventListener('click',load);
 addItem();
 })();
-</script></body></html>
+</script><script>
+/* Revenue register: read-only. Do not mistake quote amounts for paid revenue. */
+(function(){
+ const el=id=>document.getElementById(id), money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);
+ let rows=[];
+ const csvCell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ async function loadRevenue(){
+  el('rev-message').textContent='Loading quote and invoice records…';
+  el('rev-export').disabled=true;
+  try{
+   const session=await db.auth.getSession();
+   if(!session.data.session)throw Error('Sign in to access revenue records.');
+   // This RPC enforces the same CRM administrator authorization as Quotes.
+   const {data,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'list',p_payload:{}});
+   if(error)throw error;
+   const start=el('rev-from').value,end=el('rev-to').value;
+   if(start&&end&&start>end)throw Error('The start date must not be after the end date.');
+   const filtered=(data||[]).filter(x=>{const d=String(x.created_at||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end)});
+   // Invoice metadata is maintained by the existing expired_quotes workflow.
+   const tr=await db.rpc('ai_apparel_crm_expired_quotes',{p_action:'list'});
+   const map=new Map((tr.error?[]:(tr.data||[])).map(x=>[String(x.quote_id),x]));
+   rows=filtered.map(x=>{const t=map.get(String(x.id))||{};return {number:x.quote_number||'',date:String(x.created_at||'').slice(0,10),customer:x.customer_name||x.business_name||'',status:x.status||'',amount:Number(x.total)||0,invoice:t.invoice_status||'Not recorded',invoiceUrl:t.shopify_invoice_url||'',draft:!!t.shopify_draft_order_id};});
+   el('rev-approved').textContent=money(rows.filter(x=>x.status==='Approved').reduce((a,x)=>a+x.amount,0));
+   el('rev-open').textContent=money(rows.filter(x=>!['Approved','Declined','Expired'].includes(x.status)).reduce((a,x)=>a+x.amount,0));
+   el('rev-drafts').textContent=String(rows.filter(x=>x.draft).length);
+   el('rev-register').innerHTML=rows.length?'<table><thead><tr><th>Quote</th><th>Date</th><th>Customer</th><th>Quote status</th><th>Estimate</th><th>Invoice tracking</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+escapeHtml(x.number)+'</td><td>'+escapeHtml(x.date)+'</td><td>'+escapeHtml(x.customer)+'</td><td>'+escapeHtml(x.status)+'</td><td>'+money(x.amount)+'</td><td>'+(x.invoiceUrl?'<a href="'+escapeHtml(x.invoiceUrl)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(x.invoice)+'</a>':escapeHtml(x.invoice))+'</td></tr>').join('')+'</tbody></table>':'<p class="info">No quotes in the selected date range.</p>';
+   el('rev-message').textContent=rows.length+' quote records loaded. Date filters use quote creation dates. Invoice status may lag behind actions taken directly in Shopify.';
+   el('rev-export').disabled=!rows.length;
+  }catch(e){el('rev-message').textContent='Revenue unavailable: '+e.message;el('rev-register').textContent='No accounting records loaded.';}
+ }
+ el('rev-refresh').addEventListener('click',loadRevenue);
+ document.querySelector('[data-page="revenue"]').addEventListener('click',loadRevenue);
+ el('rev-export').addEventListener('click',()=>{
+  if(!rows.length)return;
+  const lines=[['Quote','Date','Customer','Quote status','Quote estimate','Invoice tracking','Invoice URL'],...rows.map(x=>[x.number,x.date,x.customer,x.status,x.amount.toFixed(2),x.invoice,x.invoiceUrl])];
+  const blob=new Blob([lines.map(r=>r.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ai-apparel-revenue-register.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ });
+})();
+</script>
+</body></html>
