@@ -1802,4 +1802,76 @@ addItem();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 </script>
+
+<style id="ai-reconciliation-review-style">
+#ai-reconciliation-review{margin:18px 0;padding:20px;border:1px solid #d5e0eb;border-radius:12px;background:#fff;color:#193047}
+#ai-reconciliation-review h3{margin:0 0 9px}
+#ai-reconciliation-review .ai-audit-summary{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+#ai-reconciliation-review .ai-audit-metric{border:1px solid #d5e0eb;border-radius:9px;padding:10px 14px;min-width:130px}
+#ai-reconciliation-review .ai-audit-metric strong{display:block;font-size:20px}
+#ai-reconciliation-review .ai-audit-table-wrap{overflow-x:auto}
+#ai-reconciliation-review table{width:100%;border-collapse:collapse;font-size:13px}
+#ai-reconciliation-review th,#ai-reconciliation-review td{padding:9px;text-align:left;border-bottom:1px solid #e2e8f0}
+#ai-reconciliation-review .ai-audit-warning{color:#92400e;font-weight:700}
+#ai-reconciliation-review button{border:1px solid #b8c9db;border-radius:8px;background:#f7faff;padding:9px 14px;cursor:pointer}
+</style>
+<script id="ai-reconciliation-review-script">
+(()=>{
+ const start=()=>{
+  const page=document.getElementById('revenue');
+  if(!page||document.getElementById('ai-reconciliation-review'))return;
+  const panel=document.createElement('section');panel.id='ai-reconciliation-review';
+  const title=document.createElement('h3');title.textContent='Accounting Reconciliation — October 1, 2026 Forward';
+  const info=document.createElement('p');info.textContent='Read-only verification of paid orders, production-cost status, and original Shopify tax evidence. Tax warnings are review items, not automatically corrected liabilities.';
+  const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Refresh reconciliation';
+  const status=document.createElement('p');status.setAttribute('role','status');
+  const summary=document.createElement('div');summary.className='ai-audit-summary';
+  const tableWrap=document.createElement('div');tableWrap.className='ai-audit-table-wrap';
+  panel.append(title,info,refresh,status,summary,tableWrap);
+  const exportPanel=document.getElementById('ai-accounting-export');
+  exportPanel?exportPanel.before(panel):page.append(panel);
+  const cell=(row,value,tag='td')=>{const el=document.createElement(tag);el.textContent=String(value??'—');row.append(el);return el};
+  const metric=(label,value)=>{const item=document.createElement('div');item.className='ai-audit-metric';const number=document.createElement('strong');number.textContent=String(value??0);const caption=document.createElement('span');caption.textContent=label;item.append(number,caption);summary.append(item)};
+  const money=value=>Number(value||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
+  const load=async()=>{
+   refresh.disabled=true;status.textContent='Checking verified transactions and tax evidence…';
+   try{
+    if(typeof db==='undefined'||!db)throw Error('Sign in to the CRM to review accounting');
+    const [financial,tax]=await Promise.all([db.rpc('ai_financial_reconciliation_audit'),db.rpc('ai_financial_tax_evidence_audit')]);
+    if(financial.error)throw financial.error;
+    if(tax.error)throw tax.error;
+    const f=financial.data||{},t=tax.data||{};
+    const evidence=new Map((t.orders||[]).map(x=>[x.source+'|'+x.order_id,x]));
+    summary.replaceChildren();tableWrap.replaceChildren();
+    metric('Verified collections',money(f.net_collected));
+    metric('Paid orders',f.paid_orders);
+    metric('Pending costs',f.pending_costs);
+    metric('Estimated costs',f.estimated_costs);
+    metric('Final costs',f.final_costs);
+    metric('Tax classification reviews',t.classification_reviews);
+    metric('Missing tax records',f.missing_tax_records);
+    const table=document.createElement('table'),head=document.createElement('thead'),header=document.createElement('tr');
+    ['Order','Source','Collected','Cost status','Tax evidence'].forEach(v=>cell(header,v,'th'));head.append(header);table.append(head);
+    const body=document.createElement('tbody');
+    for(const order of f.orders||[]){
+      const row=document.createElement('tr'),ev=evidence.get(order.source+'|'+order.order_id);
+      cell(row,order.name||order.order_id);cell(row,order.source);cell(row,money(order.net_collected));
+      const cost=cell(row,order.cost_status);if(order.cost_status!=='final')cost.className='ai-audit-warning';
+      const issue=order.missing_tax_record?'Missing tax record':ev?.classification_review?'Review Shopify taxable / nontaxable classification':'No flagged mismatch';
+      const taxCell=cell(row,issue);if(order.missing_tax_record||ev?.classification_review)taxCell.className='ai-audit-warning';
+      body.append(row);
+    }
+    table.append(body);tableWrap.append(table);
+    status.textContent='Audit updated. Shopify history may still be synchronizing; do not use this report as a finalized tax return.';
+   }catch(e){status.textContent='Unable to load reconciliation: '+(e?.message||String(e))}
+   finally{refresh.disabled=false}
+  };
+  refresh.addEventListener('click',load);
+  const revenueNav=document.querySelector('[data-page="revenue"]');
+  if(revenueNav)revenueNav.addEventListener('click',()=>{if(!summary.children.length)load()});
+  // Avoid automatic repeated queries; the user can refresh after signing in.
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
 </body></html>
