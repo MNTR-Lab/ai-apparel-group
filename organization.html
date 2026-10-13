@@ -867,6 +867,19 @@
     .super-admin-org-picker select{max-width:230px;min-width:150px;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#111827;font:inherit}
     @media(max-width:700px){.header-inner{height:auto;min-height:75px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}.header-right{flex-wrap:wrap;justify-content:flex-end}.super-admin-org-picker{width:100%;margin:8px 0;flex-wrap:wrap}.super-admin-org-picker select{max-width:100%;flex:1}}
 </style>
+  <style>
+    .quote-review-overlay{position:fixed;inset:0;z-index:100010;background:rgba(9,17,32,.72);display:none;align-items:center;justify-content:center;padding:20px}
+    .quote-review-overlay.open{display:flex}
+    .quote-review-dialog{background:#fff;color:#111827;border-radius:18px;width:min(840px,100%);max-height:90vh;overflow:auto;padding:28px;box-shadow:0 30px 90px #0005}
+    .quote-review-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
+    .quote-review-close{border:0;background:#f1f5f9;border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:22px}
+    .quote-review-item{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:13px 0;border-bottom:1px solid #e5e7eb;font-size:13px}
+    .quote-review-summary{margin:20px 0;text-align:right;font-size:21px;font-weight:900}
+    .quote-review-note{background:#f3f4f6;border-radius:10px;padding:14px;margin:14px 0;white-space:pre-wrap}
+    .quote-review-approve{background:var(--navy);color:#fff;border:0;border-radius:9px;padding:14px 20px;font-weight:800;cursor:pointer}
+    .quote-review-approve:disabled{opacity:.6;cursor:wait}
+    @media(max-width:650px){.quote-review-dialog{padding:18px}.quote-review-item{grid-template-columns:1fr auto}}
+</style>
   <style>[hidden]{display:none!important}</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1422,6 +1435,15 @@
 
   </main>
 
+
+  <div class="quote-review-overlay" id="quoteReviewOverlay" role="presentation">
+    <section class="quote-review-dialog" role="dialog" aria-modal="true" aria-labelledby="quoteReviewHeading">
+      <div class="quote-review-header"><div><div style="font-size:11px;font-weight:900;color:var(--navy)">PROMOTIONAL QUOTE • <span id="quoteReviewOrg"></span></div><h2 id="quoteReviewHeading">Review Quote</h2></div><button type="button" class="quote-review-close" id="quoteReviewClose" aria-label="Close quote">×</button></div>
+      <div id="quoteReviewBody"></div><div id="quoteReviewMessage" role="status" aria-live="polite" style="margin:12px 0;color:#991b1b"></div>
+      <button type="button" id="quoteReviewApprove" class="quote-review-approve" hidden>APPROVE QUOTE</button>
+    </section>
+  </div>
+
   <div id="loginGate" style="position:fixed;inset:0;z-index:99999;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:24px;">
     <div style="width:min(460px,100%);background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:32px;box-shadow:0 24px 70px rgba(15,23,42,.14);">
       <img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/ai-nal.png?v=1723312110" alt="AI Apparel Group" style="max-width:210px;max-height:72px;display:block;margin:0 auto 22px;object-fit:contain;">
@@ -1915,126 +1937,102 @@
       return labels[status] || String(status || "").replaceAll("_"," ").toUpperCase();
     }
 
+    let latestOrganizationQuotes = [];
+    const currentQuoteStatuses = new Set(["request_received","pricing","quote_ready","approved"]);
+    const quoteReviewOverlay = document.getElementById("quoteReviewOverlay");
+    const quoteReviewApprove = document.getElementById("quoteReviewApprove");
+    document.getElementById("quoteReviewClose").onclick = closeQuoteReview;
+    quoteReviewOverlay.addEventListener("click", event => { if(event.target === quoteReviewOverlay) closeQuoteReview(); });
+    document.addEventListener("keydown", event => { if(event.key === "Escape") closeQuoteReview(); });
+    function closeQuoteReview(){ quoteReviewOverlay.classList.remove("open"); quoteReviewApprove.onclick = null; }
+    function quoteMoney(value){ return formatMoney(Number(value || 0)); }
+    function openQuoteReview(id) {
+      const quote = latestOrganizationQuotes.find(q => String(q.id) === String(id));
+      if (!quote) return;
+      document.getElementById("quoteReviewOrg").textContent = ORGANIZATION.name;
+      document.getElementById("quoteReviewHeading").textContent = quote.request_number || "Promotional Quote";
+      document.getElementById("quoteReviewMessage").textContent = "";
+      const items = Array.isArray(quote.ai_apparel_quote_request_items) ? quote.ai_apparel_quote_request_items : [];
+      const charges = [["Setup",quote.setup_charge],["Decoration",quote.decoration_charge],["Freight",quote.freight_charge],["Other charges",quote.additional_charge]];
+      const body = document.getElementById("quoteReviewBody");
+      body.replaceChildren();
+      const project = document.createElement("p"); project.textContent = (quote.project_name || "Promotional Request") + " • " + quoteStatusLabel(quote.status); body.appendChild(project);
+      if (items.length) {
+        for (const item of items) {
+          const row = document.createElement("div"); row.className = "quote-review-item";
+          const name = document.createElement("div");
+          const strong = document.createElement("strong"); strong.textContent = item.product_name || "Product"; name.appendChild(strong);
+          const detail = document.createElement("div"); detail.style.color = "#6b7280"; detail.textContent = [item.product_code,item.color,item.decoration].filter(Boolean).join(" • "); name.appendChild(detail);
+          const qty = document.createElement("span"); qty.textContent = "Qty " + (item.quoted_quantity ?? item.quantity ?? "—");
+          const price = document.createElement("strong"); price.textContent = quoteMoney(item.line_total);
+          row.append(name,qty,price);body.appendChild(row);
+        }
+      }
+      const summary = document.createElement("div"); summary.className = "quote-review-summary";
+      summary.textContent = "Quote Total: " + quoteMoney(quote.quoted_total); body.appendChild(summary);
+      for (const [label,value] of charges) if (Number(value)) {
+        const line = document.createElement("p");line.style.textAlign="right";line.textContent=label+": "+quoteMoney(value);body.insertBefore(line,summary);
+      }
+      if (Number(quote.discount_amount)) {const line=document.createElement("p");line.style.textAlign="right";line.textContent="Discount: -"+quoteMoney(quote.discount_amount);body.insertBefore(line,summary);}
+      if (quote.customer_quote_notes) {const note=document.createElement("div");note.className="quote-review-note";note.textContent="AI Apparel Notes: " + quote.customer_quote_notes;body.appendChild(note);}
+      quoteReviewApprove.hidden = quote.status !== "quote_ready";
+      quoteReviewApprove.disabled = false;
+      quoteReviewApprove.textContent = "APPROVE QUOTE • " + quoteMoney(quote.quoted_total);
+      quoteReviewApprove.onclick = async () => {
+        if (!window.confirm("Approve this quote and authorize AI Apparel to proceed with invoicing?")) return;
+        quoteReviewApprove.disabled = true; quoteReviewApprove.textContent = "APPROVING…";
+        try {
+          const response = await fetch(QUOTE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"approve_quote",organization_id:ORGANIZATION.id,quote_id:quote.id})});
+          const result = await response.json();
+          if (!response.ok || !result.ok) throw new Error(result.error || "Unable to approve quote");
+          closeQuoteReview();await loadQuoteApprovalAction();
+        } catch(error) {document.getElementById("quoteReviewMessage").textContent=error.message || "Unable to approve quote";quoteReviewApprove.disabled=false;quoteReviewApprove.textContent="APPROVE QUOTE • "+quoteMoney(quote.quoted_total);}
+      };
+      quoteReviewOverlay.classList.add("open");
+    }
+
     function renderCurrentQuotes(quotes) {
       const list = document.getElementById("currentQuotesList");
       const empty = document.getElementById("emptyCurrentQuotes");
       if (!list || !empty) return;
-
-      const current = (quotes || []).filter(q => ["request_received","pricing","quote_ready","approved"].includes(String(q.status || "").toLowerCase()));
+      const current = (quotes || []).filter(q => currentQuoteStatuses.has(String(q.status || "").toLowerCase()));
       list.innerHTML = "";
-
-      if (!current.length) {
-        empty.style.display = "block";
-        return;
-      }
-
+      if (!current.length) { empty.style.display = "block"; return; }
       empty.style.display = "none";
-
       current.forEach(quote => {
-        const card = document.createElement("article");
-        card.className = "current-quote-card";
+        const card = document.createElement("article");card.className="current-quote-card";
         const statusClass = quote.status === "quote_ready" ? " ready" : quote.status === "approved" ? " approved" : "";
-        const total = Number(quote.quoted_total || 0) > 0 ? formatMoney(quote.quoted_total) : "Pricing in progress";
+        const total = Number(quote.quoted_total || 0) > 0 ? quoteMoney(quote.quoted_total) : "Pricing in progress";
         const buttonLabel = quote.status === "quote_ready" ? "REVIEW & APPROVE" : "VIEW QUOTE";
-
-        card.innerHTML = `
-          <div class="current-quote-main">
-            <div class="current-quote-number">${escapeHtml(quote.request_number || "Promotional Quote")}</div>
-            <div class="current-quote-project">${escapeHtml(quote.project_name || "Promotional Request")}</div>
-          </div>
-          <div class="current-quote-status${statusClass}">${quoteStatusLabel(quote.status)}</div>
-          <div class="current-quote-total">${total}</div>
-          <button class="current-quote-button" type="button">${buttonLabel}</button>
-        `;
-
-        card.querySelector("button").onclick = () => {
-          const target = new URL("./promotional.html", window.location.href);
-          target.searchParams.set("organization_id", ORGANIZATION.id);
-          target.searchParams.set("open_quotes", "1");
-          target.searchParams.set("quote_id", quote.id);
-          window.open(target.toString(), "_blank", "noopener,noreferrer");
-        };
+        card.innerHTML = `<div class="current-quote-main"><div class="current-quote-number">${escapeHtml(quote.request_number || "Promotional Quote")}</div><div class="current-quote-project">${escapeHtml(quote.project_name || "Promotional Request")}</div></div><div class="current-quote-status${statusClass}">${quoteStatusLabel(quote.status)}</div><div class="current-quote-total">${total}</div><button class="current-quote-button" type="button">${buttonLabel}</button>`;
+        card.querySelector("button").onclick = () => openQuoteReview(quote.id);
         list.appendChild(card);
       });
     }
 
     async function loadQuoteApprovalAction() {
       try {
-        const response = await fetch(
-          QUOTE_API +
-          "?organization_id=" +
-          encodeURIComponent(ORGANIZATION.id)
-        );
-
+        const response = await fetch(QUOTE_API + "?organization_id=" + encodeURIComponent(ORGANIZATION.id));
         const payload = await response.json();
-
-        if (!response.ok || !payload.ok) {
-          return;
-        }
-
-        const allQuotes = payload.quotes || [];
-        renderCurrentQuotes(allQuotes);
-
-        const readyQuotes = allQuotes.filter(
-          quote => quote.status === "quote_ready"
-        );
-
-        const actionBox =
-          document.getElementById("quoteApprovalAction");
-
-        if (!readyQuotes.length) {
-          actionBox.classList.remove("show");
-          return;
-        }
-
+        if (!response.ok || !payload.ok) throw new Error(payload.error || "Unable to load quotes");
+        latestOrganizationQuotes = (payload.quotes || []).filter(q => !q.organization_id || q.organization_id === ORGANIZATION.id);
+        renderCurrentQuotes(latestOrganizationQuotes);
+        const readyQuotes = latestOrganizationQuotes.filter(q => q.status === "quote_ready");
+        const actionBox = document.getElementById("quoteApprovalAction");
+        if (!readyQuotes.length) {actionBox.classList.remove("show");return;}
         actionBox.classList.add("show");
-
+        const title = document.getElementById("quoteApprovalTitle");
+        const detail = document.getElementById("quoteApprovalText");
         if (readyQuotes.length === 1) {
-          const quote = readyQuotes[0];
-
-          document.getElementById(
-            "quoteApprovalTitle"
-          ).textContent =
-            quote.request_number +
-            " is ready for your approval";
-
-          document.getElementById(
-            "quoteApprovalText"
-          ).textContent =
-            "AI Apparel has completed pricing for " +
-            (quote.project_name || "your Promotional request") +
-            ". Review the quote and approve it to move forward.";
+          title.textContent = (readyQuotes[0].request_number || "Quote") + " is ready for your approval";
+          detail.textContent = "AI Apparel has completed pricing for " + (readyQuotes[0].project_name || "your Promotional request") + ". Review and approve it to move forward.";
         } else {
-          document.getElementById(
-            "quoteApprovalTitle"
-          ).textContent =
-            readyQuotes.length +
-            " Promotional quotes are ready for your approval";
-
-          document.getElementById(
-            "quoteApprovalText"
-          ).textContent =
-            "AI Apparel has completed pricing. Review your pending quotes and approve the ones you want to move forward.";
+          title.textContent = readyQuotes.length + " Promotional quotes are ready for your approval";
+          detail.textContent = "Review your pending quotes and approve the ones you want to move forward.";
         }
-
-        document.getElementById(
-          "reviewQuoteButton"
-        ).onclick = function() {
-          const target = new URL("./promotional.html", window.location.href);
-          target.searchParams.set("organization_id", ORGANIZATION.id);
-          target.searchParams.set("open_quotes", "1");
-          target.searchParams.set("quote_id", readyQuotes[0].id);
-          window.open(target.toString(), "_blank", "noopener,noreferrer");
-        };
-
-      } catch (error) {
-        console.error(
-          "Quote approval check:",
-          error
-        );
-      }
+        document.getElementById("reviewQuoteButton").onclick = () => openQuoteReview(readyQuotes[0].id);
+      } catch(error) {console.error("Quote approval check:",error);}
     }
-
 
     function renderOrganization() {
 
