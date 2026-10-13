@@ -1882,4 +1882,50 @@ addItem();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 </script>
+<script id="ai-verified-payment-tax-evidence-v1">
+(()=>{
+ const start=()=>{
+  const page=document.getElementById('revenue');
+  if(!page||document.getElementById('ai-verified-tax-evidence'))return;
+  const section=document.createElement('section');section.id='ai-verified-tax-evidence';
+  section.style.cssText='margin:18px 0;padding:18px;border:1px solid #dce6f0;border-radius:12px;background:#fff;color:#18283c';
+  const title=document.createElement('h3');title.textContent='Verified Payments vs. Order Tax Evidence';title.style.margin='0 0 8px';section.append(title);
+  const desc=document.createElement('p');desc.style.cssText='font-size:13px;line-height:1.55;margin:0 0 12px';
+  desc.textContent='Separates tax shown on orders with verified payments from tax on orders without a verified payment. Order tax is not allocated across partial payments or refunds. This is evidence for reconciliation, not sales tax due or a filing-ready report.';section.append(desc);
+  const controls=document.createElement('div');controls.style.cssText='display:flex;gap:10px;flex-wrap:wrap;align-items:center';
+  const year=document.createElement('select');year.setAttribute('aria-label','Verified tax evidence year');year.style.cssText='padding:9px;border-radius:7px';
+  const current=Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric'}).format(new Date()));
+  for(let y=current;y>=2026;y--){const opt=document.createElement('option');opt.value=String(y);opt.textContent=String(y);year.append(opt)}
+  const refresh=document.createElement('button');refresh.type='button';refresh.className='action secondary';refresh.textContent='Check verified-payment tax';
+  controls.append(year,refresh);section.append(controls);
+  const output=document.createElement('div');output.setAttribute('role','status');output.style.marginTop='12px';section.append(output);
+  const money=x=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(x)||0);
+  const load=async()=>{
+   refresh.disabled=true;output.textContent='Checking verified payments and tax records…';
+   try{
+    if(typeof db==='undefined'||!db)throw Error('CRM database connection unavailable');
+    const {data,error}=await db.rpc('ai_financial_verified_tax_evidence',{p_year:Number(year.value)});
+    if(error)throw error;
+    const summary=data?.summary||{},orders=Array.isArray(data?.orders)?data.orders:[];
+    output.replaceChildren();
+    const stats=document.createElement('p');stats.style.cssText='line-height:1.7;font-size:14px';
+    stats.textContent=`Verified paid orders: ${summary.paid_orders??0} | Verified cash: ${money(summary.verified_cash)} | Paid-order tax evidence: ${money(summary.paid_order_tax_evidence)} | Unclassified paid orders: ${summary.unclassified_paid_orders??0} | Missing tax records: ${summary.missing_tax_records??0}`;
+    output.append(stats);
+    if(orders.length){
+     const wrap=document.createElement('div');wrap.style.overflowX='auto';const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';
+     const head=document.createElement('tr');['Paid order','Source','Verified cash','Order tax evidence','Tax status'].forEach(x=>{const th=document.createElement('th');th.textContent=x;th.style.cssText='text-align:left;padding:9px 7px;border-bottom:2px solid #dce6f0';head.append(th)});table.append(head);
+     for(const x of orders){const tr=document.createElement('tr');const vals=[x.source_order_name||x.source_order_id,x.source,money(x.verified_cash),x.missing_tax_record?'Missing record':money(x.tax_collected),x.missing_tax_record?'Missing record':x.tax_status||'Unknown'];
+      for(const val of vals){const td=document.createElement('td');td.textContent=String(val??'');td.style.cssText='padding:8px 7px;border-bottom:1px solid #e8edf4';tr.append(td)}table.append(tr)}wrap.append(table);output.append(wrap);
+    }
+    const warning=document.createElement('p');warning.className='info';warning.textContent='Unpaid order tax may still appear in the separate order-date tax report. Only the verified cash ledger determines received payments. Tax classifications must be reviewed before filing.';output.append(warning);
+   }catch(e){output.textContent='Unable to check verified-payment tax evidence: '+(e?.message||String(e))}
+   finally{refresh.disabled=false}
+  };
+  refresh.addEventListener('click',load);year.addEventListener('change',load);
+  const anchor=document.getElementById('ai-tax-reconciliation')||document.getElementById('rev-tax-panel');
+  if(anchor)anchor.after(section);else page.append(section);
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
 </body></html>
