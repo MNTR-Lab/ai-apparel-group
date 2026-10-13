@@ -878,12 +878,14 @@ async function list(){
  const followUp=state==='Expired'?(workflow?.follow_up_needed?'<div style="margin-top:12px;padding:10px;border-radius:9px;background:#fff1f2;color:#9f1239;font-weight:700">● Customer follow-up needed <button type="button" class="ai-expired-followup" data-id="'+esc(x.id)+'" style="margin-left:8px">Mark Follow-Up Complete</button></div>':'<div style="margin-top:12px;color:#166534">✓ Follow-up completed</div>'):'';
  const replaceAction=state==='Expired'?'<div style="margin-top:10px"><button type="button" class="ai-expired-replace" data-id="'+esc(x.id)+'" style="font-weight:700">Create Replacement Quote</button><span style="margin-left:8px;color:#64748b;font-size:12px">Creates a new Draft with the original items and pricing for your review. No invoice is sent.</span></div>':'';
  const approvalAction=state==='Sent'?'<div style="margin-top:10px"><button type="button" class="ai-generate-approval" data-id="'+esc(x.id)+'">Generate Secure Customer Approval Link</button><span style="margin-left:8px;color:#64748b;font-size:12px">For internal testing; does not send an email or invoice.</span></div>':'';
+ const invoiceWorkflow=trackingMap.get(x.id)||{};
+ const invoiceAction=state==='Approved'?'<div style="margin-top:10px;padding:10px;border:1px solid #d9e5f1;border-radius:8px"><strong>Company Store invoice:</strong> '+esc(invoiceWorkflow.invoice_status||'NOT_SENT')+' '+(invoiceWorkflow.shopify_invoice_url?'<a href="'+esc(invoiceWorkflow.shopify_invoice_url)+'" target="_blank" rel="noopener noreferrer">View invoice</a>':'')+(!invoiceWorkflow.shopify_draft_order_id&&(!invoiceWorkflow.invoice_status||invoiceWorkflow.invoice_status==='NOT_SENT')?'<div style="margin-top:8px"><button type="button" class="ai-create-shopify-draft" data-id="'+esc(x.id)+'">Create Shopify Draft — No Email</button></div>':'')+'</div>':'';
  const date=x.created_at?new Date(x.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
  const details=(x.items||[]).map(i=>'<div class="ai-sq-line"><span>'+esc(i.description)+(i.variant_title?' · '+esc(i.variant_title):'')+'</span><span>'+esc(i.quantity)+' × '+money(i.unit_price)+'</span></div>').join('');
  return '<article class="ai-sq-card"><div class="ai-sq-top"><div><div class="ai-sq-number">'+esc(x.quote_number)+' <span class="ai-sq-date">'+esc(date+expiry)+'</span></div><h4>'+esc(x.title)+'</h4><div class="ai-sq-customer">'+esc(x.customer_name||x.business_name||'Unassigned customer')+(x.customer_name&&x.business_name?' · '+esc(x.business_name):'')+'</div></div><span class="ai-sq-badge '+badgeClass+'">'+esc(state)+'</span></div>'+ 
  '<div class="ai-sq-middle"><div><span class="ai-sq-caption">ESTIMATE TOTAL</span><strong class="ai-sq-price">'+money(x.total)+'</strong></div><div><span class="ai-sq-caption">PRODUCTION JOB</span><strong class="ai-sq-job">'+esc(x.job_number||'Not created')+'</strong></div></div>'+ 
  '<details class="ai-sq-details"><summary>View '+(x.items||[]).length+' line items &amp; specifications <span>⌄</span></summary><div class="ai-sq-lines">'+(details||'<p>No line items</p>')+(x.notes?'<p class="ai-sq-notes">'+esc(x.notes)+'</p>':'')+'</div></details>'+ 
- '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:['Draft','Sent','Changes Requested','Approved','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
+ '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:['Draft','Sent','Changes Requested','Approved','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+invoiceAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
  }).join('');
  const active=data.filter(x=>x.status!=='Approved'&&x.status!=='Expired');
  const expired=data.filter(x=>x.status==='Expired');
@@ -900,6 +902,21 @@ async function list(){
  '<details id="ai-archived-quote-details" class="ai-quote-fold ai-quote-archive-section" '+(openArchive?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Archived Quotes</strong><span class="ai-quote-fold-count">'+archived.length+' approved</span></summary><div class="ai-quote-fold-content"><p class="info">Approved quotes are moved here automatically. Their artwork and production job links remain available.</p><div class="ai-saved-quotes-grid">'+(archived.length?renderCards(archived):'<p class="info">No approved quotes yet.</p>')+'</div></div></details>';
 }
 q('ai-quotes-list').addEventListener('click',async e=>{
+ const invoiceBtn=e.target.closest('.ai-create-shopify-draft');
+ if(invoiceBtn){
+  if(!confirm('Create a draft invoice in Shopify? This will NOT email the customer.'))return;
+  invoiceBtn.disabled=true;
+  try{
+   const {data:sessionData,error:sessionError}=await db.auth.getSession();
+   if(sessionError||!sessionData?.session?.access_token)throw Error('Please sign in again.');
+   const response=await fetch(CRM_SUPABASE_URL+'/functions/v1/ai-apparel-crm-invoicing',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionData.session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify({action:'create_draft',quote_id:invoiceBtn.dataset.id})});
+   const payload=await response.json();
+   if(!response.ok)throw Error(payload.error+(payload.details?' — '+payload.details:''));
+   alert(payload.status==='EXISTS'?'A Shopify draft already exists.':'Shopify draft created successfully. No email was sent.');
+   await list();
+  }catch(error){alert(error.message);invoiceBtn.disabled=false;}
+  return;
+ }
  const approveBtn=e.target.closest('.ai-generate-approval');
  if(approveBtn){
   if(!confirm('Generate a NEW secure customer link? Any earlier approval link for this quote will stop working. No email will be sent.'))return;
