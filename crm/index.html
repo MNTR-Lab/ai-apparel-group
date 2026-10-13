@@ -367,17 +367,52 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 @media(max-width:980px){.ai-quote-builder-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.ai-quote-redesign .ai-quote-header{padding:17px;flex-wrap:wrap}.ai-quote-builder-grid{padding:10px}.ai-quote-redesign .ai-quote-block{padding:14px}.ai-quote-redesign .ai-quote-field-grid,.ai-quote-redesign .ai-quote-price-fields{grid-template-columns:1fr}.ai-quote-footer{flex-wrap:wrap}.ai-quote-footer button{width:100%}}
 </style>
+<style>
+/* Full-size modal quote builder matching GOAT-style workflow */
+#quotes.ai-quote-redesign .ai-quote-header{display:none}
+#quotes .ai-quote-toolbar{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin:18px 0}
+#quotes .ai-quote-toolbar span{font-size:13px;color:#667b90}
+#quotes .ai-quote-overlay{position:fixed;inset:0;z-index:15000;background:#142239a8;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+#quotes .ai-quote-overlay[hidden]{display:none!important}
+#quotes .ai-quote-modal{width:min(1320px,97vw);height:min(91vh,960px);display:flex;flex-direction:column;background:#f2f4f8;border-radius:15px;overflow:hidden;box-shadow:0 22px 85px #0005}
+#quotes .ai-quote-modal-header{background:#19232d;color:#fff;padding:23px 27px;display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex:none}
+#quotes .ai-quote-modal-header span{color:#a6d9e5;font-size:10px;font-weight:800;letter-spacing:1.5px}
+#quotes .ai-quote-modal-header h2{color:#fff;margin:6px 0;font-size:25px}
+#quotes .ai-quote-modal-header p{color:#d3dae2;margin:0;font-size:12px}
+#quotes #ai-close-quote{border:1px solid #8dabc6;border-radius:9px;background:transparent;color:#fff;font-size:23px;width:37px;height:37px;line-height:1}
+#quotes .ai-quote-workspace{overflow-y:auto;flex:1;min-height:0;border:0;border-radius:0}
+#quotes .ai-quote-builder-grid{grid-template-columns:minmax(0,1.55fr) minmax(340px,1fr);gap:18px;padding:22px}
+#quotes .ai-quote-block{padding:22px}
+#quotes .ai-quote-block h3{font-size:16px}
+#quotes .ai-quote-field-grid input,#quotes .ai-quote-field-grid select,#quotes .ai-quote-field-grid textarea,#quotes .ai-quote-price-fields input{font-size:14px;min-height:43px}
+#quotes .ai-quote-artwork-block{background:#19232d;border-color:#19232d;color:#fff}
+#quotes .ai-quote-artwork-block h3{color:#fff}
+#quotes .ai-quote-artwork-block .ai-quote-help{color:#c9d3df}
+#quotes .ai-quote-artwork-block .ai-proof-upload{background:#fff;border-radius:11px;padding:14px}
+#quotes .ai-quote-artwork-notes{display:grid;gap:7px;color:#fff;font-size:12px;font-weight:750;margin:12px 0}
+#quotes .ai-quote-artwork-notes textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #d2dce6;min-height:80px;font:inherit;color:#233548}
+#quotes .ai-quote-summary-items{font-size:12px;color:#53667a;padding:12px 0;border-bottom:1px solid #e5eaf0;line-height:1.8}
+#quotes .ai-quote-footer{position:sticky;bottom:0;z-index:3;padding:15px 22px}
+#quotes .ai-quote-footer-buttons{display:flex;gap:9px}
+#quotes .ai-quote-footer-buttons button{white-space:nowrap}
+#quotes .ai-quote-saved{margin-top:16px}
+@media(max-width:950px){#quotes .ai-quote-builder-grid{grid-template-columns:1fr}#quotes .ai-quote-modal{width:100%;height:95vh}}
+@media(max-width:650px){#quotes .ai-quote-overlay{padding:4px}#quotes .ai-quote-modal-header{padding:15px}#quotes .ai-quote-builder-grid{padding:10px}#quotes .ai-quote-footer{flex-wrap:wrap}#quotes .ai-quote-footer-buttons{width:100%}#quotes .ai-quote-footer-buttons button{flex:1}}
+</style>
 <section id="quotes" class="ai-modern-quotes ai-quote-redesign" hidden>
 <div class="ai-quote-header"><div><span class="ai-quote-eyebrow">AI APPAREL GROUP · QUOTE BUILDER</span><h2>Quotes &amp; Estimates</h2><p>Build a detailed customer quote, attach artwork, and move approved work into production.</p></div><span class="ai-quote-header-chip">Customer estimates</span></div>
+<div class="ai-quote-toolbar"><button type="button" id="ai-open-quote" class="action">+ Create a quote</button><span>Manage drafts and approved customer estimates below.</span></div>
+<div class="ai-quote-overlay" id="ai-quote-overlay" hidden><div class="ai-quote-modal" role="dialog" aria-modal="true" aria-labelledby="ai-quote-dialog-title">
+<div class="ai-quote-modal-header"><div><span>AI APPAREL GROUP · QUOTE BUILDER</span><h2 id="ai-quote-dialog-title">Create a quote</h2><p>Build a professional estimate, add products, and define project requirements.</p></div><button type="button" id="ai-close-quote" aria-label="Close quote builder">×</button></div>
 <div class="ai-quote-workspace">
 <form id="ai-quote-form" class="crm-job-form ai-quote-builder">
-<div class="ai-quote-builder-top"><div><strong>Create a quote</strong><small>Products, customer details, artwork, and a live estimate</small></div><span class="ai-quote-draft-pill">DRAFT</span></div>
+
 <div class="ai-quote-steps"><span><b>1</b> Products</span><span><b>2</b> Project details</span><span><b>3</b> Design &amp; artwork</span><span><b>4</b> Review &amp; save</span></div>
 <div class="ai-quote-builder-grid">
 <div class="ai-quote-main">
 <div class="ai-quote-block"><div class="ai-quote-block-heading"><h3>1. Add Products &amp; Services</h3><span>Itemized pricing</span></div><p class="ai-quote-help">Add store items by description or SKU, or create custom embroidery, screen printing, uniforms, and other services. Live catalog lookup is not connected yet.</p>
 <div id="ai-quote-items"></div><button type="button" id="ai-quote-add-item" class="ai-quote-add-btn">+ Add product or service</button></div>
-<div class="ai-quote-block"><div class="ai-quote-block-heading"><h3>2. Customer &amp; Project Details</h3><span>Quote ownership</span></div>
+<div class="ai-quote-block"><div class="ai-quote-block-heading"><h3>2. Project Details</h3><span>Quote ownership</span></div>
 <div class="ai-quote-field-grid"><label class="ai-quote-wide">Quote title<input name="title" required maxlength="200" placeholder="e.g. Carolina ENT embroidered polos"></label>
 <label class="ai-quote-wide">Find existing customer<input id="ai-quote-customer-search" type="search" placeholder="Search by name or email"></label>
 <label>Customer<select name="customer_id" id="ai-quote-customer"><option value="">No customer selected</option></select></label>
@@ -385,16 +420,43 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <label class="ai-quote-wide">Project specifications &amp; instructions<textarea name="notes" rows="4" placeholder="Sizes, colors, decoration placement, due date, event or season, delivery requirements…"></textarea></label></div></div>
 </div>
 <div class="ai-quote-side">
-<div class="ai-quote-block ai-quote-artwork-block"><div class="ai-quote-block-heading"><h3>3. Design &amp; Artwork</h3></div><p class="ai-quote-help">Attach customer logos, proofs, and mockups. Artwork stays with the saved quote.</p>
-<div class="ai-proof-upload"><div class="ai-proof-symbol">✦</div><div><strong>Artwork attachments</strong><p>PNG, JPG, WebP, or PDF — up to 15 MB per file.</p></div><label class="ai-proof-picker">Choose files<input id="ai-quote-artwork" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple></label><div id="ai-quote-artwork-names" class="ai-proof-names">No artwork selected</div></div></div>
-<div class="ai-quote-block ai-quote-review-block"><div class="ai-quote-block-heading"><h3>4. Review &amp; Save</h3></div><p class="ai-quote-help">Review the estimated charges before saving this draft.</p>
+<div class="ai-quote-block ai-quote-artwork-block"><div class="ai-quote-block-heading"><h3>3. Design &amp; Mockup</h3></div><p class="ai-quote-help">Attach customer logos, proofs, and mockups. Artwork stays with the saved quote.</p>
+<label class="ai-quote-artwork-notes">Artwork notes / mockup instructions<textarea id="ai-quote-artwork-notes" rows="3" placeholder="Logo placement, inspiration, colors, artwork requirements…"></textarea></label><div class="ai-proof-upload"><div class="ai-proof-symbol">✦</div><div><strong>Artwork attachments</strong><p>PNG, JPG, WebP, or PDF — up to 15 MB per file.</p></div><label class="ai-proof-picker">Choose files<input id="ai-quote-artwork" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple></label><div id="ai-quote-artwork-names" class="ai-proof-names">No artwork selected</div></div></div>
+<div class="ai-quote-block ai-quote-review-block"><div class="ai-quote-block-heading"><h3>4. Review &amp; Save</h3></div><div id="ai-quote-summary-items" class="ai-quote-summary-items">Add products to review your estimate.</div><p class="ai-quote-help">Review the estimated charges before saving this draft.</p>
 <div class="ai-quote-price-fields"><label>Discount ($)<input id="ai-quote-discount" name="discount_amount" type="number" min="0" step=".01" value="0"></label><label>Shipping ($)<input id="ai-quote-shipping" name="shipping_amount" type="number" min="0" step=".01" value="0"></label><label>Estimated tax ($)<input id="ai-quote-tax" name="tax_amount" type="number" min="0" step=".01" value="0"></label></div>
 <div id="ai-quote-totals" class="ai-quote-grand-total" aria-live="polite">Subtotal: $0.00 | Total: $0.00</div><p class="ai-quote-tax-note">Tax is an estimate entered for this quote; final tax is determined at invoicing.</p></div>
 </div></div>
-<div class="ai-quote-footer"><span>Quotes are saved as drafts until reviewed and approved.</span><button class="action" type="submit">Save Draft Quote</button></div>
-</form></div>
+<div class="ai-quote-footer"><span>Quotes are saved as drafts until reviewed and approved.</span><div class="ai-quote-footer-buttons"><button type="button" id="ai-cancel-quote" class="action secondary">Cancel</button><button class="action" type="submit">Save Draft Quote</button></div></div>
+</form></div></div></div>
 <div class="panel ai-quote-panel ai-quote-saved"><div id="ai-quotes-list">Loading…</div></div>
 </section>
+<script>
+/* Quote dialog: presentation only. Existing quote save, artwork and approval handlers remain authoritative. */
+(function(){
+ const get=id=>document.getElementById(id), overlay=get('ai-quote-overlay'),form=get('ai-quote-form');
+ if(!overlay||!form)return;
+ const open=()=>{overlay.hidden=false;document.body.style.overflow='hidden';get('ai-close-quote').focus();updateSummary()};
+ const close=()=>{overlay.hidden=true;document.body.style.overflow=''};
+ get('ai-open-quote').addEventListener('click',open);
+ get('ai-close-quote').addEventListener('click',close);
+ get('ai-cancel-quote').addEventListener('click',close);
+ overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)close()});
+ function updateSummary(){
+  const rows=[...get('ai-quote-items').querySelectorAll('.ai-quote-row')];
+  const result=rows.map(r=>{
+   const name=r.querySelector('.qi-description')?.value||r.querySelector('[name="description"]')?.value||'Product or service';
+   const qty=Number(r.querySelector('.qi-quantity')?.value||r.querySelector('[name="quantity"]')?.value||1);
+   const price=Number(r.querySelector('.qi-price')?.value||r.querySelector('[name="unit_price"]')?.value||0);
+   return {name,qty,price};
+  });
+  get('ai-quote-summary-items').textContent=result.length?result.map(x=>x.name+' × '+x.qty+' — '+(x.qty*x.price).toLocaleString('en-US',{style:'currency',currency:'USD'})).join('  ·  '):'Add products to review your estimate.';
+ }
+ form.addEventListener('input',updateSummary);
+ get('ai-quote-add-item').addEventListener('click',()=>setTimeout(updateSummary,0));
+ form.addEventListener('submit',()=>{setTimeout(()=>{if(form.querySelector('button[type="submit"]')?.disabled===false&&form.querySelectorAll('.ai-quote-row').length===1&&form.querySelector('input[name="title"]')?.value==='')close()},1800)});
+})();
+</script>
 <section id="jobs" hidden><h2>Jobs & Projects</h2><p class="lead">Create production job records and associate them with online customers, business accounts, and verified Shopify orders.</p><div class="panel"><h3>Create production job</h3><form id="crm-job-form" class="crm-job-form"><label>Job title<input name="title" placeholder="e.g. Carolina ENT embroidered polos" required maxlength="200"></label><label>Online customer<input type="search" id="crm-job-customer-search" placeholder="Search customer name or email…" autocomplete="off"><select name="customer_id" id="crm-job-customer"><option value="">No customer selected</option></select><small id="crm-job-customer-help" style="font-weight:400;color:#65788c">Type a name or email to find a customer.</small></label><label>Business account<select name="business_id" id="crm-job-business"><option value="">No business selected</option></select></label><label>Shopify order ID (optional)<input name="shopify_order_id" placeholder="gid://shopify/Order/…" autocomplete="off"></label><button type="submit" class="action">Create Job</button></form><p class="info">Order IDs must exist in the imported Shopify order index. If a business is selected, the order must have an approved association with it.</p></div><div class="panel"><h3>Production jobs</h3><div id="crm-jobs-list">Loading…</div></div></section>
 <section id="shipping" hidden><h2>Shipping/Delivery</h2><p class="lead">Jobs move here automatically after every active production stage is completed. Confirm shipment or delivery to archive them.</p><div id="crm-shipping-jobs" class="panel">Loading…</div></section>
 <section id="archivedjobs" hidden><h2>Archived Jobs</h2><p class="lead">Completed shipments and deliveries. Historical records remain available in Jobs &amp; Projects.</p><div id="crm-archived-jobs" class="panel">Loading…</div></section>
