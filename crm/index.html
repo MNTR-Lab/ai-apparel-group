@@ -274,27 +274,44 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 .crm-prod-stage-status{font-size:12px;font-weight:600;color:#53657a;white-space:nowrap}
 .crm-prod-stage>.crm-prod-form{padding:14px 16px;margin:0}
 </style>
+
 <style>
-/* GOAT-inspired Revenue & Accounting styling — AI Apparel data and handlers preserved */
-#revenue{--rev-ink:#23243a;--rev-muted:#73758a;--rev-border:#e6e4ed;--rev-accent:#109488;--rev-bg:#f5f5f9;color:var(--rev-ink)}
-#revenue .rev-hero{background:linear-gradient(115deg,#512678,#683695 55%,#109488);box-shadow:none;border-radius:20px;padding:27px 30px}
-#revenue .rev-eyebrow{color:#d9f6ef;letter-spacing:1.8px}
-#revenue .rev-hero p{color:#f1eaf7}
-#revenue .rev-hero-mark{color:#c8f2eb}
-#revenue .panel{border:1px solid #e6e4ed;border-radius:17px;box-shadow:0 2px 12px #27213c08}
-#revenue .rev-kicker{color:#109488}
-#revenue .rev-section-heading h3{color:#23243a}
-#revenue .rev-pill{background:#e8f6f2;border-color:#d7eee8;color:#087d75}
-#revenue .rev-metrics .card,#revenue .rev-period-card{background:#fff;border:1px solid #e6e4ed;border-radius:16px;box-shadow:none}
-#revenue .rev-metrics .card strong,#revenue .rev-period-card strong{color:#683695}
-#revenue .rev-period-card{border-top:4px solid #109488}
-#revenue .rev-toolbar{background:#fff}
-#revenue input[type=date],#revenue select{border-color:#d9d9e5;background:#fff;color:#23243a;outline-color:#109488}
-#revenue .action:not(.secondary){background:#109488;border-color:#109488;color:white}
-#revenue .action.secondary{background:#fff;border-color:#d9cce7;color:#683695}
-#revenue .rev-acc-panel summary{border-radius:12px}
-#revenue .rev-banner{background:#f8f5fc;border-color:#e8dff1}
-</style></head>
+/* GOAT reporting STRUCTURE, using AI Apparel's existing blue/navy identity. */
+#revenue .rev-layout-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:17px 0 24px}
+#revenue .rev-layout-summary .card{padding:20px;border-radius:15px;background:white;border:1px solid #dfe6ef}
+#revenue .rev-layout-summary label{display:block;font-size:13px;color:#65758a;font-weight:650}
+#revenue .rev-layout-summary strong{display:block;font-size:clamp(21px,2.4vw,29px);color:#006fba;margin:11px 0}
+#revenue .rev-layout-summary small{color:#65758a;font-size:12px}
+#revenue .rev-layout-periods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:15px 0 24px}
+#revenue .rev-layout-period{background:#fff;border:1px solid #dfe6ef;border-top:4px solid #006fba;border-radius:15px;padding:21px;min-width:0}
+#revenue .rev-layout-period:nth-child(2){border-top-color:#cc338b}
+#revenue .rev-layout-period:nth-child(3){border-top-color:#193956}
+#revenue .rev-layout-period .rev-period-top{margin-bottom:10px}
+#revenue .rev-layout-period .rev-period-top .rev-period-icon{display:none}
+#revenue .rev-layout-period .rev-period-type{font-size:11px;letter-spacing:.09em;font-weight:800}
+#revenue .rev-layout-period>label{display:block;font-size:13px;color:#65758a;margin:7px 0}
+#revenue .rev-layout-period>strong{display:block;font-size:23px;color:#193956;margin:9px 0 16px}
+#revenue .rev-layout-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid #e8edf3;padding:10px 0;font-size:13px}
+#revenue .rev-layout-row:last-child{border-bottom:0}
+#revenue .rev-layout-row span{color:#64748b}
+#revenue .rev-layout-row b{font-weight:750;color:#193956;text-align:right;overflow-wrap:anywhere}
+#revenue .rev-layout-tax{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:14px 0 24px}
+#revenue .rev-layout-tax .rev-tax-tile{border:1px solid #dfe6ef;border-radius:15px;background:white;padding:20px;min-width:0}
+#revenue .rev-tax-tile small{display:block;color:#64748b;font-size:13px}
+#revenue .rev-tax-tile strong{display:block;color:#006fba;font-size:clamp(19px,2.2vw,27px);margin:11px 0}
+#revenue .rev-tax-tile span{color:#64748b;font-size:12px}
+#revenue .rev-layout-detail{margin:16px 0;border-radius:15px;overflow:hidden}
+#revenue .rev-layout-detail>summary{cursor:pointer;padding:20px 22px;font-weight:800;color:#193956}
+#revenue .rev-layout-detail>div{padding:0 20px 20px}
+#revenue .rev-layout-detail .rev-accounting-grid{display:block}
+#revenue .rev-layout-detail .rev-accounting-grid>details{margin:14px 0}
+#revenue .rev-layout-tax-note{padding:15px 18px;background:#f4f8fc;border:1px solid #dfe6ef;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:20px}
+#revenue .rev-toolbar{margin-bottom:18px}
+@media(max-width:1050px){#revenue .rev-layout-summary,#revenue .rev-layout-tax{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){#revenue .rev-layout-periods{grid-template-columns:1fr}}
+@media(max-width:550px){#revenue .rev-layout-summary,#revenue .rev-layout-tax{grid-template-columns:1fr}}
+</style>
+</head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
@@ -1554,6 +1571,83 @@ addItem();
  function csv(){const rows=[['Paid date','Order','Transaction ID','Transaction type','Shipping location','Shopify tax authority','Rate','Cash movement','Allocated tax','Exempt flag','Allocation warning']];for(const r of records){if(!r.lines.length)rows.push([r.date.toISOString().slice(0,10),r.name,r.tx,r.kind,r.location,'No tax collected','',r.paid.toFixed(2),'0.00',r.exempt?'Yes':'No',r.estimated?'Review':'']);else for(const l of r.lines)rows.push([r.date.toISOString().slice(0,10),r.name,r.tx,r.kind,r.location,l.title,l.rate??'',r.paid.toFixed(2),l.amount.toFixed(2),r.exempt?'Yes':'No',r.estimated?'Proportional estimate':''])}const contents=rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),url=URL.createObjectURL(new Blob([contents],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='ai-apparel-shopify-tax-jurisdictions-'+currentYear+'-'+$('tax-period').value+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
  $('tax-sync').addEventListener('click',sync);$('tax-refresh').addEventListener('click',refresh);$('tax-export').addEventListener('click',csv);document.querySelectorAll('[data-tax-period]').forEach(card=>{const activate=()=>{$('tax-period').value=card.dataset.taxPeriod;$('tax-period').dispatchEvent(new Event('change'));document.querySelectorAll('[data-tax-period]').forEach(c=>c.setAttribute('aria-pressed',String(c===card)));$('tax-jurisdiction-list').scrollIntoView({behavior:'smooth',block:'nearest'});};card.addEventListener('click',activate);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});});
   $('tax-period').addEventListener('change',render);monthSelect.addEventListener('change',render);$('rev-report-year').addEventListener('change',refresh);$('rev-tax-panel').addEventListener('toggle',()=>{if($('rev-tax-panel').open)refresh()});
+})();
+</script>
+
+<script>
+/* Layout-only adaptation of GOAT Revenue. No Supabase, Shopify, or business logic changes. */
+(()=>{
+ const page=document.getElementById('revenue');if(!page)return;
+ const get=id=>document.getElementById(id);
+ const metrics=page.querySelector('.rev-metrics');
+ if(metrics){metrics.classList.add('rev-layout-summary');}
+ const periodPanel=get('rev-period-panel');
+ const periodGrid=periodPanel?.querySelector('.rev-period-grid');
+ if(periodGrid){
+   periodGrid.classList.add('rev-layout-periods');
+   periodGrid.querySelectorAll('.rev-period-card').forEach(card=>{
+     card.classList.add('rev-layout-period');
+     const ids=[['estimates','Approved estimates'],['count','Quotes created'],['collected','Collected revenue'],['tax','Order tax recorded']];
+     const prefix=card.querySelector('[id$="-period"]')?.id.replace(/^rev-/,'').replace(/-period$/,'');
+     if(!prefix)return;
+     const last=card.querySelector('small:last-child');
+     const rows=document.createElement('div');rows.className='rev-layout-rows';
+     ids.forEach(([suffix,label])=>{
+       const item=get('rev-'+prefix+'-'+suffix);if(!item)return;
+       const row=document.createElement('div');row.className='rev-layout-row';
+       const name=document.createElement('span');name.textContent=label;
+       const value=document.createElement('b');value.append(item);
+       row.append(name,value);rows.append(row);
+     });
+     if(last&&last.textContent.includes('Expenses / Profit')){
+       const row=document.createElement('div');row.className='rev-layout-row';
+       const name=document.createElement('span');name.textContent='Expenses / profit';
+       const value=document.createElement('b');value.append(last);
+       row.append(name,value);rows.append(row);
+     }
+     card.append(rows);
+   });
+ }
+ // Move reporting controls above the three period panels, just as on GOAT.
+ if(periodPanel&&periodGrid){
+   const heading=periodPanel.querySelector('.rev-section-heading');
+   if(heading)heading.remove();
+   periodPanel.classList.add('rev-layout-period-panel');
+ }
+ // GOAT's four-card tax overview, backed by AI Apparel's actual existing figures.
+ const taxHeading=document.createElement('h3');taxHeading.textContent='Sales tax reporting';
+ const taxGrid=document.createElement('div');taxGrid.className='rev-layout-tax';
+ const taxTiles=[
+   ['Taxable sales','tax-sales','Calculated from synced tax details'],
+   ['Non-taxable sales',null,'See detailed tax reconciliation'],
+   ['Sales tax collected','tax-collected','Before allocated refunds'],
+   ['Net sales tax collected','tax-net','Not necessarily tax due or remitted']
+ ];
+ const mirrors=[];
+ taxTiles.forEach(([label,id,note])=>{
+   const tile=document.createElement('div');tile.className='rev-tax-tile';
+   const small=document.createElement('small');small.textContent=label;
+   const strong=document.createElement('strong');strong.textContent='—';
+   const caption=document.createElement('span');caption.textContent=note;
+   tile.append(small,strong,caption);taxGrid.append(tile);
+   if(id){const source=get(id);if(source)mirrors.push([source,strong]);}
+ });
+ const taxNote=document.createElement('div');taxNote.className='rev-layout-tax-note';
+ taxNote.textContent='Tax figures require synchronized Shopify tax detail. Non-taxable sales and tax due cannot be determined from quote estimates; use the detailed filing report for reconciled classifications.';
+ const update=()=>mirrors.forEach(([from,to])=>{to.textContent=from.textContent||'—'});
+ update();
+ const observer=new MutationObserver(update);
+ mirrors.forEach(([source])=>observer.observe(source,{childList:true,characterData:true,subtree:true}));
+ if(periodPanel){periodPanel.after(taxHeading,taxGrid,taxNote);}
+ // Keep all detailed accounting tools intact and accessible, but declutter the main page.
+ const details=document.createElement('details');details.className='panel rev-layout-detail';
+ const summary=document.createElement('summary');summary.textContent='Detailed accounting, sales tax filings, costs & historical imports';
+ const body=document.createElement('div');details.append(summary,body);
+ const register=get('rev-register')?.closest('.panel');
+ const accounting=page.querySelector('.rev-accounting-grid');
+ const csv=get('rev-csv-import');
+ [register,accounting,csv].forEach(node=>{if(node)body.append(node)});
+ page.append(details);
 })();
 </script>
 </body></html>
