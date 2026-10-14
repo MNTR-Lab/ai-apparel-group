@@ -775,36 +775,14 @@ $("business-account-list").addEventListener("click",async e=>{
   if(error)throw Error(error.message);
   if(modal.hidden)return;
   $("crm-profile-title").textContent=data.name;
-  const {data:businessContacts,error:bcError}=await db.rpc('ai_apparel_crm_business_contacts',{p_action:'list',p_business_id:data.id});
-  if(bcError)throw Error(bcError.message);
   const customers=data.customers||[],orders=data.orders||[];
-  const contacts=Array.isArray(businessContacts)?businessContacts:[];
   content.innerHTML=`<div class="crm-business-summary"><div><strong>${customers.length}</strong><small>Linked customers</small></div><div><strong>${orders.length}</strong><small>Approved Shopify orders</small></div><div><strong>${escapeHtml(data.status||"Active")}</strong><small>Account status</small></div></div><h3>Linked customers</h3>`+
   (customers.length?`<div class="crm-business-detail-list">${customers.map(c=>`<div><strong>${escapeHtml(c.name||"Unnamed customer")}</strong><small>${escapeHtml(c.email||"No email")} ${c.verified?" · Verified association":""}</small></div>`).join("")}</div>`:'<p class="info">No customers linked to this organization yet.</p>')+
-  `<div style="margin:18px 0 10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">Business Contacts</h3><button type="button" class="action" id="ai-add-business-contact" data-business-id="${escapeHtml(data.id)}">+ Add Business Contact</button></div>`+
-  (contacts.length?`<div class="crm-business-detail-list">${contacts.map(c=>`<div><strong>${escapeHtml(c.name)}</strong><small>${escapeHtml(c.role||'Contact')} · ${escapeHtml(c.email)}${c.phone?' · '+escapeHtml(c.phone):''}</small></div>`).join('')}</div>`:'<p class="info">No business contacts added yet.</p>')+
   `<h3>Approved Shopify order associations</h3>`+
   (orders.length?`<div class="crm-business-detail-list">${orders.map(o=>`<div><strong>${escapeHtml(o.order_name||("Shopify order "+String(o.order_id||"").split("/").pop()))}</strong><small>${escapeHtml(o.order_date?new Date(o.order_date).toLocaleDateString():"Date not available")}${Array.isArray(o.product_titles)&&o.product_titles.length?" · "+escapeHtml(o.product_titles.join(", ")):""}</small></div>`).join("")}</div>`:'<p class="info">No approved Shopify orders associated with this organization.</p>');
   await appendRelatedJobs({p_customer_id:null,p_business_id:data.id});
 
  }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
-});
-$("crm-profile-content").addEventListener('click',async e=>{
- const btn=e.target.closest('#ai-add-business-contact');if(!btn)return;
- const businessId=btn.dataset.businessId;
- const name=prompt('Business contact — full name:');if(name===null)return;
- if(name.trim().length<2){alert('Please enter a contact name.');return;}
- const email=prompt('Business contact — email address:');if(email===null)return;
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){alert('Please enter a valid email address.');return;}
- const role=prompt('Job title or role (optional):','');if(role===null)return;
- const phone=prompt('Phone number (optional):','');if(phone===null)return;
- btn.disabled=true;
- const {error}=await db.rpc('ai_apparel_crm_business_contacts',{p_action:'add',p_business_id:businessId,p_name:name.trim(),p_email:email.trim(),p_role:role.trim()||null,p_phone:phone.trim()||null});
- btn.disabled=false;
- if(error){alert('Unable to save contact: '+error.message);return;}
- alert('Business contact saved.');
- const original=document.querySelector('#business-account-list [data-business-profile="'+businessId+'"]');
- if(original)original.click();
 });
 document.querySelector('button[data-page="businesses"]').addEventListener("click",()=>loadBusinessAccounts().catch(e=>status(e.message)));
 function jobListMarkup(jobs){
@@ -1299,7 +1277,7 @@ async function list(){
  const expiry=workflow?.expires_at?' · Approval deadline: '+new Date(workflow.expires_at).toLocaleDateString('en-US',{timeZone:'America/New_York'}):'';
  const followUp=state==='Expired'?(workflow?.follow_up_needed?'<div style="margin-top:12px;padding:10px;border-radius:9px;background:#fff1f2;color:#9f1239;font-weight:700">● Customer follow-up needed <button type="button" class="ai-expired-followup" data-id="'+esc(x.id)+'" style="margin-left:8px">Mark Follow-Up Complete</button></div>':'<div style="margin-top:12px;color:#166534">✓ Follow-up completed</div>'):'';
  const replaceAction=state==='Expired'?'<div style="margin-top:10px"><button type="button" class="ai-expired-replace" data-id="'+esc(x.id)+'" style="font-weight:700">Create Replacement Quote</button><span style="margin-left:8px;color:#64748b;font-size:12px">Creates a new Draft with the original items and pricing for your review. No invoice is sent.</span></div>':'';
- const approvalAction=state==='Sent'?'<div style="margin-top:10px"><button type="button" class="ai-email-quote action" data-id="'+esc(x.id)+'">Review &amp; Email Quote</button> <button type="button" class="ai-generate-approval" data-id="'+esc(x.id)+'">Copy Approval Link</button><span style="display:block;margin-top:6px;color:#64748b;font-size:12px">Choose a linked business contact or enter an email before sending.</span></div>':'';
+ const approvalAction=state==='Sent'?'<div style="margin-top:10px"><button type="button" class="ai-generate-approval" data-id="'+esc(x.id)+'">Generate Secure Customer Approval Link</button><span style="margin-left:8px;color:#64748b;font-size:12px">For internal testing; does not send an email or invoice.</span></div>':'';
  const invoiceWorkflow=trackingMap.get(x.id)||{};
  const invoiceAction=state==='Approved'?'<div style="margin-top:10px;padding:10px;border:1px solid #d9e5f1;border-radius:8px"><strong>Company Store invoice:</strong> '+esc(invoiceWorkflow.invoice_status||'NOT_SENT')+' '+(invoiceWorkflow.shopify_invoice_url?'<a href="'+esc(invoiceWorkflow.shopify_invoice_url)+'" target="_blank" rel="noopener noreferrer">View invoice</a>':'')+(!invoiceWorkflow.shopify_draft_order_id&&(!invoiceWorkflow.invoice_status||invoiceWorkflow.invoice_status==='NOT_SENT')?'<div style="margin-top:8px"><button type="button" class="ai-create-shopify-draft" data-id="'+esc(x.id)+'">Create Shopify Draft — No Email</button></div>':'')+'</div>':'';
  const date=x.created_at?new Date(x.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
@@ -1406,44 +1384,6 @@ q('ai-quotes-list').addEventListener('click',async e=>{
    alert(payload.status==='EXISTS'?'A Shopify draft already exists.':'Shopify draft created successfully. No email was sent.');
    await list();
   }catch(error){alert(error.message);invoiceBtn.disabled=false;}
-  return;
- }
- const emailBtn=e.target.closest('.ai-email-quote');
- if(emailBtn){
-  emailBtn.disabled=true;
-  try{
-   const quoteId=emailBtn.dataset.id;
-   const {data:contacts,error:contactError}=await db.rpc('ai_apparel_crm_quote_recipient',{p_action:'contacts',p_quote_id:quoteId});
-   if(contactError)throw Error(contactError.message);
-   const {data:existing,error:existingError}=await db.rpc('ai_apparel_crm_quote_recipient',{p_action:'get',p_quote_id:quoteId});
-   if(existingError)throw Error(existingError.message);
-   const quote=(window.aiCrmSavedQuotes||[]).find(q=>q.id===quoteId);
-   const {data:bc,error:bcError}=await db.rpc('ai_apparel_crm_quote_business_contacts',{p_quote_id:quoteId});
-   if(bcError)throw Error(bcError.message);
-   const businessContacts=Array.isArray(bc)?bc:[];
-   const linked=[...(Array.isArray(contacts)?contacts.filter(c=>c.email).map(c=>({...c,source:'customer'})):[]),...businessContacts];
-   const choices=linked.map((c,i)=>(i+1)+'. '+(c.name||'Contact')+' <'+c.email+'>').join('\n');
-   const selection=prompt('WHO SHOULD RECEIVE THIS QUOTE?\n'+(choices||'No linked contacts found for this business.')+'\n\nEnter a contact number above OR type the recipient email:',existing?.email||'');
-   if(selection===null)return;
-   const picked=/^[1-9]\d*$/.test(selection.trim())?linked[Number(selection.trim())-1]:null;
-   const email=(picked?.email||selection.trim()).toLowerCase();
-   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('Enter a valid email address.');
-   let name=picked?.name||(existing?.email===email?existing?.contact_name||'':'');
-   if(!picked){const n=prompt('Recipient contact name (optional):',name||'');if(n===null)return;name=n.trim();}
-   if(!confirm('SEND QUOTE TO:\n'+email+'\n\n'+(quote?.quote_number||'Quote')+' — '+(quote?.title||'')+'\nTotal: '+money(quote?.total||0)+'\n\nA NEW secure approval link will be created and emailed. Continue?'))return;
-   const {error:saveError}=await db.rpc('ai_apparel_crm_quote_recipient',{p_action:'save',p_quote_id:quoteId,p_email:email,p_contact_name:name||null,p_customer_id:picked?.source==='customer'?picked.id:null});
-   if(saveError)throw Error(saveError.message);
-   const {data:linkData,error:linkError}=await db.rpc('ai_apparel_crm_issue_approval_link',{p_quote_id:quoteId});
-   if(linkError)throw Error(linkError.message);
-   const link=new URL('./quote-approval.html',window.location.href);
-   link.searchParams.set('token',linkData.token);
-   const {data:sessionData,error:sessionError}=await db.auth.getSession();
-   if(sessionError||!sessionData?.session?.access_token)throw Error('Sign in again before sending.');
-   const response=await fetch(CRM_SUPABASE_URL+'/functions/v1/ai-apparel-quote-email',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionData.session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify({quote_id:quoteId,approval_url:link.toString()})});
-   const result=await response.json();
-   if(!response.ok)throw Error((result.error||'Email request failed')+(result.details?' — '+JSON.stringify(result.details):''));
-   alert('Quote email accepted by Resend for '+result.email+'. Message ID: '+result.message_id);
-  }catch(error){alert('Quote email not sent: '+error.message);}finally{emailBtn.disabled=false;}
   return;
  }
  const approveBtn=e.target.closest('.ai-generate-approval');
