@@ -1394,6 +1394,7 @@ q('ai-quotes-list').addEventListener('toggle',async e=>{
  }catch(err){body.textContent='Could not load internal costs: '+err.message}
 },true);
 let aiEditingQuoteId=null;
+let aiOpeningExistingDraft=false;
 async function aiEditDraftQuote(id){
  const quote=(window.aiCrmSavedQuotes||[]).find(x=>x.id===id);
  if(!quote||quote.status!=='Draft')throw Error('Only draft quotes can be edited.');
@@ -1418,13 +1419,29 @@ async function aiEditDraftQuote(id){
  aiEditingQuoteId=id;
  q('ai-quote-dialog-title').textContent='Edit Draft · '+quote.quote_number;
  form.querySelector('button[type="submit"]').textContent='Save Changes';
+ aiOpeningExistingDraft=true;
  q('ai-open-quote').click();
  totals();
 }
 q('ai-open-quote').addEventListener('click',()=>{
- if(aiEditingQuoteId)return;
+ // Editing an existing draft explicitly preserves its loaded values.
+ if(aiOpeningExistingDraft){aiOpeningExistingDraft=false;return;}
+ // The Create a Quote button must never reuse a previously selected draft.
+ aiEditingQuoteId=null;
+ const form=q('ai-quote-form');
+ form.reset();
+ q('ai-quote-customer').value='';
+ q('ai-quote-business').value='';
+ q('ai-quote-discount').value=0;
+ q('ai-quote-shipping').value=0;
+ q('ai-quote-tax').value=0;
+ q('ai-quote-items').innerHTML='';
+ addItem();
+ q('ai-quote-artwork').value='';
+ q('ai-quote-artwork-names').textContent='No artwork selected';
  q('ai-quote-dialog-title').textContent='Create a quote';
- q('ai-quote-form').querySelector('button[type="submit"]').textContent='Save Draft Quote';
+ form.querySelector('button[type="submit"]').textContent='Save Draft Quote';
+ totals();
 });
 q('ai-quotes-list').addEventListener('click',async e=>{
  const b=e.target.closest('.ai-edit-draft-quote');if(!b)return;
