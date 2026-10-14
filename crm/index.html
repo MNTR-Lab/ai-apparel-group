@@ -1351,6 +1351,15 @@ q('ai-quote-form').addEventListener('submit',async e=>{
   if(Number(payload.discount_amount)>subtotal)throw Error('Discount exceeds subtotal.');
   const {data:created,error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'create',p_payload:payload});
   if(error)throw Error(error.message);
+  // Internal-only cost records: separate admin-protected RPC, never part of customer quote payload.
+  const internalCosts=[...q('ai-quote-items').querySelectorAll('.ai-quote-row')].map(row=>({
+   supplier_cost:row.querySelector('.qi-cost').value===''?null:Number(row.querySelector('.qi-cost').value),
+   decoration_cost:Number(row.querySelector('.qi-decoration').value||0),
+   labor_cost:Number(row.querySelector('.qi-labor').value||0),
+   other_cost:Number(row.querySelector('.qi-other').value||0)
+  }));
+  const {error:costError}=await db.rpc('ai_apparel_crm_internal_quote_costs',{p_action:'save',p_quote_id:created.id,p_lines:internalCosts});
+  if(costError){await list();throw Error('Quote '+created.quote_number+' saved, but internal costs could not be saved: '+costError.message+'. Do not resend this quote; review the saved quote first.');}
   if(proofFiles.length){try{await uploadProofs(created.id,proofFiles)}catch(uploadError){await list();throw Error('Quote '+created.quote_number+' was saved, but '+uploadError.message+'. You can attach artwork from Saved Quotes.')}}
   form.reset();q('ai-quote-artwork-names').textContent='No artwork selected';q('ai-quote-items').innerHTML='';addItem();await load();status('Itemized quote saved as Draft.');
  }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
