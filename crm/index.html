@@ -1267,6 +1267,7 @@ async function list(){
  return '<article class="ai-sq-card"><div class="ai-sq-top"><div><div class="ai-sq-number">'+esc(x.quote_number)+' <span class="ai-sq-date">'+esc(date+expiry)+'</span></div><h4>'+esc(x.title)+'</h4><div class="ai-sq-customer">'+esc(x.customer_name||x.business_name||'Unassigned customer')+(x.customer_name&&x.business_name?' · '+esc(x.business_name):'')+'</div></div><span class="ai-sq-badge '+badgeClass+'">'+esc(state)+'</span></div>'+ 
  '<div class="ai-sq-middle"><div><span class="ai-sq-caption">ESTIMATE TOTAL</span><strong class="ai-sq-price">'+money(x.total)+'</strong></div><div><span class="ai-sq-caption">PRODUCTION JOB</span><strong class="ai-sq-job">'+esc(x.job_number||'Not created')+'</strong></div></div>'+ 
  '<details class="ai-sq-details"><summary>View '+(x.items||[]).length+' line items &amp; specifications <span>⌄</span></summary><div class="ai-sq-lines">'+(details||'<p>No line items</p>')+(x.notes?'<p class="ai-sq-notes">'+esc(x.notes)+'</p>':'')+'</div></details>'+ 
+ '<details class="ai-internal-cost-panel" data-id="'+esc(x.id)+'" style="margin:10px 0;padding:12px;border:1px solid #d1dbe7;border-radius:10px;background:#f1f5f9"><summary style="cursor:pointer;font-weight:700">🔒 Internal Cost Breakdown (staff only)</summary><div class="ai-internal-cost-body" style="padding-top:10px">Open to load saved internal costs.</div></details>'+
  '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:['Draft','Sent','Changes Requested','Approved','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+invoiceAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
  }).join('');
  const active=data.filter(x=>x.status!=='Approved'&&x.status!=='Expired');
@@ -1283,6 +1284,31 @@ async function list(){
  '<details id="ai-expired-quote-details" class="ai-quote-fold" '+(openExpired?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Expired Quotes '+(pending?'🔴':'')+'</strong><span class="ai-quote-fold-count">'+expired.length+' expired · '+pending+' follow-up needed</span></summary><div class="ai-quote-fold-content"><div class="ai-saved-quotes-grid">'+(expired.length?renderCards(expired):'<p class="info">No expired quotes.</p>')+'</div></div></details>'+
  '<details id="ai-archived-quote-details" class="ai-quote-fold ai-quote-archive-section" '+(openArchive?'open':'')+'><summary class="ai-quote-fold-title"><span class="ai-quote-fold-chevron" aria-hidden="true">›</span><strong>Archived Quotes</strong><span class="ai-quote-fold-count">'+archived.length+' approved</span></summary><div class="ai-quote-fold-content"><p class="info">Approved quotes are moved here automatically. Their artwork and production job links remain available.</p><div class="ai-saved-quotes-grid">'+(archived.length?renderCards(archived):'<p class="info">No approved quotes yet.</p>')+'</div></div></details>';
 }
+q('ai-quotes-list').addEventListener('toggle',async e=>{
+ const panel=e.target.closest('.ai-internal-cost-panel');
+ if(!panel||!panel.open||panel.dataset.loaded==='yes')return;
+ const body=panel.querySelector('.ai-internal-cost-body');
+ body.textContent='Loading private cost records…';
+ try{
+  const {data,error}=await db.rpc('ai_apparel_crm_internal_quote_costs',{p_action:'get',p_quote_id:panel.dataset.id,p_lines:[]});
+  if(error)throw Error(error.message);
+  const rows=Array.isArray(data)?data:[];
+  const quoteRows=[...panel.closest('.ai-sq-card').querySelectorAll('.ai-sq-line')];
+  let total=0;
+  body.innerHTML=rows.length?rows.map((v,i)=>{
+   const qty=Number(quoteRows[i]?.querySelector('span:last-child')?.textContent?.split(' × ')[0]||0);
+   const supplier=v.supplier_cost==null?null:Number(v.supplier_cost);
+   const decoration=Number(v.decoration_cost||0),labor=Number(v.labor_cost||0),other=Number(v.other_cost||0);
+   const cost=supplier===null?null:(supplier+decoration+labor+other)*qty;
+   if(cost!==null)total+=cost;
+   return '<div style="padding:8px 0;border-bottom:1px solid #cbd5e1"><strong>Line '+(i+1)+'</strong> · Quantity '+qty+
+    '<div>Supplier/unit: '+(supplier===null?'Pending':money(supplier))+' · Decoration/unit: '+money(decoration)+' · Labor/unit: '+money(labor)+' · Other/unit: '+money(other)+'</div>'+
+    '<div>Estimated line cost: '+(cost===null?'Incomplete':money(cost))+'</div></div>';
+  }).join('')+'<p><strong>Known estimated production costs: '+money(total)+'</strong></p><p>Shipping cost pending. Estimates exclude taxes and additional fees.</p>':
+  '<p>No saved internal cost records for this quote.</p>';
+  panel.dataset.loaded='yes';
+ }catch(err){body.textContent='Could not load internal costs: '+err.message}
+},true);
 q('ai-quotes-list').addEventListener('click',async e=>{
  const invoiceBtn=e.target.closest('.ai-create-shopify-draft');
  if(invoiceBtn){
@@ -1365,6 +1391,31 @@ q('ai-quote-form').addEventListener('submit',async e=>{
  }catch(err){status(err.message);alert(err.message)}finally{button.disabled=false}
 });
 q('ai-quote-artwork').addEventListener('change',e=>{const files=[...e.target.files];q('ai-quote-artwork-names').textContent=files.length?files.map(f=>f.name).join(' · '):'No artwork selected';});
+q('ai-quotes-list').addEventListener('toggle',async e=>{
+ const panel=e.target.closest('.ai-internal-cost-panel');
+ if(!panel||!panel.open||panel.dataset.loaded==='yes')return;
+ const body=panel.querySelector('.ai-internal-cost-body');
+ body.textContent='Loading private cost records…';
+ try{
+  const {data,error}=await db.rpc('ai_apparel_crm_internal_quote_costs',{p_action:'get',p_quote_id:panel.dataset.id,p_lines:[]});
+  if(error)throw Error(error.message);
+  const rows=Array.isArray(data)?data:[];
+  const quoteRows=[...panel.closest('.ai-sq-card').querySelectorAll('.ai-sq-line')];
+  let total=0;
+  body.innerHTML=rows.length?rows.map((v,i)=>{
+   const qty=Number(quoteRows[i]?.querySelector('span:last-child')?.textContent?.split(' × ')[0]||0);
+   const supplier=v.supplier_cost==null?null:Number(v.supplier_cost);
+   const decoration=Number(v.decoration_cost||0),labor=Number(v.labor_cost||0),other=Number(v.other_cost||0);
+   const cost=supplier===null?null:(supplier+decoration+labor+other)*qty;
+   if(cost!==null)total+=cost;
+   return '<div style="padding:8px 0;border-bottom:1px solid #cbd5e1"><strong>Line '+(i+1)+'</strong> · Quantity '+qty+
+    '<div>Supplier/unit: '+(supplier===null?'Pending':money(supplier))+' · Decoration/unit: '+money(decoration)+' · Labor/unit: '+money(labor)+' · Other/unit: '+money(other)+'</div>'+
+    '<div>Estimated line cost: '+(cost===null?'Incomplete':money(cost))+'</div></div>';
+  }).join('')+'<p><strong>Known estimated production costs: '+money(total)+'</strong></p><p>Shipping cost pending. Estimates exclude taxes and additional fees.</p>':
+  '<p>No saved internal cost records for this quote.</p>';
+  panel.dataset.loaded='yes';
+ }catch(err){body.textContent='Could not load internal costs: '+err.message}
+},true);
 q('ai-quotes-list').addEventListener('click',async e=>{
  const btn=e.target.closest('.ai-view-proofs');if(!btn)return;
  const target=[...q('ai-quotes-list').querySelectorAll('.ai-proof-list')].find(el=>el.dataset.id===btn.dataset.id);
