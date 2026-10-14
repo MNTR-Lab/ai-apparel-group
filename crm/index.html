@@ -808,7 +808,7 @@ $("business-account-list").addEventListener("click",async e=>{
 });
 document.querySelector('button[data-page="businesses"]').addEventListener("click",()=>loadBusinessAccounts().catch(e=>status(e.message)));
 // Business-contact form is scoped to the existing profile modal; no changes to other page loaders.
-$("crm-profile-content").addEventListener('click',event=>{
+document.addEventListener('click',event=>{
  const section=event.target.closest('.crm-business-contacts');if(!section)return;
  const form=section.querySelector('.ai-business-contact-form');
  if(event.target.closest('.ai-add-business-contact')){
@@ -822,7 +822,7 @@ $("crm-profile-content").addEventListener('click',event=>{
   section.querySelector('.ai-contact-message').textContent='';
  }
 });
-$("crm-profile-content").addEventListener('submit',async event=>{
+document.addEventListener('submit',async event=>{
  const form=event.target.closest('.ai-business-contact-form');if(!form)return;
  event.preventDefault();
  const section=form.closest('.crm-business-contacts');
