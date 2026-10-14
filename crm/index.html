@@ -1161,12 +1161,29 @@ async function aiSsLoadStyle(i){
  const style=p.styleID||p.partNumber||p.styleId;
  const msg=document.getElementById('ai-ss-message'),results=document.getElementById('ai-ss-results');
  if(!style){msg.textContent='Style identifier missing';return}
- msg.textContent='Loading sizes and colors…';
+ msg.textContent='Loading all available colors and sizes…';
  try{
   aiSsProducts=await aiSsFetch({style:String(style)});
-  results.innerHTML=aiSsProducts.slice(0,100).map((v,j)=>'<div style="padding:9px;border:1px solid #e2e8f0;border-radius:8px"><strong>'+aiSsEsc(v.styleName||v.partNumber||p.styleName||'Product')+'</strong> · '+aiSsEsc(v.colorName||v.color||'')+' / '+aiSsEsc(v.sizeName||v.size||'')+' · SKU '+aiSsEsc(v.sku||v.skuID||'')+' · Supplier cost $'+aiSsEsc(v.customerPrice??'—')+' <button type="button" class="ai-quote-add-btn" data-ss-product="'+j+'">Add to quote</button></div>').join('')||'No SKUs found';
-  msg.textContent='Select a size/color. Enter the customer selling price after adding.';
+  const colors=[...new Set(aiSsProducts.map(v=>String(v.colorName||v.color||'Unknown').trim()))].sort((a,b)=>a.localeCompare(b));
+  results.innerHTML='<div style="padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:white">'+
+  '<div style="font-weight:700;margin-bottom:8px">'+aiSsEsc(p.brandName||p.brand||'')+' '+aiSsEsc(p.styleName||p.partNumber||'')+'</div>'+
+  '<label style="display:block;margin:8px 0">Choose color <select id="ai-ss-color" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:7px">'+
+  colors.map(c=>'<option value="'+aiSsEsc(c)+'">'+aiSsEsc(c)+'</option>').join('')+'</select></label>'+
+  '<div id="ai-ss-color-sizes"></div></div>';
+  const picker=document.getElementById('ai-ss-color');
+  picker.addEventListener('change',aiSsRenderSizes);
+  if(colors.some(c=>c.toLowerCase()==='cardinal'))picker.value=colors.find(c=>c.toLowerCase()==='cardinal');
+  aiSsRenderSizes();
+  msg.textContent=colors.length+' colors and '+aiSsProducts.length+' SKUs loaded. Choose a color, then add the size(s) needed.';
  }catch(e){msg.textContent=e.message}
+}
+function aiSsRenderSizes(){
+ const picker=document.getElementById('ai-ss-color'),target=document.getElementById('ai-ss-color-sizes');
+ if(!picker||!target)return;
+ const color=picker.value;
+ const entries=aiSsProducts.map((v,i)=>({v,i})).filter(x=>String(x.v.colorName||x.v.color||'Unknown').trim()===color);
+ target.innerHTML='<div style="font-weight:600;margin:10px 0 6px">Available sizes · '+aiSsEsc(color)+'</div>'+
+ entries.map(({v,i})=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #e2e8f0"><div><strong>'+aiSsEsc(v.sizeName||v.size||'One size')+'</strong><div style="font-size:12px;color:#64748b">SKU '+aiSsEsc(v.sku||v.skuID||'')+' · Supplier cost $'+aiSsEsc(v.customerPrice??'—')+'</div></div><button type="button" class="ai-quote-add-btn" data-ss-product="'+i+'">Add</button></div>').join('')||'<p>No sizes returned for this color.</p>';
 }
 function aiSsAddProduct(i){
  const p=aiSsProducts[i];if(!p)return;
