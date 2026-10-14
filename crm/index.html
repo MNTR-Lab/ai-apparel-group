@@ -1289,10 +1289,21 @@ addItem();
    throw Error('Financial service returned an unexpected response (HTTP '+res.status+'). Check that the ai-apparel-financial-report Edge Function is deployed and responding.');
   }
   if(!res.ok||out.error){
-   const detail=typeof out.error==='string'?out.error:(out.error?.message||out.message||'Financial request failed');
-   if(res.status===404)throw Error('Financial reporting function was not found (404). Deploy ai-apparel-financial-report in Supabase.');
-   if(res.status===401||res.status===403)throw Error('Financial reporting access was denied (HTTP '+res.status+'). Verify your Supabase login and function permissions. '+detail);
-   throw Error(detail+' (HTTP '+res.status+').');
+   const formatError=value=>{
+    if(typeof value==='string')return value;
+    if(value==null)return '';
+    if(typeof value==='object'){
+     const primary=typeof value.message==='string'?value.message:(typeof value.error==='string'?value.error:'');
+     const serialized=JSON.stringify(value);
+     return primary?(serialized&&serialized!=='{}'&&serialized!==JSON.stringify({message:primary})?primary+' | '+serialized:primary):(serialized||'Unknown error');
+    }
+    return String(value);
+   };
+   const detail=formatError(out.error)||formatError(out.message)||'Financial request failed';
+   const extra=out.details?' | Details: '+formatError(out.details):'';
+   if(res.status===404)throw Error('Financial reporting function was not found (404). Deploy ai-apparel-financial-report in Supabase. '+detail+extra);
+   if(res.status===401||res.status===403)throw Error('Financial reporting access was denied (HTTP '+res.status+'). Verify your Supabase login and function permissions. '+detail+extra);
+   throw Error(detail+extra+' (HTTP '+res.status+').');
   }
   return out;
  }
