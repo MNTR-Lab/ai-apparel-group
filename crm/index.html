@@ -1928,4 +1928,77 @@ addItem();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 </script>
+<style id="ai-tax-review-queue-style">
+#ai-tax-review-queue{margin:18px 0;border:1px solid #dce6f0;border-radius:14px;background:#fff;padding:20px;color:#18283c}
+#ai-tax-review-queue .trq-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#ai-tax-review-queue h3{margin:0 0 6px;font-size:19px}
+#ai-tax-review-queue .trq-statgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+#ai-tax-review-queue .trq-stat{border:1px solid #e1e9f2;border-radius:11px;padding:13px;background:#f7fafd}
+#ai-tax-review-queue .trq-stat small{display:block;color:#5d7186}#ai-tax-review-queue .trq-stat strong{font-size:23px;color:#153957}
+#ai-tax-review-queue .trq-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+#ai-tax-review-queue select,#ai-tax-review-queue input,#ai-tax-review-queue textarea{border:1px solid #c9d7e6;border-radius:8px;padding:10px;max-width:100%}
+#ai-tax-review-queue .trq-list{display:grid;gap:8px;margin:14px 0}
+#ai-tax-review-queue .trq-order{border:1px solid #e1e9f2;border-radius:10px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+#ai-tax-review-queue .trq-order small{display:block;color:#64748b;margin-top:4px}
+#ai-tax-review-queue .trq-form{padding:16px;background:#f7fafd;border:1px solid #d9e5f1;border-radius:12px;margin-top:12px}
+#ai-tax-review-queue .trq-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+#ai-tax-review-queue .trq-fields label{font-size:13px;font-weight:650}#ai-tax-review-queue .trq-fields input{display:block;width:100%;margin-top:6px}
+#ai-tax-review-queue .trq-warning{font-size:13px;line-height:1.6;color:#586a7d}
+@media(max-width:700px){#ai-tax-review-queue .trq-statgrid,#ai-tax-review-queue .trq-fields{grid-template-columns:1fr}}
+</style>
+<script id="ai-tax-review-queue-script">
+(()=>{
+ 'use strict';
+ const start=()=>{
+  const page=document.getElementById('revenue');if(!page||document.getElementById('ai-tax-review-queue'))return;
+  const section=document.createElement('section');section.id='ai-tax-review-queue';
+  section.innerHTML=`<div class="trq-head"><div><h3>Sales Tax Review Queue</h3><p class="info">Classify verified paid orders, document exemptions, and review refunds. Unpaid orders are excluded from this review queue.</p></div><span class="rev-pill">ADMIN REVIEW</span></div>
+  <div class="trq-statgrid"><div class="trq-stat"><small>Paid orders awaiting review</small><strong id="trq-pending">—</strong></div><div class="trq-stat"><small>Paid orders reviewed</small><strong id="trq-complete">—</strong></div><div class="trq-stat"><small>Verified paid orders</small><strong id="trq-total">—</strong></div></div>
+  <div class="trq-controls"><label>Year <select id="trq-year"></select></label><label>Show <select id="trq-filter"><option value="pending">Awaiting review</option><option value="reviewed">Reviewed</option><option value="all">All verified paid orders</option></select></label><button type="button" class="action secondary" id="trq-refresh">Refresh review queue</button></div>
+  <p class="info" role="status" id="trq-status">Select Refresh review queue to load records.</p><div class="trq-list" id="trq-list"></div>
+  <form class="trq-form" id="trq-form" hidden><h4 id="trq-form-title">Review sales tax</h4><input type="hidden" id="trq-order"><input type="hidden" id="trq-source">
+  <p id="trq-evidence" class="trq-warning"></p><div class="trq-fields"><label>Taxable merchandise sales ($)<input id="trq-taxable" type="number" min="0" step="0.01" required></label><label>Non-taxable merchandise sales ($)<input id="trq-nontaxable" type="number" min="0" step="0.01" required></label><label>Tax refunded ($)<input id="trq-refunded" type="number" min="0" step="0.01" required></label></div>
+  <label>Review / exemption notes <textarea id="trq-notes" rows="3" maxlength="2000" style="display:block;width:100%;margin:7px 0 12px" placeholder="Explain exemption, tax jurisdiction, refund verification, or outstanding discrepancy" required></textarea></label>
+  <p class="trq-warning">Enter verified merchandise amounts only. Do not automatically classify untaxed orders as exempt. Check shipping tax, jurisdiction, refund evidence, and order subtotal before saving. Saving documents an internal review; it does not file or remit tax.</p>
+  <div class="trq-controls"><button class="action" id="trq-save" type="submit">Save reviewed classification</button><button class="action secondary" id="trq-cancel" type="button">Cancel</button></div></form>`;
+  const anchor=document.getElementById('ai-verified-tax-evidence')||document.getElementById('rev-tax-panel');if(anchor)anchor.after(section);else page.append(section);
+  const $=id=>document.getElementById(id),money=x=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(x)||0);
+  const yearNow=Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric'}).format(new Date()));for(let y=yearNow;y>=2026;y--){$('trq-year').add(new Option(String(y),String(y)));}
+  let rows=[],busy=false,loaded=false;
+  async function rpc(action,payload){const {data,error}=await db.rpc('ai_financial_accounting',{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data||{};}
+  async function load(){if(busy)return;busy=true;$('trq-refresh').disabled=true;$('trq-status').textContent='Loading verified payments and tax reviews…';try{
+   if(typeof db==='undefined'||!db)throw Error('CRM connection unavailable');
+   const year=Number($('trq-year').value);
+   const [ledger,review]=await Promise.all([db.rpc('ai_financial_verified_tax_evidence',{p_year:year}),rpc('tax_list',{year})]);
+   if(ledger.error)throw Error(ledger.error.message);
+   const paid=Array.isArray(ledger.data?.orders)?ledger.data.orders:[],taxes=Array.isArray(review.orders)?review.orders:[];
+   const key=(source,id)=>String(source||'shopify').toLowerCase()+'|'+String(id||'');
+   const map=new Map(taxes.map(t=>[key(t.source,t.order_id),t]));
+   rows=paid.filter(x=>x.source_order_id).map(x=>{
+    const t=map.get(key(x.source,x.source_order_id))||{};
+    return {...x,order_id:String(x.source_order_id),name:x.source_order_name||t.name||x.source_order_id,source:String(x.source||t.source||'shopify').toLowerCase(),review:t,reviewed:!!t.reviewed};
+   });loaded=true;render();
+  }catch(e){$('trq-status').textContent='Review queue unavailable: '+(e.message||String(e));$('trq-list').replaceChildren();}finally{busy=false;$('trq-refresh').disabled=false;}}
+  function render(){const pending=rows.filter(x=>!x.reviewed),reviewed=rows.filter(x=>x.reviewed);$('trq-pending').textContent=pending.length;$('trq-complete').textContent=reviewed.length;$('trq-total').textContent=rows.length;
+   const f=$('trq-filter').value,items=rows.filter(x=>f==='all'||(f==='pending'?!x.reviewed:x.reviewed));$('trq-status').textContent=rows.length+' verified paid order(s) in '+$('trq-year').value+'. '+pending.length+' require classification. Unpaid orders are not shown.';
+   const list=$('trq-list');list.replaceChildren();if(!items.length){const p=document.createElement('p');p.className='info';p.textContent='No verified paid orders match this filter.';list.append(p);return;}
+   for(const x of items){const card=document.createElement('div');card.className='trq-order';const info=document.createElement('div'),name=document.createElement('strong'),meta=document.createElement('small');name.textContent=x.name;meta.textContent=[x.source,'Verified cash '+money(x.verified_cash),x.missing_tax_record?'Missing order tax record':'Order tax evidence '+money(x.tax_collected),x.reviewed?'Reviewed':'Needs review'].join(' · ');info.append(name,meta);const b=document.createElement('button');b.className='action secondary';b.type='button';b.textContent=x.reviewed?'Edit review':'Review order';b.addEventListener('click',()=>edit(x));card.append(info,b);list.append(card);}
+  }
+  function edit(x){$('trq-order').value=x.order_id;$('trq-source').value=x.source;$('trq-form-title').textContent='Tax review — '+x.name;
+   $('trq-taxable').value=x.reviewed?Number(x.review.taxable_sales||0).toFixed(2):'';$('trq-nontaxable').value=x.reviewed?Number(x.review.nontaxable_sales||0).toFixed(2):'';
+   $('trq-refunded').value=x.reviewed?Number(x.review.tax_refunded||0).toFixed(2):'';$('trq-notes').value=x.review.notes||'';
+   $('trq-evidence').textContent='Verified cash '+money(x.verified_cash)+' · Order tax evidence '+(x.missing_tax_record?'MISSING — verify before classifying':money(x.tax_collected))+'. Order tax is not the tax allocated to each payment. Check original merchandise subtotal and refunds.';
+   $('trq-form').hidden=false;$('trq-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  $('trq-form').addEventListener('submit',async e=>{e.preventDefault();const b=$('trq-save');if(b.disabled)return;const x=rows.find(r=>r.order_id===$('trq-order').value&&r.source===$('trq-source').value);if(!x)return;
+   if(x.missing_tax_record){$('trq-status').textContent='Cannot classify this order until its missing tax record is reconciled.';return;}
+   const nums=['taxable','nontaxable','refunded'].map(k=>Number($('trq-'+k).value));if(nums.some(n=>!Number.isFinite(n)||n<0)||!$('trq-notes').value.trim()){ $('trq-status').textContent='Enter verified non-negative amounts and review notes.';return;}
+   b.disabled=true;try{await rpc('tax_save',{source:x.source,order_id:x.order_id,taxable_sales:nums[0].toFixed(2),nontaxable_sales:nums[1].toFixed(2),tax_refunded:nums[2].toFixed(2),notes:$('trq-notes').value.trim()});$('trq-form').hidden=true;await load();$('trq-status').textContent='Review saved. This classification is not a filed sales tax return.';}catch(err){$('trq-status').textContent='Unable to save review: '+(err.message||String(err));}finally{b.disabled=false;}
+  });
+  $('trq-cancel').addEventListener('click',()=>{$('trq-form').hidden=true});$('trq-refresh').addEventListener('click',load);$('trq-filter').addEventListener('change',()=>{if(loaded)render()});$('trq-year').addEventListener('change',load);
+  document.querySelector('[data-page="revenue"]')?.addEventListener('click',()=>{if(!loaded)load()});
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
 </body></html>
