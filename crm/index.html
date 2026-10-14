@@ -461,6 +461,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="ai-quote-main">
 <div class="ai-quote-block"><div class="ai-quote-block-heading"><h3>1. Add Products &amp; Services</h3><span>Itemized pricing</span></div><p class="ai-quote-help">Add store items by description or SKU, or create custom embroidery, screen printing, uniforms, and other services. Search live SAGE/PromoPlace products or add custom products and services. Verify supplier pricing before sending a quote.</p>
 <div id="ai-sage-picker" style="border:1px solid #cbd5e1;border-radius:12px;padding:14px;margin:12px 0;background:#f8fbff"><strong>PromoPlace · SAGE Product Search</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="ai-sage-search" type="search" placeholder="Search promotional products (e.g. tumblers, pens)" style="flex:1;min-width:200px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button id="ai-sage-search-btn" type="button" class="ai-quote-add-btn">Search products</button></div><div id="ai-sage-message" role="status" style="font-size:12px;margin:8px 0;color:#475569">Uses your existing SAGE Connect integration. Searches may consume API credits.</div><div id="ai-sage-results" style="display:grid;gap:8px;max-height:270px;overflow:auto"></div></div>
+<div id="ai-ss-picker" style="border:1px solid #cbd5e1;border-radius:12px;padding:14px;margin:12px 0;background:#f8fbff"><strong>S&amp;S Activewear · Catalog Search</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="ai-ss-search" type="search" placeholder="Search by style, brand or product" style="flex:1;min-width:200px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button id="ai-ss-search-btn" type="button" class="ai-quote-add-btn">Search S&amp;S</button></div><div id="ai-ss-message" role="status" style="font-size:12px;margin:8px 0;color:#475569">Choose a style, then a size/color SKU. Set your own customer selling price.</div><div id="ai-ss-results" style="display:grid;gap:8px;max-height:320px;overflow:auto"></div></div>
 <div id="ai-quote-items"></div><button type="button" id="ai-quote-add-item" class="ai-quote-add-btn">+ Add product or service</button></div>
 <div class="ai-quote-block"><div class="ai-quote-block-heading"><h3>2. Project Details</h3><span>Quote ownership</span></div>
 <div class="ai-quote-field-grid"><label class="ai-quote-wide">Quote title<input name="title" required maxlength="200" placeholder="e.g. Carolina ENT embroidered polos"></label>
@@ -1137,6 +1138,45 @@ async function aiSageSelect(index){
 document.getElementById('ai-sage-search-btn').addEventListener('click',aiSageSearch);
 document.getElementById('ai-sage-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aiSageSearch()}});
 document.getElementById('ai-sage-results').addEventListener('click',e=>{const b=e.target.closest('[data-ai-sage-index]');if(b)aiSageSelect(Number(b.dataset.aiSageIndex))});
+const AI_SS_URL=CRM_SUPABASE_URL+'/functions/v1/ai-apparel-ss-products';
+let aiSsStyles=[],aiSsProducts=[];
+async function aiSsFetch(params){
+ const {data:{session}}=await db.auth.getSession();
+ if(!session)throw Error('Sign in to search S&S');
+ const r=await fetch(AI_SS_URL+'?'+new URLSearchParams(params),{headers:{Authorization:'Bearer '+session.access_token,apikey:CRM_PUBLISHABLE_KEY}});
+ const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'S&S search failed');return Array.isArray(d.items)?d.items:[];
+}
+const aiSsEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function aiSsSearch(){
+ const q=document.getElementById('ai-ss-search').value.trim(),msg=document.getElementById('ai-ss-message'),results=document.getElementById('ai-ss-results');
+ if(!q)return;msg.textContent='Searching S&S styles…';results.innerHTML='';
+ try{
+  aiSsStyles=await aiSsFetch({q});
+  results.innerHTML=aiSsStyles.slice(0,30).map((p,i)=>'<div style="padding:9px;border:1px solid #e2e8f0;border-radius:8px"><strong>'+aiSsEsc(p.brandName||p.brand||'')+' '+aiSsEsc(p.styleName||p.name||p.title||p.partNumber||'Style')+'</strong> · '+aiSsEsc(p.partNumber||p.styleID||'')+' <button type="button" class="ai-quote-add-btn" data-ss-style="'+i+'">View sizes &amp; colors</button></div>').join('')||'No styles found';
+  msg.textContent=aiSsStyles.length+' matching styles.';
+ }catch(e){msg.textContent=e.message}
+}
+async function aiSsLoadStyle(i){
+ const p=aiSsStyles[i];if(!p)return;
+ const style=p.styleID||p.partNumber||p.styleId;
+ const msg=document.getElementById('ai-ss-message'),results=document.getElementById('ai-ss-results');
+ if(!style){msg.textContent='Style identifier missing';return}
+ msg.textContent='Loading sizes and colors…';
+ try{
+  aiSsProducts=await aiSsFetch({style:String(style)});
+  results.innerHTML=aiSsProducts.slice(0,100).map((v,j)=>'<div style="padding:9px;border:1px solid #e2e8f0;border-radius:8px"><strong>'+aiSsEsc(v.styleName||v.partNumber||p.styleName||'Product')+'</strong> · '+aiSsEsc(v.colorName||v.color||'')+' / '+aiSsEsc(v.sizeName||v.size||'')+' · SKU '+aiSsEsc(v.sku||v.skuID||'')+' · Supplier cost $'+aiSsEsc(v.customerPrice??'—')+' <button type="button" class="ai-quote-add-btn" data-ss-product="'+j+'">Add to quote</button></div>').join('')||'No SKUs found';
+  msg.textContent='Select a size/color. Enter the customer selling price after adding.';
+ }catch(e){msg.textContent=e.message}
+}
+function aiSsAddProduct(i){
+ const p=aiSsProducts[i];if(!p)return;
+ const name=p.styleName||p.partNumber||'S&S Apparel',sku=p.sku||p.skuID||'',variant=[p.colorName||p.color,p.sizeName||p.size].filter(Boolean).join(' / ');
+ addItem({item_type:'custom',description:'S&S Activewear · '+name,sku:String(sku),variant_title:variant,quantity:1,unit_price:0});
+ document.getElementById('ai-ss-message').textContent='Added '+name+'. Enter your selling price before saving the quote.';
+}
+document.getElementById('ai-ss-search-btn').addEventListener('click',aiSsSearch);
+document.getElementById('ai-ss-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aiSsSearch()}});
+document.getElementById('ai-ss-results').addEventListener('click',e=>{const b=e.target.closest('[data-ss-style],[data-ss-product]');if(!b)return;if(b.dataset.ssStyle!==undefined)aiSsLoadStyle(Number(b.dataset.ssStyle));else aiSsAddProduct(Number(b.dataset.ssProduct))});
 function addItem(v={}){
  const row=document.createElement('div');row.className='ai-quote-row';
  row.style.cssText='padding:12px;margin:12px 0;border:1px solid #d6dce4;border-radius:10px;background:#fafbfd';
