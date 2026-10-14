@@ -318,6 +318,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
 <nav aria-label="CRM navigation">
 <button class="nav active" data-page="dashboard">◫ &nbsp; Dashboard</button>
+<button class="nav" data-page="emailinbox">✉ &nbsp; Email Inbox <span id="crm-mail-unread" style="float:right"></span></button>
 <button class="nav" data-page="clients">♙ &nbsp; Clients</button>
 <button class="nav" data-page="businesses">▦ &nbsp; Business Accounts</button>
 <button class="nav" data-page="quotes">▤ &nbsp; Quotes & Estimates</button>
@@ -346,6 +347,10 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div id="auth-message" class="info" role="status"></div>
 <button id="logout" class="action secondary" hidden type="button">Sign Out</button>
 </div>
+<section id="emailinbox" hidden><h2>CRM Email Inbox</h2><p class="info">CRM-only correspondence. Existing IONOS mailboxes are not connected.</p>
+<div class="quick"><button class="action" id="crm-mail-inbox">Inbox</button><button class="action secondary" id="crm-mail-sent">Sent</button><button class="action secondary" id="crm-mail-compose-toggle">Compose</button><button class="action secondary" id="crm-mail-refresh">Refresh</button></div>
+<form id="crm-mail-compose" hidden style="margin:15px 0;gap:10px"><input id="crm-mail-to" type="email" placeholder="Recipient email" required><input id="crm-mail-subject" placeholder="Subject" required><textarea id="crm-mail-body" rows="7" placeholder="Message" required></textarea><button class="action" type="submit">Send Email</button></form>
+<p id="crm-mail-status" class="info"></p><div id="crm-mail-list" class="panel">Select Inbox or Sent to load messages.</div><div id="crm-mail-detail" class="panel" hidden></div></section>
 <section id="dashboard"><h2>Operations Overview</h2><p class="lead">Blueprint-style CRM structure customized for AI Apparel Group.</p>
 <div class="grid"><div class="card"><label>Active Clients</label><strong id="stat-clients">—</strong><small>AI Apparel CRM clients</small></div><div class="card"><label>Open Quotes</label><strong id="stat-quotes">—</strong><small>CRM quotes</small></div><div class="card"><label>Active Jobs</label><strong id="stat-jobs">—</strong><small>CRM jobs</small></div><div class="card"><label>Production Tasks</label><strong id="stat-tasks">—</strong><small>CRM tasks</small></div></div>
 <div class="columns"><div class="panel"><h3>Recent Jobs</h3><div class="empty">No live job data is connected yet.</div></div><div class="panel"><h3>Connected Systems Plan</h3><table><tr><td>Blueprint CRM shell</td><td><span class="state green">UI staged</span></td></tr><tr><td>AI Apparel client data</td><td><span class="state">Pending</span></td></tr><tr><td>Shopify order integration</td><td><span class="state">Keep existing</span></td></tr><tr><td>Rewards Portal</td><td><span class="state">Keep existing</span></td></tr></table></div></div>
@@ -573,7 +578,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 </section>
 </div></main></div>
 <script>
-const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",shipping:"Shipping/Delivery",archivedjobs:"Archived Jobs",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts",revenue:"Revenue & Accounting"};
+const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",emailinbox:"Email Inbox",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",shipping:"Shipping/Delivery",archivedjobs:"Archived Jobs",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts",revenue:"Revenue & Accounting"};
 document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
 const page=button.dataset.page;
 document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
@@ -2371,4 +2376,38 @@ addItem();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-</body></html>
+<script>
+(function(){
+const el=id=>document.getElementById(id);let folder="inbox",messages=[];
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function load(){
+ el("crm-mail-status").textContent="Loading...";
+ try{
+ const {data,error}=await db.rpc("ai_apparel_crm_email_inbox",{p_action:"list",p_payload:{folder}});if(error)throw error;
+ messages=data.messages||[];el("crm-mail-unread").textContent=Number(data.unread)>0?"● "+data.unread:"";
+ el("crm-mail-list").innerHTML=messages.length?messages.map(m=>'<button type="button" class="crm-mail-open" data-id="'+esc(m.id)+'" style="display:block;width:100%;text-align:left;padding:14px;border:0;border-bottom:1px solid #dbe5ee;background:transparent;cursor:pointer"><strong>'+esc(m.subject||"(No subject)")+'</strong><small style="display:block">'+esc(folder==="sent"?m.to_email:m.from_email)+' · '+esc(new Date(m.created_at).toLocaleString())+(m.is_read?"":" · Unread")+'</small></button>').join(""):'<p class="info">No '+folder+' messages yet.</p>';
+ el("crm-mail-status").textContent=folder==="inbox"?"Incoming replies require Resend inbound routing to be connected.":"";
+ }catch(e){el("crm-mail-status").textContent="Unable to load: "+e.message;}
+}
+el("crm-mail-inbox").onclick=()=>{folder="inbox";load()};
+el("crm-mail-sent").onclick=()=>{folder="sent";load()};
+el("crm-mail-refresh").onclick=load;
+el("crm-mail-compose-toggle").onclick=()=>{const f=el("crm-mail-compose");f.hidden=!f.hidden;f.style.display=f.hidden?"none":"grid"};
+el("crm-mail-list").addEventListener("click",async e=>{
+ const b=e.target.closest(".crm-mail-open");if(!b)return;const m=messages.find(x=>x.id===b.dataset.id);if(!m)return;
+ el("crm-mail-detail").hidden=false;el("crm-mail-detail").innerHTML='<h3>'+esc(m.subject)+'</h3><p class="info">From: '+esc(m.from_email)+' | To: '+esc(m.to_email)+'</p><pre style="white-space:pre-wrap;font:inherit">'+esc(m.body_text)+'</pre><button class="action crm-mail-reply" type="button">Reply</button>';
+ el("crm-mail-detail").querySelector(".crm-mail-reply").onclick=()=>{const f=el("crm-mail-compose");f.hidden=false;f.style.display="grid";el("crm-mail-to").value=m.from_email;el("crm-mail-subject").value=m.subject.startsWith("Re:")?m.subject:"Re: "+m.subject;el("crm-mail-body").focus()};
+ if(folder==="inbox"){await db.rpc("ai_apparel_crm_email_inbox",{p_action:"read",p_payload:{id:m.id}});load()}
+});
+el("crm-mail-compose").addEventListener("submit",async e=>{
+ e.preventDefault();const btn=e.target.querySelector('[type="submit"]');btn.disabled=true;el("crm-mail-status").textContent="Sending...";
+ try{
+ const {data:{session}}=await db.auth.getSession();if(!session)throw Error("Sign in required");
+ const res=await fetch(CRM_SUPABASE_URL+"/functions/v1/ai-apparel-crm-mail-send",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"apikey":CRM_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({to:el("crm-mail-to").value,subject:el("crm-mail-subject").value,body:el("crm-mail-body").value})});
+ const out=await res.json();if(!res.ok)throw Error(out.error||"Send failed");
+ el("crm-mail-status").textContent="Email accepted by Resend."+(out.logged?"":" Sent history could not be recorded.");e.target.reset();folder="sent";await load();
+ }catch(err){el("crm-mail-status").textContent=err.message}finally{btn.disabled=false}
+});
+document.querySelector('button[data-page="emailinbox"]').addEventListener("click",load);
+})();
+</script></body></html>
