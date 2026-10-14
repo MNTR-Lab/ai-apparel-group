@@ -1190,6 +1190,10 @@ function addItem(v={}){
  '<label>Quantity<input class="qi-quantity" type="number" min=".01" step=".01" value="'+esc(v.quantity||1)+'" required></label>'+
  '<label>Customer selling price ($)<input class="qi-price" type="number" min="0" step=".01" value="'+esc(v.unit_price??0)+'" required></label>'+
  '<label>Supplier unit cost ($) <span style="font-size:11px;color:#64748b">(internal estimate)</span><input class="qi-cost" type="number" min="0" step=".01" placeholder="Not available" value="'+(Number.isFinite(v.supplier_cost)?esc(v.supplier_cost):'')+'"></label>'+
+ '<label>Decoration cost / unit ($)<input class="qi-decoration" type="number" min="0" step=".01" value="'+esc(v.decoration_cost??0)+'"></label>'+
+ '<label>Labor cost / unit ($)<input class="qi-labor" type="number" min="0" step=".01" value="'+esc(v.labor_cost??0)+'"></label>'+
+ '<label>Other cost / unit ($)<input class="qi-other" type="number" min="0" step=".01" value="'+esc(v.other_cost??0)+'"></label>'+
+
  '</div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px"><div><strong class="qi-total">$0.00</strong><div class="qi-margin" style="font-size:12px;color:#475569"></div></div><button type="button" class="qi-remove">Remove</button></div>';
  row.querySelector('.qi-type').value=v.item_type||'custom';
  row.querySelector('.qi-sku').value=v.sku||'';
@@ -1216,11 +1220,24 @@ function totals(){
   if(raw===''||raw==null){el.textContent='Supplier cost not provided — margin unavailable';return}
   const cost=Number(raw);
   if(!Number.isFinite(cost)||cost<0){el.textContent='Enter a valid supplier cost';return}
-  const profit=revenue-(cost*line.quantity);
+  const extra=['.qi-decoration','.qi-labor','.qi-other'].reduce((sum,selector)=>sum+Math.max(0,Number(r.querySelector(selector)?.value||0)),0);
+  const profit=revenue-((cost+extra)*line.quantity);
   const margin=revenue>0?((profit/revenue)*100).toFixed(1)+'%':'—';
-  el.textContent='Internal estimate · Gross profit: '+money(profit)+' · Gross margin: '+margin+' (before decoration, freight, fees and tax)';
+  el.textContent='Internal estimate · Gross profit: '+money(profit)+' · Gross margin: '+margin+' (includes decoration, labor and other unit costs; excludes shipping and tax)';
  });
  q('ai-quote-totals').textContent='Subtotal: '+money(subtotal)+' | Total: '+money(subtotal-discount+shipping+tax);
+ let knownCost=0,missing=0;
+ q('ai-quote-items').querySelectorAll('.ai-quote-row').forEach((r,i)=>{
+   const raw=r.querySelector('.qi-cost')?.value;
+   if(raw===''||raw==null){missing++;return}
+   const unit=Number(raw)+['.qi-decoration','.qi-labor','.qi-other'].reduce((a,sel)=>a+Number(r.querySelector(sel)?.value||0),0);
+   knownCost+=unit*lines[i].quantity;
+ });
+ let summary=q('ai-quote-internal-cost-summary');
+ if(!summary){summary=document.createElement('div');summary.id='ai-quote-internal-cost-summary';summary.style.cssText='margin:12px 0;padding:12px;background:#eef6ff;border:1px solid #cbd5e1;border-radius:10px;font-size:13px';q('ai-quote-totals').insertAdjacentElement('afterend',summary)}
+ const netSales=subtotal-discount,profit=netSales-knownCost;
+ summary.textContent='Internal cost estimate · Known costs: '+money(knownCost)+' · Estimated profit before shipping/tax: '+money(profit)+' · Margin: '+(netSales>0?(profit/netSales*100).toFixed(1)+'%':'—')+(missing?' · '+missing+' line(s) missing product cost':'')+' · Shipping cost pending';
+
 }
 async function customers(term=''){
  const token=++searchToken,select=q('ai-quote-customer'),prev=select.value;
