@@ -1171,7 +1171,9 @@ async function aiSsLoadStyle(i){
 function aiSsAddProduct(i){
  const p=aiSsProducts[i];if(!p)return;
  const name=p.styleName||p.partNumber||'S&S Apparel',sku=p.sku||p.skuID||'',variant=[p.colorName||p.color,p.sizeName||p.size].filter(Boolean).join(' / ');
- addItem({item_type:'custom',description:'S&S Activewear · '+name,sku:String(sku),variant_title:variant,quantity:1,unit_price:0});
+ const rawCost=p.customerPrice??p.wholesalePrice??p.price;
+ const supplierCost=rawCost!==null&&rawCost!==undefined&&rawCost!==''&&Number.isFinite(Number(rawCost))?Number(rawCost):null;
+ addItem({item_type:'custom',description:'S&S Activewear · '+name,sku:String(sku),variant_title:variant,quantity:1,unit_price:0,supplier_cost:supplierCost});
  document.getElementById('ai-ss-message').textContent='Added '+name+'. Enter your selling price before saving the quote.';
 }
 document.getElementById('ai-ss-search-btn').addEventListener('click',aiSsSearch);
@@ -1186,8 +1188,9 @@ function addItem(v={}){
  '<label>SKU<input class="qi-sku" placeholder="Optional"></label>'+
  '<label>Size / Color / Variant<input class="qi-variant" placeholder="Optional"></label>'+
  '<label>Quantity<input class="qi-quantity" type="number" min=".01" step=".01" value="'+esc(v.quantity||1)+'" required></label>'+
- '<label>Unit price ($)<input class="qi-price" type="number" min="0" step=".01" value="'+esc(v.unit_price??0)+'" required></label>'+
- '</div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px"><strong class="qi-total">$0.00</strong><button type="button" class="qi-remove">Remove</button></div>';
+ '<label>Customer selling price ($)<input class="qi-price" type="number" min="0" step=".01" value="'+esc(v.unit_price??0)+'" required></label>'+
+ '<label>Supplier unit cost ($) <span style="font-size:11px;color:#64748b">(internal estimate)</span><input class="qi-cost" type="number" min="0" step=".01" placeholder="Not available" value="'+(Number.isFinite(v.supplier_cost)?esc(v.supplier_cost):'')+'"></label>'+
+ '</div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px"><div><strong class="qi-total">$0.00</strong><div class="qi-margin" style="font-size:12px;color:#475569"></div></div><button type="button" class="qi-remove">Remove</button></div>';
  row.querySelector('.qi-type').value=v.item_type||'custom';
  row.querySelector('.qi-sku').value=v.sku||'';
  row.querySelector('.qi-variant').value=v.variant_title||'';
@@ -1205,7 +1208,18 @@ function items(){return [...q('ai-quote-items').querySelectorAll('.ai-quote-row'
 function totals(){
  const lines=items(),subtotal=lines.reduce((a,b)=>a+Math.round(b.quantity*b.unit_price*100)/100,0);
  const discount=Number(q('ai-quote-discount').value||0),shipping=Number(q('ai-quote-shipping').value||0),tax=Number(q('ai-quote-tax').value||0);
- q('ai-quote-items').querySelectorAll('.ai-quote-row').forEach((r,i)=>r.querySelector('.qi-total').textContent=money(lines[i].quantity*lines[i].unit_price));
+ q('ai-quote-items').querySelectorAll('.ai-quote-row').forEach((r,i)=>{
+  const line=lines[i],revenue=line.quantity*line.unit_price;
+  r.querySelector('.qi-total').textContent=money(revenue);
+  const raw=r.querySelector('.qi-cost')?.value;
+  const el=r.querySelector('.qi-margin');
+  if(raw===''||raw==null){el.textContent='Supplier cost not provided — margin unavailable';return}
+  const cost=Number(raw);
+  if(!Number.isFinite(cost)||cost<0){el.textContent='Enter a valid supplier cost';return}
+  const profit=revenue-(cost*line.quantity);
+  const margin=revenue>0?((profit/revenue)*100).toFixed(1)+'%':'—';
+  el.textContent='Internal estimate · Gross profit: '+money(profit)+' · Gross margin: '+margin+' (before decoration, freight, fees and tax)';
+ });
  q('ai-quote-totals').textContent='Subtotal: '+money(subtotal)+' | Total: '+money(subtotal-discount+shipping+tax);
 }
 async function customers(term=''){
