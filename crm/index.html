@@ -786,7 +786,16 @@ $("business-account-list").addEventListener("click",async e=>{
   contactSection.className='crm-business-contacts';
   contactSection.dataset.businessId=data.id;
   contactSection.style.cssText='margin-top:20px;padding:18px;border:1px solid #dce6f0;border-radius:12px;background:#f8fbff';
-  contactSection.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><h3 style="margin:0">Business Contacts</h3><button type="button" class="action ai-add-business-contact">+ Add Business Contact</button></div><div class="ai-business-contact-list info" style="margin-top:12px">Loading contacts…</div>';
+  contactSection.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><h3 style="margin:0">Business Contacts</h3><button type="button" class="action ai-add-business-contact">+ Add Business Contact</button></div>
+  <form class="ai-business-contact-form" hidden style="margin:14px 0;padding:15px;border:1px solid #d5e3ef;border-radius:10px;background:white">
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+    <label style="display:grid;gap:5px;font-size:12px;font-weight:700">Contact name *<input name="name" required maxlength="150" placeholder="Full name" style="padding:10px;width:100%"></label>
+    <label style="display:grid;gap:5px;font-size:12px;font-weight:700">Email address *<input name="email" type="email" required maxlength="254" placeholder="name@business.com" style="padding:10px;width:100%"></label>
+    <label style="display:grid;gap:5px;font-size:12px;font-weight:700">Job title<input name="role" maxlength="120" placeholder="Purchasing manager" style="padding:10px;width:100%"></label>
+    <label style="display:grid;gap:5px;font-size:12px;font-weight:700">Phone<input name="phone" type="tel" maxlength="50" placeholder="Phone number" style="padding:10px;width:100%"></label>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap"><button type="submit" class="action ai-save-business-contact">Save Contact</button><button type="button" class="action secondary ai-cancel-business-contact">Cancel</button><span class="ai-contact-message" role="status" style="font-size:12px;color:#53657a"></span></div>
+  </form><div class="ai-business-contact-list info" style="margin-top:12px">Loading contacts…</div>`;
   content.appendChild(contactSection);
   try{
    const {data:contacts,error:contactError}=await db.rpc('ai_apparel_crm_business_contacts',{p_action:'list',p_business_id:data.id});
@@ -798,25 +807,42 @@ $("business-account-list").addEventListener("click",async e=>{
  }catch(err){content.innerHTML=`<p class="info">${escapeHtml(err.message)}</p>`}
 });
 document.querySelector('button[data-page="businesses"]').addEventListener("click",()=>loadBusinessAccounts().catch(e=>status(e.message)));
-// Isolated contact action. Errors here cannot interrupt the other CRM page loaders.
-$("crm-profile-content").addEventListener('click',async event=>{
- const button=event.target.closest('.ai-add-business-contact');if(!button)return;
- const section=button.closest('.crm-business-contacts');if(!section)return;
- const name=prompt('Business contact — full name:','');if(name===null)return;
- if(!name.trim()){alert('A contact name is required.');return;}
- const email=prompt('Business contact — email address:','');if(email===null)return;
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){alert('Enter a valid email address.');return;}
- const role=prompt('Job title / role (optional):','');if(role===null)return;
- const phone=prompt('Phone (optional):','');if(phone===null)return;
- button.disabled=true;
+// Business-contact form is scoped to the existing profile modal; no changes to other page loaders.
+$("crm-profile-content").addEventListener('click',event=>{
+ const section=event.target.closest('.crm-business-contacts');if(!section)return;
+ const form=section.querySelector('.ai-business-contact-form');
+ if(event.target.closest('.ai-add-business-contact')){
+  form.hidden=false;
+  section.querySelector('.ai-add-business-contact').hidden=true;
+  form.elements.name.focus();
+ }
+ if(event.target.closest('.ai-cancel-business-contact')){
+  form.reset();form.hidden=true;
+  section.querySelector('.ai-add-business-contact').hidden=false;
+  section.querySelector('.ai-contact-message').textContent='';
+ }
+});
+$("crm-profile-content").addEventListener('submit',async event=>{
+ const form=event.target.closest('.ai-business-contact-form');if(!form)return;
+ event.preventDefault();
+ const section=form.closest('.crm-business-contacts');
+ const save=form.querySelector('.ai-save-business-contact');
+ const message=form.querySelector('.ai-contact-message');
+ const fields=new FormData(form);
+ const name=String(fields.get('name')||'').trim(),email=String(fields.get('email')||'').trim();
+ if(!name||!form.checkValidity()){form.reportValidity();return;}
+ save.disabled=true;message.textContent='Saving contact…';
  try{
-  const {error}=await db.rpc('ai_apparel_crm_business_contacts',{p_action:'add',p_business_id:section.dataset.businessId,p_name:name.trim(),p_email:email.trim(),p_role:role.trim()||null,p_phone:phone.trim()||null});
+  const {error}=await db.rpc('ai_apparel_crm_business_contacts',{p_action:'add',p_business_id:section.dataset.businessId,p_name:name,p_email:email,p_role:String(fields.get('role')||'').trim()||null,p_phone:String(fields.get('phone')||'').trim()||null});
   if(error)throw error;
   const {data:contacts,error:loadError}=await db.rpc('ai_apparel_crm_business_contacts',{p_action:'list',p_business_id:section.dataset.businessId});
   if(loadError)throw loadError;
   section.querySelector('.ai-business-contact-list').innerHTML=(contacts||[]).map(c=>'<div style="padding:10px 0;border-bottom:1px solid #e2e8f0"><strong>'+escapeHtml(c.name)+'</strong> '+(c.role?' · '+escapeHtml(c.role):'')+'<small style="display:block;color:#64748b">'+escapeHtml(c.email)+(c.phone?' · '+escapeHtml(c.phone):'')+'</small></div>').join('');
-  alert('Business contact saved.');
- }catch(error){alert('Unable to save contact: '+error.message)}finally{button.disabled=false}
+  form.reset();form.hidden=true;
+  section.querySelector('.ai-add-business-contact').hidden=false;
+  message.textContent='';
+ }catch(error){message.textContent='Unable to save contact: '+(error.message||String(error));}
+ finally{save.disabled=false;}
 });
 
 function jobListMarkup(jobs){
