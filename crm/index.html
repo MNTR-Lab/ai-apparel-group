@@ -1343,6 +1343,7 @@ async function list(){
  const followUp=state==='Expired'?(workflow?.follow_up_needed?'<div style="margin-top:12px;padding:10px;border-radius:9px;background:#fff1f2;color:#9f1239;font-weight:700">● Customer follow-up needed <button type="button" class="ai-expired-followup" data-id="'+esc(x.id)+'" style="margin-left:8px">Mark Follow-Up Complete</button></div>':'<div style="margin-top:12px;color:#166534">✓ Follow-up completed</div>'):'';
  const replaceAction=state==='Expired'?'<div style="margin-top:10px"><button type="button" class="ai-expired-replace" data-id="'+esc(x.id)+'" style="font-weight:700">Create Replacement Quote</button><span style="margin-left:8px;color:#64748b;font-size:12px">Creates a new Draft with the original items and pricing for your review. No invoice is sent.</span></div>':'';
  const approvalAction=state==='Sent'?'<div style="margin-top:10px"><button type="button" class="ai-send-quote-email action" data-id="'+esc(x.id)+'">Review &amp; Email Quote</button> <button type="button" class="ai-generate-approval" data-id="'+esc(x.id)+'">Copy Approval Link</button></div>':'';
+ const approveButton=state==='Sent'||state==='Changes Requested'?'<button type="button" class="ai-approve-quote action" data-id="'+esc(x.id)+'" style="margin-top:10px">Approve Quote &amp; Create Job</button>':'';
  const invoiceWorkflow=trackingMap.get(x.id)||{};
  const invoiceAction=state==='Approved'?'<div style="margin-top:10px;padding:10px;border:1px solid #d9e5f1;border-radius:8px"><strong>Company Store invoice:</strong> '+esc(invoiceWorkflow.invoice_status||'NOT_SENT')+' '+(invoiceWorkflow.shopify_invoice_url?'<a href="'+esc(invoiceWorkflow.shopify_invoice_url)+'" target="_blank" rel="noopener noreferrer">View invoice</a>':'')+(!invoiceWorkflow.shopify_draft_order_id&&(!invoiceWorkflow.invoice_status||invoiceWorkflow.invoice_status==='NOT_SENT')?'<div style="margin-top:8px"><button type="button" class="ai-create-shopify-draft" data-id="'+esc(x.id)+'">Create Shopify Draft — No Email</button></div>':'')+'</div>':'';
  const date=x.created_at?new Date(x.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
@@ -1351,8 +1352,8 @@ async function list(){
  '<div class="ai-sq-middle"><div><span class="ai-sq-caption">ESTIMATE TOTAL</span><strong class="ai-sq-price">'+money(x.total)+'</strong></div><div><span class="ai-sq-caption">PRODUCTION JOB</span><strong class="ai-sq-job">'+esc(x.job_number||'Not created')+'</strong></div></div>'+ 
  '<details class="ai-sq-details"><summary>View '+(x.items||[]).length+' line items &amp; specifications <span>⌄</span></summary><div class="ai-sq-lines">'+(details||'<p>No line items</p>')+(x.notes?'<p class="ai-sq-notes">'+esc(x.notes)+'</p>':'')+'</div></details>'+ 
  '<details class="ai-internal-cost-panel" data-id="'+esc(x.id)+'" style="margin:10px 0;padding:12px;border:1px solid #d1dbe7;border-radius:10px;background:#f1f5f9"><summary style="cursor:pointer;font-weight:700">🔒 Internal Cost Breakdown (staff only)</summary><div class="ai-internal-cost-body" style="padding-top:10px">Open to load saved internal costs.</div></details>'+
- '<div style="margin:10px 0">'+(state==='Draft'?'<button type="button" class="ai-edit-draft-quote action secondary" data-id="'+esc(x.id)+'">Edit Draft Quote</button>':'')+'</div>'+ 
- '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:['Draft','Sent','Changes Requested','Approved','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+invoiceAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
+ '<div style="margin:10px 0"><button type="button" class="ai-view-quote action secondary" data-id="'+esc(x.id)+'">View Full Quote</button> '+approveButton+' '+(state==='Draft'?'<button type="button" class="ai-edit-draft-quote action secondary" data-id="'+esc(x.id)+'">Edit Draft Quote</button>':'')+'</div>'+ 
+ '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:state==='Approved'?['Approved']:['Draft','Sent','Changes Requested','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+invoiceAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
  }).join('');
  const active=data.filter(x=>x.status!=='Approved'&&x.status!=='Expired');
  const expired=data.filter(x=>x.status==='Expired');
@@ -1606,9 +1607,34 @@ q('ai-quotes-list').addEventListener('change',async e=>{
  const input=e.target.closest('.ai-attach-proof');if(!input)return;
  try{const files=[...input.files];if(!files.length)return;validateProofFiles(files);input.disabled=true;await uploadProofs(input.dataset.id,files);const target=[...q('ai-quotes-list').querySelectorAll('.ai-proof-list')].find(el=>el.dataset.id===input.dataset.id);await viewProofs(input.dataset.id,target);status('Artwork attached to quote.')}catch(err){status(err.message);alert(err.message)}finally{input.disabled=false;input.value=''}
 });
+q('ai-quotes-list').addEventListener('click',async e=>{
+ const view=e.target.closest('.ai-view-quote');
+ if(!view)return;
+ const quote=(window.aiCrmSavedQuotes||[]).find(x=>String(x.id)===String(view.dataset.id));
+ if(!quote){alert('Quote details are not loaded. Refresh Quotes and try again.');return;}
+ const old=document.getElementById('ai-quote-readonly-modal');if(old)old.remove();
+ const modal=document.createElement('div');modal.id='ai-quote-readonly-modal';modal.className='crm-modal';
+ const lines=(quote.items||[]).map(i=>'<tr><td>'+esc(i.description||i.product_name||'Item')+(i.variant_title?'<br><small>'+esc(i.variant_title)+'</small>':'')+(i.specifications?'<br><small>'+esc(typeof i.specifications==='string'?i.specifications:JSON.stringify(i.specifications))+'</small>':'')+'</td><td>'+esc(i.quantity??'')+'</td><td>'+money(i.unit_price)+'</td><td>'+money(Number(i.quantity||0)*Number(i.unit_price||0))+'</td></tr>').join('');
+ modal.innerHTML='<div class="crm-modal-backdrop"></div><div class="crm-modal-panel" role="dialog" aria-modal="true" aria-label="Quote details" style="width:min(960px,100%)"><div class="crm-modal-header"><div><span class="crm-eyebrow">READ-ONLY QUOTE DETAILS</span><h2>'+esc(quote.quote_number||'Quote')+'</h2><p>'+esc(quote.title||'')+'</p></div><button class="crm-modal-close" type="button" aria-label="Close">×</button></div><div class="crm-profile-grid"><div><small>Customer</small><strong>'+esc(quote.customer_name||quote.business_name||'Unassigned')+'</strong></div><div><small>Status</small><strong>'+esc(quote.status||'Draft')+'</strong></div><div><small>Production job</small><strong>'+esc(quote.job_number||'Not created')+'</strong></div><div><small>Total</small><strong>'+money(quote.total)+'</strong></div></div><div style="overflow-x:auto"><table><thead><tr><th>Product / Specifications</th><th>Quantity</th><th>Unit price</th><th>Line total</th></tr></thead><tbody>'+(lines||'<tr><td colspan="4">No items recorded</td></tr>')+'</tbody></table></div><div style="text-align:right;margin-top:16px;line-height:1.9"><div>Subtotal: '+money(quote.subtotal)+'</div><div>Discount: '+money(quote.discount_amount)+'</div><div>Shipping: '+money(quote.shipping_amount)+'</div><div>Tax: '+money(quote.tax_amount)+'</div><strong>Total: '+money(quote.total)+'</strong></div>'+(quote.notes?'<div class="crm-job-quote-notes"><strong>Quote notes</strong><p>'+esc(quote.notes)+'</p></div>':'')+'<p class="info">This view does not edit or approve the quote. Artwork can be opened using View artwork on its quote card.</p></div>';
+ document.body.appendChild(modal);
+ const close=()=>modal.remove();modal.querySelector('.crm-modal-close').addEventListener('click',close);modal.querySelector('.crm-modal-backdrop').addEventListener('click',close);
+ modal.querySelector('.crm-modal-close').focus();
+});
+q('ai-quotes-list').addEventListener('click',async e=>{
+ const b=e.target.closest('.ai-approve-quote');if(!b)return;
+ const quote=(window.aiCrmSavedQuotes||[]).find(x=>String(x.id)===String(b.dataset.id));
+ if(!quote||!['Sent','Changes Requested'].includes(quote.status)){alert('This quote is not eligible for approval.');return;}
+ if(!confirm('APPROVE '+(quote.quote_number||'this quote')+' and create its production job? This is not a draft or edit action.'))return;
+ b.disabled=true;
+ try{
+  const {error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'status',p_payload:{id:b.dataset.id,status:'Approved'}});
+  if(error)throw Error(error.message);
+  await list();await loadProductionJobs();status('Quote approved and production jobs refreshed.');
+ }catch(err){alert('Approval failed: '+err.message);await list()}finally{b.disabled=false}
+});
 q('ai-quotes-list').addEventListener('change',async e=>{
  const sel=e.target.closest('.ai-quote-status');if(!sel)return;
- const next=sel.value;if(next==='Approved'&&!confirm('Approve quote and create the linked production job?')){await list();return;}
+ const next=sel.value;if(next==='Approved'){await list();return;}
  sel.disabled=true;
  try{const {error}=await db.rpc('ai_apparel_crm_quotes',{p_action:'status',p_payload:{id:sel.dataset.id,status:next}});if(error)throw Error(error.message);await list();if(next==='Approved'){await loadProductionJobs();status('Quote approved; linked job created.')}else status('Quote status updated.');}
  catch(err){status(err.message);alert(err.message);await list();}
