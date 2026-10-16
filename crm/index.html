@@ -1475,7 +1475,7 @@ q('ai-quotes-list').addEventListener('click',async e=>{
   const {data,error}=await db.rpc('ai_apparel_crm_issue_approval_link',{p_quote_id:approveBtn.dataset.id});
   approveBtn.disabled=false;
   if(error){alert(error.message);return;}
-  const link=new URL('./quote-approval.html',window.location.href);
+  const link=new URL('https://ai-apparel-group.pages.dev/crm/quote-approval.html');
   link.searchParams.set('token',data.token);
   const value=link.toString();
   try{await navigator.clipboard.writeText(value);alert('Approval link copied to clipboard. This is a secure, single-use link. Use it for testing only until invoicing is connected.');}
@@ -1534,7 +1534,7 @@ q('ai-quotes-list').addEventListener('click',async event=>{
   if(saveError)throw saveError;
   const {data:approval,error:approvalError}=await db.rpc('ai_apparel_crm_issue_approval_link',{p_quote_id:quoteId});
   if(approvalError)throw approvalError;
-  const approvalUrl=new URL('./quote-approval.html',window.location.href);
+  const approvalUrl=new URL('https://ai-apparel-group.pages.dev/crm/quote-approval.html');
   approvalUrl.searchParams.set('token',approval.token);
   const {data:sessionData,error:sessionError}=await db.auth.getSession();
   if(sessionError||!sessionData?.session?.access_token)throw Error('Session expired. Sign in again.');
