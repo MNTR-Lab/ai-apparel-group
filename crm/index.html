@@ -1345,7 +1345,7 @@ async function list(){
  const approvalAction=state==='Sent'?'<div style="margin-top:10px"><button type="button" class="ai-send-quote-email action" data-id="'+esc(x.id)+'">Review &amp; Email Quote</button> <button type="button" class="ai-generate-approval" data-id="'+esc(x.id)+'">Copy Approval Link</button></div>':'';
  const approveButton=state==='Sent'||state==='Changes Requested'?'<button type="button" class="ai-approve-quote action" data-id="'+esc(x.id)+'" style="margin-top:10px">Approve Quote &amp; Create Job</button>':'';
  const invoiceWorkflow=trackingMap.get(x.id)||{};
- const invoiceAction=state==='Approved'?'<div style="margin-top:10px;padding:10px;border:1px solid #d9e5f1;border-radius:8px"><strong>Company Store invoice:</strong> '+esc(invoiceWorkflow.invoice_status||'NOT_SENT')+' '+(invoiceWorkflow.shopify_invoice_url?'<a href="'+esc(invoiceWorkflow.shopify_invoice_url)+'" target="_blank" rel="noopener noreferrer">View invoice</a>':'')+(!invoiceWorkflow.shopify_draft_order_id&&(!invoiceWorkflow.invoice_status||invoiceWorkflow.invoice_status==='NOT_SENT')?'<div style="margin-top:8px"><button type="button" class="ai-create-shopify-draft" data-id="'+esc(x.id)+'">Create Shopify Draft — No Email</button></div>':'')+'</div>':'';
+ const invoiceAction=state==='Approved'?'<div style="margin-top:10px;padding:10px;border:1px solid #d9e5f1;border-radius:8px"><strong>Company Store invoice:</strong> '+esc(invoiceWorkflow.invoice_status||'NOT_SENT')+' '+(invoiceWorkflow.shopify_invoice_url?'<a href="'+esc(invoiceWorkflow.shopify_invoice_url)+'" target="_blank" rel="noopener noreferrer">View invoice</a>':'')+(!invoiceWorkflow.shopify_draft_order_id&&(!invoiceWorkflow.invoice_status||invoiceWorkflow.invoice_status==='NOT_SENT')?'<div style="margin-top:8px"><button type="button" class="ai-create-shopify-draft" data-id="'+esc(x.id)+'">Create & Send Invoice</button></div>':'')+'</div>':'';
  const date=x.created_at?new Date(x.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
  const details=(x.items||[]).map(i=>'<div class="ai-sq-line"><span>'+esc(i.description)+(i.variant_title?' · '+esc(i.variant_title):'')+'</span><span>'+esc(i.quantity)+' × '+money(i.unit_price)+'</span></div>').join('');
  return '<article class="ai-sq-card"><div class="ai-sq-top"><div><div class="ai-sq-number">'+esc(x.quote_number)+' <span class="ai-sq-date">'+esc(date+expiry)+'</span></div><h4>'+esc(x.title)+'</h4><div class="ai-sq-customer">'+esc(x.customer_name||x.business_name||'Unassigned customer')+(x.customer_name&&x.business_name?' · '+esc(x.business_name):'')+'</div></div><span class="ai-sq-badge '+badgeClass+'">'+esc(state)+'</span></div>'+ 
@@ -1453,18 +1453,15 @@ q('ai-quotes-list').addEventListener('click',async e=>{
 q('ai-quotes-list').addEventListener('click',async e=>{
  const invoiceBtn=e.target.closest('.ai-create-shopify-draft');
  if(invoiceBtn){
-  if(!confirm('Create a draft invoice in Shopify? This will NOT email the customer.'))return;
+  if(!confirm('Create and EMAIL the Shopify invoice to this customer now?'))return;
   invoiceBtn.disabled=true;
   try{
    const {data:sessionData,error:sessionError}=await db.auth.getSession();
    if(sessionError||!sessionData?.session?.access_token)throw Error('Please sign in again.');
-   const testEmail=prompt('DRAFT-ONLY TEST: Enter an email for the Shopify draft. This does not email anyone or change the CRM customer record. Use your own test email.','');
-   if(testEmail===null){invoiceBtn.disabled=false;return;}
-   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail.trim()))throw Error('Enter a valid test email.');
-   const response=await fetch(CRM_SUPABASE_URL+'/functions/v1/ai-apparel-crm-invoicing',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionData.session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify({action:'create_draft',quote_id:invoiceBtn.dataset.id,test_email:testEmail.trim()})});
+   const response=await fetch(CRM_SUPABASE_URL+'/functions/v1/ai-apparel-crm-invoicing',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionData.session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify({action:'create_invoice',quote_id:invoiceBtn.dataset.id})});
    const payload=await response.json();
    if(!response.ok)throw Error(payload.error+(payload.details?' — '+payload.details:''));
-   alert(payload.status==='EXISTS'?'A Shopify draft already exists.':'Shopify draft created successfully. No email was sent.');
+   alert(payload.email_sent?'Invoice emailed to customer successfully.': 'An invoice record already exists. Please verify its status before sending again.');
    await list();
   }catch(error){alert(error.message);invoiceBtn.disabled=false;}
   return;
@@ -1479,7 +1476,7 @@ q('ai-quotes-list').addEventListener('click',async e=>{
   const link=new URL('https://ai-apparel-group.pages.dev/crm/quote-approval.html');
   link.searchParams.set('token',data.token);
   const value=link.toString();
-  try{await navigator.clipboard.writeText(value);alert('Approval link copied to clipboard. This is a secure, single-use link. Use it for testing only until invoicing is connected.');}
+  try{await navigator.clipboard.writeText(value);alert('Approval link copied to clipboard. This is a secure, single-use link. Share it with your customer for approval.');}
   catch(_){prompt('Copy this secure customer approval link:',value);}
   return;
  }
