@@ -2579,11 +2579,12 @@ addItem();
   const taxable=document.getElementById('rev-verified-taxable');
   const nontaxable=document.getElementById('rev-verified-nontaxable');
   const due=document.getElementById('rev-verified-tax-due');
-  if(!page||!evidence||!taxable||!nontaxable||!due)return;
+  if(!page||!evidence||!taxable||!nontaxable||!due)return false;
+  if(document.getElementById('ai-verified-tax-panel'))return true;
   const grid=evidence.closest('.ai-goat-grid');
   if(!grid)return;
   const panel=document.createElement('section');
-  panel.className='panel';
+  panel.className='panel';panel.id='ai-verified-tax-panel';
   panel.style.cssText='margin:12px 0 22px;padding:18px';
   const heading=document.createElement('h3');
   heading.textContent='Shopify Sales Tax · Verified Payments';
@@ -2651,8 +2652,16 @@ addItem();
   document.querySelector('[data-page="revenue"]')?.addEventListener('click',update);
   document.getElementById('trq-refresh')?.addEventListener('click',update);
   update();
+  return true;
  };
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+ const boot=()=>{
+  if(init())return;
+  const target=document.getElementById('revenue')||document.body;
+  const observer=new MutationObserver(()=>{if(init())observer.disconnect()});
+  observer.observe(target,{childList:true,subtree:true});
+  document.querySelector('[data-page="revenue"]')?.addEventListener('click',()=>{if(init())observer.disconnect()});
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 <script>
