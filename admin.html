@@ -125,7 +125,9 @@ button{border:0;border-radius:8px;padding:11px 16px;background:#111827;color:#ff
 <div><label>QUALIFYING TOTAL</label><input id="subtotal" type="number" step=".01" min="0" value="0"></div>
 <div><label>COUPON / DISCOUNT CODE</label><input id="discountCode"></div>
 <div><label>DISCOUNT AMOUNT</label><input id="discountAmount" type="number" step=".01" min="0" value="0"></div>
+<div style="grid-column:1/-1"><label>REWARDS ENTRY METHOD</label><select id="rewardsEntryMethod"><option value="standard">STANDARD TRANSACTION — EXISTING POINTS RULES</option><option value="deferred_coupon">COUPON / DEFERRED BILLING — 1 POINT PER $1</option></select><div class="muted" id="rewardsMethodHelp" style="margin-top:7px">Standard transactions retain the current points rules based on transaction type.</div></div>
 <div><label>POINTS OVERRIDE (OPTIONAL)</label><input id="pointsOverride" type="number" step=".01" placeholder="Auto calculate"></div>
+<div style="grid-column:1/-1;padding:14px;border:1px solid #d1d5db;border-radius:10px;background:#f8fafc"><strong>REWARDS PREVIEW</strong><div id="rewardsPreview" style="margin-top:6px;font-size:20px;font-weight:900">0 points</div><div id="rewardsFinancialNote" class="muted" style="margin-top:5px">Standard transaction entry.</div></div>
 </div>
 <div style="margin-top:16px"><label>ADMIN NOTE</label><textarea id="note" rows="3" placeholder="Why this transaction is being added"></textarea></div>
 <div style="margin-top:18px"><button class="teal" id="addBtn">ADD TRANSACTION</button></div>
@@ -430,7 +432,52 @@ document.getElementById("confirmPassword").addEventListener("keydown",e=>{if(e.k
 document.getElementById("resetBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}st.textContent="Sending password reset email…";const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:"https://ai-apparel-group.pages.dev/admin.html"});st.textContent=error?error.message:"Password reset email sent. Open the newest email and click the reset link.";};
 document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("email").value.trim().toLowerCase();const password=document.getElementById("password").value;const st=document.getElementById("loginStatus");if(email!=="bikard@aiapparelgroup.com"){st.textContent="This email is not authorized for Super Admin access.";return}if(!password){st.textContent="Enter your password.";return}st.textContent="Signing in…";const {error}=await sb.auth.signInWithPassword({email,password});if(error){st.textContent=error.message;return}try{await loadAdmin();st.textContent=""}catch(e){st.textContent=e.message;await sb.auth.signOut()}};document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("loginBtn").click()});
 document.getElementById("logoutBtn").onclick=async()=>{await sb.auth.signOut();location.reload()};
-document.getElementById("addBtn").onclick=async()=>{const st=document.getElementById("saveStatus");try{const txOrg=document.getElementById("txOrg").value;if(!txOrg){st.textContent="Select the organization that should receive this transaction and Rewards credit.";return;}st.textContent="Saving…";const points=document.getElementById("pointsOverride").value;const data=await api("POST",{action:"add_transaction",organization_id:txOrg,order_number:document.getElementById("orderNumber").value.trim(),order_type:document.getElementById("orderType").value,ordered_at:document.getElementById("orderedAt").value,customer_name:document.getElementById("customerName").value.trim(),customer_email:document.getElementById("customerEmail").value.trim(),subtotal:document.getElementById("subtotal").value,discount_code:document.getElementById("discountCode").value.trim(),discount_amount:document.getElementById("discountAmount").value,rewards_points:points===""?null:Number(points),note:document.getElementById("note").value.trim()});st.textContent="Saved. "+data.order.order_number+" added with "+data.points+" points."; }catch(e){st.textContent=e.message}};
+function updateRewardsPreview(){
+ const mode=document.getElementById("rewardsEntryMethod").value;
+ const type=document.getElementById("orderType").value;
+ const amount=Number(document.getElementById("subtotal").value||0);
+ const override=document.getElementById("pointsOverride").value;
+ const multiplier=mode==="deferred_coupon"?1:(type==="ONLINE"?2:(["QUOTE","PROMO"].includes(type)?1:0));
+ const points=override===""?Math.round(amount*multiplier*100)/100:Number(override);
+ document.getElementById("rewardsPreview").textContent=(Number.isFinite(points)?points.toLocaleString(undefined,{maximumFractionDigits:2}):"Invalid")+" points";
+ document.getElementById("rewardsMethodHelp").textContent=mode==="deferred_coupon"?"For a qualifying pay-later coupon: use the ORIGINAL merchandise subtotal before the coupon. Rewards only; no new sale or tax should be recorded.":"Standard transactions retain the current points rules based on transaction type.";
+ document.getElementById("rewardsFinancialNote").textContent=mode==="deferred_coupon"?"This option requires the updated Supabase backend. It must record $0 additional financial revenue and avoid duplicate order credit.":"Standard transaction entry.";
+ if(mode==="deferred_coupon")document.getElementById("pointsOverride").placeholder="Auto: 1 point per $1";
+ else document.getElementById("pointsOverride").placeholder="Auto calculate";
+}
+["rewardsEntryMethod","orderType","subtotal","pointsOverride"].forEach(id=>document.getElementById(id).addEventListener("input",updateRewardsPreview));
+updateRewardsPreview();
+document.getElementById("addBtn").onclick=async()=>{
+ const st=document.getElementById("saveStatus"),btn=document.getElementById("addBtn");
+ const txOrg=document.getElementById("txOrg").value;
+ const mode=document.getElementById("rewardsEntryMethod").value;
+ const orderNumber=document.getElementById("orderNumber").value.trim();
+ const subtotal=Number(document.getElementById("subtotal").value);
+ const discount=Number(document.getElementById("discountAmount").value);
+ const pointsInput=document.getElementById("pointsOverride").value;
+ if(!txOrg){st.textContent="Select the organization that should receive this transaction and Rewards credit.";return;}
+ if(!Number.isFinite(subtotal)||subtotal<0||!Number.isFinite(discount)||discount<0){st.textContent="Enter valid nonnegative merchandise and discount amounts.";return;}
+ if(mode==="deferred_coupon"&&!orderNumber){st.textContent="Enter the original Shopify order/reference number for a deferred coupon.";return;}
+ if(mode==="deferred_coupon"&&subtotal<=0){st.textContent="Enter the original qualifying merchandise subtotal before the coupon.";return;}
+ if(pointsInput!==""&&(!Number.isFinite(Number(pointsInput))||Number(pointsInput)<0)){st.textContent="Enter a valid nonnegative points override.";return;}
+ btn.disabled=true;st.textContent="Saving…";
+ try{
+  const data=await api("POST",{
+   action:"add_transaction",organization_id:txOrg,order_number:orderNumber,
+   order_type:document.getElementById("orderType").value,
+   ordered_at:document.getElementById("orderedAt").value,
+   customer_name:document.getElementById("customerName").value.trim(),
+   customer_email:document.getElementById("customerEmail").value.trim(),
+   subtotal:subtotal,discount_code:document.getElementById("discountCode").value.trim(),
+   discount_amount:discount,
+   rewards_points:mode==="deferred_coupon"?null:(pointsInput===""?null:Number(pointsInput)),
+   rewards_entry_method:mode,
+   note:document.getElementById("note").value.trim()
+  });
+  st.textContent="Saved. "+data.order.order_number+" added with "+data.points+" points.";
+ }catch(e){st.textContent=e.message;}
+ finally{btn.disabled=false;}
+};
 
 let organizationMembers=[];
 async function orgUsersApi(method,body){
