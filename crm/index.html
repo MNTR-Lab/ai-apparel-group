@@ -2223,7 +2223,7 @@ addItem();
  const manual=detail('Add a Non-Shopify Sale','Historical sales are imported separately');const note=mk('p','info','The historical order summary has been imported into the accounting ledger. New manual sales entry is not enabled from this panel; use the approved historical import process to prevent duplicates.');manual.append(note);
  page.append(mk('h3','ai-goat-title','Sales Tax Reporting'));
  const taxGrid=mk('div','ai-goat-grid');page.append(taxGrid);
- [['Taxable sales',null,'Pending reviewed classification'],['Non-taxable sales',null,'Pending reviewed classification'],['Paid-order tax evidence','rev-cash-tax-evidence','Tax on orders with verified cash; not allocated to payments or tax due'],['Sales tax due',null,'Requires jurisdiction and payment-level tax reconciliation']].forEach(([label,id,note])=>{
+ [['Taxable sales','rev-verified-taxable','Pending payment-allocated sales reconciliation'],['Non-taxable sales','rev-verified-nontaxable','Shopify orders without charged tax; requires paid-sales allocation'],['Shopify tax on paid orders','rev-cash-tax-evidence','Tax charged by Shopify on orders with verified payment; not necessarily payment-allocated'],['Sales tax due','rev-verified-tax-due','Not filing-ready until payment allocations, refunds and jurisdictions reconcile']].forEach(([label,id,note])=>{
   const tile=mk('div','ai-goat-tile'),val=mk('strong','','—');tile.append(mk('small','',label),val,mk('span','note',note));if(id)bind(val,id);taxGrid.append(tile);
  });
  page.append(mk('div','ai-goat-banner','Financial reporting note. Approved quotes are excluded from collected sales. Refunds, payment processing fees, overhead, incomplete order costs and tax obligations require reconciliation before treating these amounts as final accounting profit.'));
@@ -2574,28 +2574,83 @@ addItem();
 <script id="ai-cash-basis-tax-correction-2026">
 (()=>{
  const init=()=>{
-  const page=document.getElementById('revenue'),tile=document.getElementById('rev-cash-tax-evidence');
-  if(!page||!tile)return;
-  const note=document.createElement('p');note.className='info';note.style.cssText='margin:12px 0;color:#795100;font-weight:600';
-  note.textContent='Cash-basis reporting: unpaid orders excluded. Order tax evidence is NOT tax collected on a payment or sales tax due.';
-  tile.closest('.ai-goat-grid')?.after(note);
+  const page=document.getElementById('revenue');
+  const evidence=document.getElementById('rev-cash-tax-evidence');
+  const taxable=document.getElementById('rev-verified-taxable');
+  const nontaxable=document.getElementById('rev-verified-nontaxable');
+  const due=document.getElementById('rev-verified-tax-due');
+  if(!page||!evidence||!taxable||!nontaxable||!due)return;
+  const grid=evidence.closest('.ai-goat-grid');
+  if(!grid)return;
+  const panel=document.createElement('section');
+  panel.className='panel';
+  panel.style.cssText='margin:12px 0 22px;padding:18px';
+  const heading=document.createElement('h3');
+  heading.textContent='Shopify Sales Tax · Verified Payments';
+  const info=document.createElement('p');
+  info.className='info';
+  info.setAttribute('role','status');
+  const refresh=document.createElement('button');
+  refresh.type='button';
+  refresh.className='action secondary';
+  refresh.textContent='Refresh tax evidence';
+  const table=document.createElement('div');
+  table.style.cssText='overflow-x:auto;margin-top:12px';
+  panel.append(heading,info,refresh,table);
+  grid.after(panel);
   const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)||0);
+  const easternYear=()=>Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric'}).format(new Date()));
+  const easternDate=v=>new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(v));
+  const cell=(tr,value)=>{const td=document.createElement('td');td.textContent=String(value);tr.append(td)};
   let running=false;
   const update=async()=>{
-   if(running)return;running=true;tile.textContent='Checking…';
+   if(running)return;
+   running=true;refresh.disabled=true;
+   evidence.textContent='Checking…';
+   taxable.textContent='Pending review';
+   nontaxable.textContent='Pending review';
+   due.textContent='Not reconciled';
+   info.textContent='Checking verified payments since October 1, 2026…';
+   table.replaceChildren();
    try{
     if(typeof db==='undefined'||!db)throw Error('CRM connection unavailable');
-    const y=Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric'}).format(new Date()));
-    const {data,error}=await db.rpc('ai_financial_verified_tax_evidence',{p_year:y});
+    const {data,error}=await db.rpc('ai_financial_verified_tax_evidence',{p_year:easternYear()});
     if(error)throw error;
-    const summary=data?.summary||{};
-    tile.textContent=money(summary.paid_order_tax_evidence);
-    note.textContent='Verified cash: '+money(summary.verified_cash)+' across '+(summary.paid_orders??0)+' paid orders. Associated order tax evidence: '+money(summary.paid_order_tax_evidence)+'. Unpaid orders excluded. This is NOT payment-allocated sales tax or filing liability.';
-   }catch(e){tile.textContent='Not verified';note.textContent='Could not verify paid-order tax evidence: '+(e?.message||String(e))+'; no tax amount is presented as collected.'}
-   finally{running=false}
+    const orders=Array.isArray(data?.orders)?data.orders:[];
+    const paid=orders.filter(o=>Number(o.verified_cash)>0 && o.first_verified_payment_at && new Date(o.first_verified_payment_at)>=new Date('2026-10-01T04:00:00Z'));
+    const shopify=paid.filter(o=>String(o.source).toLowerCase()==='shopify');
+    const missing=shopify.filter(o=>o.missing_tax_record);
+    const known=shopify.filter(o=>!o.missing_tax_record);
+    const tax=known.reduce((sum,o)=>sum+Math.max(0,Number(o.tax_collected||0)-Number(o.tax_refunded||0)),0);
+    evidence.textContent=missing.length?'Incomplete · '+money(tax):money(tax);
+    const paidTotal=shopify.reduce((sum,o)=>sum+Number(o.verified_cash||0),0);
+    info.textContent='October 1, 2026 onward · '+shopify.length+' Shopify orders with verified payments ('+money(paidTotal)+' verified cash). '+(missing.length?missing.length+' paid Shopify orders are missing tax records. ':'')+'Tax shown is Shopify order-level tax evidence, not payment-allocated tax or a filing liability. Unpaid orders and pending manual payments are excluded.';
+    const t=document.createElement('table');
+    const thead=document.createElement('thead');
+    const header=document.createElement('tr');
+    ['Order','First verified payment (ET)','Verified cash','Shopify order tax','Status'].forEach(v=>{const th=document.createElement('th');th.textContent=v;header.append(th)});
+    thead.append(header);t.append(thead);
+    const tbody=document.createElement('tbody');
+    for(const o of shopify){
+      const tr=document.createElement('tr');
+      cell(tr,o.source_order_name||o.source_order_id||'Unknown');
+      cell(tr,easternDate(o.first_verified_payment_at));
+      cell(tr,money(o.verified_cash));
+      cell(tr,o.missing_tax_record?'Missing':money(Math.max(0,Number(o.tax_collected||0)-Number(o.tax_refunded||0))));
+      cell(tr,o.missing_tax_record?'Tax record missing':'Payment verified · allocation pending');
+      tbody.append(tr);
+    }
+    if(!shopify.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=5;td.textContent='No verified Shopify payments for this reporting year.';tr.append(td);tbody.append(tr)}
+    t.append(tbody);table.append(t);
+   }catch(e){
+    evidence.textContent='Not verified';
+    info.textContent='Could not retrieve authorized tax evidence: '+(e?.message||String(e));
+   }finally{running=false;refresh.disabled=false}
   };
-  update();document.querySelector('[data-page="revenue"]')?.addEventListener('click',update);
+  refresh.addEventListener('click',update);
+  document.querySelector('[data-page="revenue"]')?.addEventListener('click',update);
   document.getElementById('trq-refresh')?.addEventListener('click',update);
+  update();
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
