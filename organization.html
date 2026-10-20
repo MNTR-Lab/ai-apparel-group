@@ -1607,12 +1607,14 @@
 
     let PROMOTIONAL_PREVIOUS_ORDERS = [];
     let ORGANIZATION_UNPAID_INVOICES = [];
+    let CRM_ORGANIZATION_QUOTES = [];
 
     async function loadOrganizationProfile() {
       const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed" + (ORGANIZATION.id ? "?organization_id="+encodeURIComponent(ORGANIZATION.id) : "");
       const response = await fetch(url,{headers:{Authorization:"Bearer "+PORTAL_ACCESS_TOKEN}});
       if (!response.ok) throw new Error("Unable to load organization profile.");
       const payload = await response.json();
+      CRM_ORGANIZATION_QUOTES = Array.isArray(payload.currentQuotes) ? payload.currentQuotes.filter(q => q.source === "CRM") : [];
       const org = payload.organization || {};
       const integrations = payload.integrations || [];
       const companyStore = integrations.find(x => x.provider === "shopify" && x.enabled);
@@ -1991,23 +1993,72 @@
       quoteReviewOverlay.classList.add("open");
     }
 
+    // Show both the original promotional quote requests and CRM quotes in one section.
+    // CRM quote details are read-only here; approvals remain in the established CRM flow.
+    function openCrmQuoteReview(quote) {
+      const body = document.getElementById("quoteReviewBody");
+      document.getElementById("quoteReviewOrg").textContent = ORGANIZATION.name;
+      document.getElementById("quoteReviewHeading").textContent = quote.quoteNumber || "CRM Quote";
+      document.getElementById("quoteReviewMessage").textContent = "";
+      body.replaceChildren();
+      const heading = document.createElement("p");
+      heading.textContent = (quote.title || "Quote") + " • " + (quote.status || "Draft");
+      heading.style.marginBottom = "14px";
+      body.appendChild(heading);
+      const items = Array.isArray(quote.items) ? quote.items : [];
+      for (const item of items) {
+        const row = document.createElement("div"); row.className = "quote-review-item";
+        const name = document.createElement("div");
+        const label = document.createElement("strong"); label.textContent = item.description || "Product"; name.appendChild(label);
+        const detail = document.createElement("div"); detail.style.color = "#6b7280";
+        detail.textContent = [item.sku,item.variant].filter(Boolean).join(" • "); name.appendChild(detail);
+        const quantity = document.createElement("span"); quantity.textContent = "Qty " + Number(item.quantity || 0);
+        const price = document.createElement("strong"); price.textContent = quoteMoney(item.lineTotal);
+        row.append(name,quantity,price); body.appendChild(row);
+      }
+      for (const [label,value] of [["Subtotal",quote.subtotal],["Discount",quote.discountAmount],["Shipping",quote.shipping],["Tax",quote.tax]]) {
+        if (Number(value || 0) === 0) continue;
+        const line = document.createElement("p"); line.style.textAlign = "right"; line.style.marginTop = "7px";
+        line.textContent = label + ": " + (label === "Discount" ? "−" : "") + quoteMoney(value);
+        body.appendChild(line);
+      }
+      const total = document.createElement("div"); total.className = "quote-review-summary";
+      total.textContent = "Quote Total: " + quoteMoney(quote.total); body.appendChild(total);
+      if (quote.invoiceStatus) {
+        const note = document.createElement("div"); note.className = "quote-review-note";
+        note.textContent = "Invoice status: " + String(quote.invoiceStatus).replaceAll("_"," "); body.appendChild(note);
+      }
+      quoteReviewApprove.hidden = true;
+      quoteReviewApprove.onclick = null;
+      quoteReviewOverlay.classList.add("open");
+    }
+
     function renderCurrentQuotes(quotes) {
       const list = document.getElementById("currentQuotesList");
       const empty = document.getElementById("emptyCurrentQuotes");
       if (!list || !empty) return;
-      const current = (quotes || []).filter(q => currentQuoteStatuses.has(String(q.status || "").toLowerCase()));
-      list.innerHTML = "";
-      if (!current.length) { empty.style.display = "block"; return; }
-      empty.style.display = "none";
-      current.forEach(quote => {
-        const card = document.createElement("article");card.className="current-quote-card";
-        const statusClass = quote.status === "quote_ready" ? " ready" : quote.status === "approved" ? " approved" : "";
-        const total = Number(quote.quoted_total || 0) > 0 ? quoteMoney(quote.quoted_total) : "Pricing in progress";
-        const buttonLabel = quote.status === "quote_ready" ? "REVIEW & APPROVE" : "VIEW QUOTE";
-        card.innerHTML = `<div class="current-quote-main"><div class="current-quote-number">${escapeHtml(quote.request_number || "Promotional Quote")}</div><div class="current-quote-project">${escapeHtml(quote.project_name || "Promotional Request")}</div></div><div class="current-quote-status${statusClass}">${quoteStatusLabel(quote.status)}</div><div class="current-quote-total">${total}</div><button class="current-quote-button" type="button">${buttonLabel}</button>`;
-        card.querySelector("button").onclick = () => openQuoteReview(quote.id);
+      const promotional = (quotes || []).filter(q => currentQuoteStatuses.has(String(q.status || "").toLowerCase()));
+      const crm = CRM_ORGANIZATION_QUOTES.filter(q => !["cancelled","canceled","deleted","void"].includes(String(q.status || "").toLowerCase()));
+      list.replaceChildren();
+      empty.style.display = (promotional.length || crm.length) ? "none" : "block";
+      const combined = [
+        ...crm.map(q => ({source:"crm",quote:q,date:q.date || ""})),
+        ...promotional.map(q => ({source:"promotional",quote:q,date:q.submitted_at || ""}))
+      ].sort((a,b) => String(b.date).localeCompare(String(a.date)));
+      for (const entry of combined) {
+        const quote = entry.quote;
+        const isCrm = entry.source === "crm";
+        const status = String(quote.status || "");
+        const statusClass = ["approved"].includes(status.toLowerCase()) ? " approved" : ["quote_ready"].includes(status.toLowerCase()) ? " ready" : "";
+        const number = isCrm ? quote.quoteNumber : quote.request_number;
+        const title = isCrm ? quote.title : quote.project_name;
+        const amount = isCrm ? quote.total : quote.quoted_total;
+        const buttonLabel = !isCrm && status === "quote_ready" ? "REVIEW & APPROVE" : "VIEW QUOTE";
+        const card = document.createElement("article"); card.className = "current-quote-card";
+        card.innerHTML = `<div class="current-quote-main"><div class="current-quote-number">${escapeHtml(number || "Quote")}</div><div class="current-quote-project">${escapeHtml(title || "Quote Request")}</div></div><div class="current-quote-status${statusClass}">${escapeHtml(isCrm ? status.toUpperCase() : quoteStatusLabel(status))}</div><div class="current-quote-total">${Number(amount || 0) > 0 ? quoteMoney(amount) : "Pricing in progress"}</div><button class="current-quote-button" type="button">${buttonLabel}</button>`;
+        card.querySelector("button").onclick = () => isCrm ? openCrmQuoteReview(quote) : openQuoteReview(quote.id);
         list.appendChild(card);
-      });
+      }
     }
 
     async function loadQuoteApprovalAction() {
@@ -2031,7 +2082,7 @@
           detail.textContent = "Review your pending quotes and approve the ones you want to move forward.";
         }
         document.getElementById("reviewQuoteButton").onclick = () => openQuoteReview(readyQuotes[0].id);
-      } catch(error) {console.error("Quote approval check:",error);}
+      } catch(error) {console.error("Quote approval check:",error);renderCurrentQuotes([]);}
     }
 
     function renderOrganization() {
