@@ -2573,96 +2573,78 @@ addItem();
 
 <script id="ai-cash-basis-tax-correction-2026">
 (()=>{
- const init=()=>{
+ const boot=()=>{
   const page=document.getElementById('revenue');
-  const evidence=document.getElementById('rev-cash-tax-evidence');
-  const taxable=document.getElementById('rev-verified-taxable');
-  const nontaxable=document.getElementById('rev-verified-nontaxable');
-  const due=document.getElementById('rev-verified-tax-due');
-  if(!page||!evidence||!taxable||!nontaxable||!due)return false;
+  const ids=['rev-verified-taxable','rev-verified-nontaxable','rev-cash-tax-evidence','rev-verified-tax-due'];
+  const nodes=ids.map(id=>document.getElementById(id));
+  if(!page||nodes.some(x=>!x))return false;
   if(document.getElementById('ai-verified-tax-panel'))return true;
-  const grid=evidence.closest('.ai-goat-grid');
-  if(!grid)return;
-  const panel=document.createElement('details');
-  panel.className='panel';panel.id='ai-verified-tax-panel';
-  panel.style.cssText='margin:12px 0 22px;padding:18px';
-  const heading=document.createElement('summary');
-  heading.textContent='View Shopify payment and tax details';
-  heading.style.cssText='cursor:pointer;font-weight:750;color:#193956;padding:4px 0';
-  const info=document.createElement('p');
-  info.className='info';
-  info.setAttribute('role','status');
-  const refresh=document.createElement('button');
-  refresh.type='button';
-  refresh.className='action secondary';
-  refresh.textContent='Refresh tax evidence';
-  const table=document.createElement('div');
-  table.style.cssText='overflow-x:auto;margin-top:12px';
-  panel.append(heading,info,refresh,table);
-  grid.after(panel);
+  const [taxable,nonTaxable,evidence,due]=nodes;
+  const grid=evidence.closest('.ai-goat-grid');if(!grid)return false;
+  const panel=document.createElement('details');panel.id='ai-verified-tax-panel';panel.className='panel';panel.style.cssText='margin:12px 0 22px;padding:18px';
+  const heading=document.createElement('summary');heading.textContent='View verified payments and tax details';heading.style.cssText='cursor:pointer;font-weight:750;color:#193956;padding:4px 0';
+  const info=document.createElement('p');info.className='info';info.setAttribute('role','status');
+  const refresh=document.createElement('button');refresh.type='button';refresh.className='action secondary';refresh.textContent='Refresh verified payments';
+  const table=document.createElement('div');table.style.cssText='overflow-x:auto;margin-top:12px';
+  panel.append(heading,info,refresh,table);grid.after(panel);
   const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)||0);
   const easternYear=()=>Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric'}).format(new Date()));
   const easternDate=v=>new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(v));
-  const cell=(tr,value)=>{const td=document.createElement('td');td.textContent=String(value);tr.append(td)};
-  let running=false;
+  const setNote=(node,text)=>{const note=node.closest('.ai-goat-tile')?.querySelector('.note');if(note)note.textContent=text};
+  let busy=false;
   const update=async()=>{
-   if(running)return;
-   running=true;refresh.disabled=true;
-   evidence.textContent='Checking…';
-   taxable.textContent='Pending review';
-   nontaxable.textContent='Pending review';
-   due.textContent='Not reconciled';
-   info.textContent='Checking verified payments since October 1, 2026…';
-   table.replaceChildren();
+   if(busy)return;busy=true;refresh.disabled=true;
+   nodes.forEach(x=>x.textContent='Checking…');info.textContent='Checking all verified payments from October 1, 2026…';table.replaceChildren();
    try{
     if(typeof db==='undefined'||!db)throw Error('CRM connection unavailable');
-    const {data,error}=await db.rpc('ai_financial_verified_tax_evidence',{p_year:easternYear()});
-    if(error)throw error;
-    const orders=Array.isArray(data?.orders)?data.orders:[];
-    const paid=orders.filter(o=>Number(o.verified_cash)>0 && o.first_verified_payment_at && new Date(o.first_verified_payment_at)>=new Date('2026-10-01T04:00:00Z'));
-    const shopify=paid.filter(o=>String(o.source).toLowerCase()==='shopify');
-    const missing=shopify.filter(o=>o.missing_tax_record);
-    const known=shopify.filter(o=>!o.missing_tax_record);
-    const tax=known.reduce((sum,o)=>sum+Math.max(0,Number(o.tax_collected||0)-Number(o.tax_refunded||0)),0);
-    evidence.textContent=missing.length?'Incomplete · '+money(tax):money(tax);
-    const paidTotal=shopify.reduce((sum,o)=>sum+Number(o.verified_cash||0),0);
-    info.textContent='October 1, 2026 onward · '+shopify.length+' Shopify orders with verified payments ('+money(paidTotal)+' verified cash). '+(missing.length?missing.length+' paid Shopify orders are missing tax records. ':'')+'Tax shown is Shopify order-level tax evidence, not payment-allocated tax or a filing liability. Unpaid orders and pending manual payments are excluded.';
-    const t=document.createElement('table');
-    const thead=document.createElement('thead');
-    const header=document.createElement('tr');
-    ['Order','First verified payment (ET)','Verified cash','Shopify order tax','Status'].forEach(v=>{const th=document.createElement('th');th.textContent=v;header.append(th)});
-    thead.append(header);t.append(thead);
-    const tbody=document.createElement('tbody');
-    for(const o of shopify){
-      const tr=document.createElement('tr');
-      cell(tr,o.source_order_name||o.source_order_id||'Unknown');
-      cell(tr,easternDate(o.first_verified_payment_at));
-      cell(tr,money(o.verified_cash));
-      cell(tr,o.missing_tax_record?'Missing':money(Math.max(0,Number(o.tax_collected||0)-Number(o.tax_refunded||0))));
-      cell(tr,o.missing_tax_record?'Tax record missing':'Payment verified · allocation pending');
-      tbody.append(tr);
+    const {data,error}=await db.rpc('ai_financial_verified_tax_evidence',{p_year:easternYear()});if(error)throw error;
+    const orders=(Array.isArray(data?.orders)?data.orders:[]).filter(o=>Number(o.verified_cash)>0 && o.first_verified_payment_at && new Date(o.first_verified_payment_at)>=new Date('2026-10-01T04:00:00Z'));
+    let taxableBase=0,zeroTaxReceipts=0,taxEvidence=0,unresolved=0,verifiedCash=0;
+    const entries=[];
+    for(const o of orders){
+     const cash=Number(o.verified_cash||0),tax=Number(o.tax_collected||0),taxRefunded=Number(o.tax_refunded||0),refunds=Number(o.verified_refunds||0);
+     const merchandise=Number(o.nontaxable_sales||0)+Number(o.taxable_sales||0);
+     verifiedCash+=cash;
+     const known=!o.missing_tax_record && Number.isFinite(tax) && Number.isFinite(taxRefunded);
+     let category='Unreconciled',sale=null;
+     if(!known){unresolved++}
+     else if(tax>0){
+      taxEvidence+=Math.max(0,tax-taxRefunded);
+      // Only classify the recorded merchandise subtotal when verified cash covers merchandise and tax.
+      // Do not count shipping as merchandise or assign full tax to partial payments.
+      if(refunds===0 && merchandise>0 && cash+0.01>=merchandise+tax){taxableBase+=merchandise;category='Taxed merchandise · payment covers base + tax';sale=merchandise}
+      else{unresolved++;category='Tax allocation / refund review required'}
+     }else if(refunds===0){
+      // No tax was charged: show verified receipts, not an unsupported claim of tax exemption.
+      zeroTaxReceipts+=cash;category='Verified payment · no tax charged';sale=cash;
+     }else{unresolved++;category='Refund allocation review required'}
+     entries.push({o,cash,tax,known,category,sale});
     }
-    if(!shopify.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=5;td.textContent='No verified Shopify payments for this reporting year.';tr.append(td);tbody.append(tr)}
+    taxable.textContent=money(taxableBase);
+    nonTaxable.textContent=money(zeroTaxReceipts);
+    evidence.textContent=unresolved?'Partial · '+money(taxEvidence):money(taxEvidence);
+    due.textContent=unresolved?'Needs reconciliation':money(taxEvidence);
+    setNote(taxable,'Paid Shopify merchandise with recorded tax; shipping excluded. Incomplete allocations excluded.');
+    setNote(nonTaxable,'Verified receipts on orders with no tax charged; includes manual payments. Not proof of legal exemption.');
+    setNote(evidence,'Shopify/manual order-level tax on verified-payment orders; partial-payment allocation may remain open.');
+    setNote(due,unresolved?'Not filing-ready: some paid orders require allocation/refund review.':'Provisional only; verify jurisdictions and tax filing period before remitting.');
+    info.textContent=`October 1, 2026 onward · ${orders.length} verified paid orders · ${money(verifiedCash)} verified cash. ${money(taxableBase)} recorded taxed merchandise; ${money(zeroTaxReceipts)} verified receipts with no tax charged. ${unresolved} order(s) require additional reconciliation. Unpaid/pending payments excluded. Amounts are not a filed tax return.`;
+    const t=document.createElement('table'),thead=document.createElement('thead'),hr=document.createElement('tr');
+    ['Order','Source','First verified payment (ET)','Verified cash','Merchandise / receipts','Tax evidence','Classification'].forEach(v=>{const th=document.createElement('th');th.textContent=v;hr.append(th)});thead.append(hr);t.append(thead);
+    const tbody=document.createElement('tbody');
+    for(const e of entries){const tr=document.createElement('tr');const vals=[e.o.source_order_name||e.o.source_order_id||'Unknown',e.o.source,easternDate(e.o.first_verified_payment_at),money(e.cash),e.sale===null?'Pending':money(e.sale),e.known?money(Math.max(0,e.tax-Number(e.o.tax_refunded||0))):'Missing',e.category];vals.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td)});tbody.append(tr)}
+    if(!entries.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No verified payments since October 1, 2026.';tr.append(td);tbody.append(tr)}
     t.append(tbody);table.append(t);
-   }catch(e){
-    evidence.textContent='Not verified';
-    info.textContent='Could not retrieve authorized tax evidence: '+(e?.message||String(e));
-   }finally{running=false;refresh.disabled=false}
+   }catch(e){nodes.forEach(x=>x.textContent='Not verified');info.textContent='Could not retrieve verified payments: '+(e?.message||String(e))}
+   finally{busy=false;refresh.disabled=false}
   };
   refresh.addEventListener('click',update);
   document.querySelector('[data-page="revenue"]')?.addEventListener('click',update);
   document.getElementById('trq-refresh')?.addEventListener('click',update);
-  update();
-  return true;
+  update();return true;
  };
- const boot=()=>{
-  if(init())return;
-  const target=document.getElementById('revenue')||document.body;
-  const observer=new MutationObserver(()=>{if(init())observer.disconnect()});
-  observer.observe(target,{childList:true,subtree:true});
-  document.querySelector('[data-page="revenue"]')?.addEventListener('click',()=>{if(init())observer.disconnect()});
- };
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+ const init=()=>{if(boot())return;const observer=new MutationObserver(()=>{if(boot())observer.disconnect()});observer.observe(document.getElementById('revenue')||document.body,{childList:true,subtree:true})};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 <script>
