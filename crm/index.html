@@ -1262,9 +1262,32 @@ function aiSsAddProduct(i){
 document.getElementById('ai-ss-search-btn').addEventListener('click',aiSsSearch);
 document.getElementById('ai-ss-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aiSsSearch()}});
 document.getElementById('ai-ss-results').addEventListener('click',e=>{const b=e.target.closest('[data-ss-style],[data-ss-product]');if(!b)return;if(b.dataset.ssStyle!==undefined)aiSsLoadStyle(Number(b.dataset.ssStyle));else aiSsAddProduct(Number(b.dataset.ssProduct))});
-// SanMar product details via authenticated Supabase proxy.
+// SanMar catalog and authenticated live Net pricing.
 const AI_SANMAR_URL=CRM_SUPABASE_URL+'/functions/v1/ai-apparel-sanmar-products';
 let aiSanmarProducts=[],aiSanmarStyle='',aiSanmarProductName='';
+async function aiSanmarRequest(payload){
+ const {data:{session}}=await db.auth.getSession();
+ if(!session)throw Error('Sign in to use SanMar');
+ const response=await fetch(AI_SANMAR_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify(payload)});
+ const data=await response.json();
+ if(!response.ok||!data.ok)throw Error(data.error||'SanMar lookup failed');
+ return data;
+}
+// SanMar's current Product Data response may concatenate a shared trailing
+// color value (observed: "Jet BlackMarine Green"). Strip ONLY when the same
+// known suffix is present across many distinct variants. Preserve part IDs.
+function aiSanmarNormalizeColors(variants){
+ const colors=[...new Set(variants.map(v=>String(v.color||'').trim()).filter(Boolean))];
+ const suffix='Marine Green';
+ const prefixed=colors.filter(c=>c.endsWith(suffix)&&c!==suffix&&c.slice(0,-suffix.length).trim());
+ const hasSuffixIssue=colors.length>=10&&prefixed.length>=Math.ceil(colors.length*.8);
+ if(!hasSuffixIssue)return {variants,corrected:false};
+ return {corrected:true,variants:variants.map(v=>{
+  const color=String(v.color||'').trim();
+  const cleaned=color.endsWith(suffix)&&color!==suffix?color.slice(0,-suffix.length).trim():color;
+  return {...v,color:cleaned||color};
+ })};
+}
 async function aiSanmarSearch(){
  const input=document.getElementById('ai-sanmar-search'),button=document.getElementById('ai-sanmar-search-btn');
  const message=document.getElementById('ai-sanmar-message'),results=document.getElementById('ai-sanmar-results');
@@ -1272,32 +1295,57 @@ async function aiSanmarSearch(){
  if(!/^[A-Z0-9-]{1,40}$/.test(productId)){message.textContent='Enter a valid SanMar style number.';return}
  button.disabled=true;message.textContent='Loading SanMar style '+productId+'…';results.replaceChildren();
  try{
-  const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Sign in to search SanMar');
-  const response=await fetch(AI_SANMAR_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':CRM_PUBLISHABLE_KEY},body:JSON.stringify({productId})});
-  const payload=await response.json();if(!response.ok||!payload.ok)throw Error(payload.error||'SanMar lookup failed');
+  const payload=await aiSanmarRequest({productId});
   aiSanmarStyle=payload.productId||productId;aiSanmarProductName=payload.productName||aiSanmarStyle;
-  aiSanmarProducts=Array.isArray(payload.variants)?payload.variants.filter(v=>v&&v.partId):[];
-  if(!aiSanmarProducts.length){message.textContent=payload.detailsError||'SanMar did not return color/size details. No quote items were added.';return}
+  const raw=Array.isArray(payload.variants)?payload.variants.filter(v=>v&&v.partId):[];
+  const normalized=aiSanmarNormalizeColors(raw);
+  aiSanmarProducts=normalized.variants;
+  if(!aiSanmarProducts.length){message.textContent=payload.detailsError||'SanMar did not return color/size details.';return}
   const colors=[...new Set(aiSanmarProducts.map(v=>String(v.color||'Unspecified').trim()))].sort((x,y)=>x.localeCompare(y));
   results.innerHTML='<div style="font-weight:700">'+aiSsEsc(aiSanmarProductName)+' · '+aiSsEsc(aiSanmarStyle)+'</div><label style="font-size:12px;font-weight:700">Choose color<select id="ai-sanmar-color" style="display:block;width:100%;padding:10px;margin:6px 0;border:1px solid #cbd5e1;border-radius:8px">'+colors.map(c=>'<option value="'+aiSsEsc(c)+'">'+aiSsEsc(c)+'</option>').join('')+'</select></label><div id="ai-sanmar-sizes"></div>';
   document.getElementById('ai-sanmar-color').addEventListener('change',aiSanmarRenderSizes);
   aiSanmarRenderSizes();
-  message.textContent=colors.length+' colors and '+aiSanmarProducts.length+' variants loaded. Supplier prices and inventory are not verified; enter cost manually before sending.';
+  message.textContent=colors.length+' colors and '+aiSanmarProducts.length+' variants loaded. Live supplier cost is retrieved when you add a size.'+(normalized.corrected?' Display color names were cleaned; verify color against SanMar before ordering.':'');
  }catch(error){message.textContent=error.message||'SanMar search failed'}finally{button.disabled=false}
 }
 function aiSanmarRenderSizes(){
  const color=document.getElementById('ai-sanmar-color')?.value,target=document.getElementById('ai-sanmar-sizes');if(!target)return;
  const entries=aiSanmarProducts.map((v,i)=>({v,i})).filter(({v})=>String(v.color||'Unspecified').trim()===color);
- target.innerHTML='<div style="font-weight:600;margin:10px 0 6px">Available sizes · '+aiSsEsc(color)+'</div>'+entries.map(({v,i})=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #e2e8f0"><div><strong>'+aiSsEsc(v.size||'Unspecified size')+'</strong><div style="font-size:12px;color:#64748b">Part ID '+aiSsEsc(v.partId)+' · Supplier cost not yet available</div></div><button type="button" class="ai-quote-add-btn" data-sanmar-part="'+i+'">Add</button></div>').join('');
+ target.innerHTML='<div style="font-weight:600;margin:10px 0 6px">Available sizes · '+aiSsEsc(color)+'</div>'+entries.map(({v,i})=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #e2e8f0"><div><strong>'+aiSsEsc(v.size||'Unspecified size')+'</strong><div style="font-size:12px;color:#64748b">Part ID '+aiSsEsc(v.partId)+' · Live Net cost on Add</div></div><button type="button" class="ai-quote-add-btn" data-sanmar-part="'+i+'">Add</button></div>').join('');
 }
-function aiSanmarAddPart(i){
+async function aiSanmarAddPart(i,button){
  const v=aiSanmarProducts[i];if(!v)return;
- addItem({item_type:'custom',description:'SanMar · '+aiSanmarProductName,sku:v.partId,variant_title:[v.color,v.size].filter(Boolean).join(' / '),quantity:1,unit_price:0,supplier_cost:null});
- document.getElementById('ai-sanmar-message').textContent='Added '+v.partId+'. Enter supplier cost and customer selling price before saving or sending.';
+ const message=document.getElementById('ai-sanmar-message');
+ if(button){button.disabled=true;button.textContent='Getting cost…'}
+ try{
+  const payload=await aiSanmarRequest({action:'price',productId:aiSanmarStyle,partId:String(v.partId),quantity:1});
+  const cost=Number(payload.supplierCost);
+  if(payload.verified!==true||!Number.isFinite(cost)||cost<=0||String(payload.partId)!==String(v.partId))throw Error('Supplier price could not be verified for this exact size');
+  addItem({item_type:'custom',description:'SanMar · '+aiSanmarProductName,sku:v.partId,variant_title:[v.color,v.size].filter(Boolean).join(' / '),quantity:1,unit_price:0,supplier_cost:cost});
+  const row=document.querySelector('#ai-quote-items .ai-quote-row:last-child');
+  if(row){row.dataset.sanmarStyle=aiSanmarStyle;row.dataset.sanmarPart=String(v.partId);row.querySelector('.qi-price')?.focus();}
+  message.textContent='Added '+v.partId+' with live SanMar Net supplier cost $'+cost.toFixed(2)+' per unit. Enter customer selling price. Recheck cost if quantity changes.';
+ }catch(error){message.textContent='Price lookup failed: '+(error.message||'Unknown error')+'. No unpriced item was added.'}
+ finally{if(button){button.disabled=false;button.textContent='Add'}}
 }
 document.getElementById('ai-sanmar-search-btn').addEventListener('click',aiSanmarSearch);
 document.getElementById('ai-sanmar-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aiSanmarSearch()}});
-document.getElementById('ai-sanmar-results').addEventListener('click',e=>{const button=e.target.closest('[data-sanmar-part]');if(button)aiSanmarAddPart(Number(button.dataset.sanmarPart))});
+document.getElementById('ai-sanmar-results').addEventListener('click',e=>{const button=e.target.closest('[data-sanmar-part]');if(button)aiSanmarAddPart(Number(button.dataset.sanmarPart),button)});
+// Quantity changes can select a different Net price break. Reprice that row
+// before saving a quote. Never silently retain an obsolete supplier cost.
+document.getElementById('ai-quote-items').addEventListener('change',async e=>{
+ const input=e.target;if(!input.matches('.qi-quantity'))return;
+ const row=input.closest('.ai-quote-row');if(!row?.dataset.sanmarPart)return;
+ const quantity=Number(input.value),partId=row.dataset.sanmarPart,productId=row.dataset.sanmarStyle;
+ const costInput=row.querySelector('.qi-cost');costInput.value='';totals();
+ if(!Number.isSafeInteger(quantity)||quantity<1){alert('SanMar quantity must be a whole number greater than zero.');return}
+ try{
+  const payload=await aiSanmarRequest({action:'price',productId,partId,quantity});
+  const cost=Number(payload.supplierCost);
+  if(payload.verified!==true||String(payload.partId)!==partId||!Number.isFinite(cost)||cost<=0)throw Error('Unverified price');
+  if(row.isConnected&&Number(input.value)===quantity){costInput.value=cost.toFixed(2);totals()}
+ }catch(err){document.getElementById('ai-sanmar-message').textContent='Repricing failed for '+partId+': '+err.message+'. Supplier cost is blank; verify before sending.'}
+});
 function addItem(v={}){
  const row=document.createElement('div');row.className='ai-quote-row';
  row.style.cssText='padding:12px;margin:12px 0;border:1px solid #d6dce4;border-radius:10px;background:#fafbfd';
