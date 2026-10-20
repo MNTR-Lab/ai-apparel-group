@@ -1437,8 +1437,8 @@ async function list(){
  '<div class="ai-sq-middle"><div><span class="ai-sq-caption">ESTIMATE TOTAL</span><strong class="ai-sq-price">'+money(x.total)+'</strong></div><div><span class="ai-sq-caption">PRODUCTION JOB</span><strong class="ai-sq-job">'+esc(x.job_number||'Not created')+'</strong></div></div>'+ 
  '<details class="ai-sq-details"><summary>View '+(x.items||[]).length+' line items &amp; specifications <span>⌄</span></summary><div class="ai-sq-lines">'+(details||'<p>No line items</p>')+(x.notes?'<p class="ai-sq-notes">'+esc(x.notes)+'</p>':'')+'</div></details>'+ 
  '<details class="ai-internal-cost-panel" data-id="'+esc(x.id)+'" style="margin:10px 0;padding:12px;border:1px solid #d1dbe7;border-radius:10px;background:#f1f5f9"><summary style="cursor:pointer;font-weight:700">🔒 Internal Cost Breakdown (staff only)</summary><div class="ai-internal-cost-body" style="padding-top:10px">Open to load saved internal costs.</div></details>'+
- '<div style="margin:10px 0"><button type="button" class="ai-view-quote action secondary" data-id="'+esc(x.id)+'">View Full Quote</button> '+approveButton+' '+(state==='Draft'?'<button type="button" class="ai-edit-draft-quote action secondary" data-id="'+esc(x.id)+'">Edit Draft Quote</button>':'')+'</div>'+ 
- '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(x.job_id||state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:state==='Approved'?['Approved']:['Draft','Sent','Changes Requested','Declined']).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+invoiceAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
+ '<div style="margin:10px 0"><button type="button" class="ai-view-quote action secondary" data-id="'+esc(x.id)+'">View Full Quote</button> '+approveButton+' '+'<button type="button" class="ai-edit-draft-quote action secondary" data-id="'+esc(x.id)+'">Edit Quote</button>'+'</div>'+ 
+ '<div class="ai-sq-bottom"><div class="ai-sq-artwork"><button type="button" class="ai-view-proofs" data-id="'+esc(x.id)+'">View artwork</button><label class="ai-add-proof">+ Add artwork<input type="file" class="ai-attach-proof" data-id="'+esc(x.id)+'" accept="image/png,image/jpeg,image/webp,application/pdf" multiple hidden></label></div><label class="ai-sq-status-label">Status <select class="ai-quote-status" data-id="'+esc(x.id)+'" '+(state==='Expired'?'disabled':'')+'>'+(state==='Expired'?['Expired']:['Draft','Sent','Changes Requested','Declined',...(state==='Approved'?['Approved']:[])]).map(st=>'<option '+(state===st?'selected ':'')+'value="'+st+'">'+st+'</option>').join('')+'</select></label></div>'+followUp+replaceAction+approvalAction+invoiceAction+'<div class="ai-proof-list"  data-id="'+esc(x.id)+'"></div></article>';
  }).join('');
  const active=data.filter(x=>x.status!=='Approved'&&x.status!=='Expired');
  const expired=data.filter(x=>x.status==='Expired');
@@ -1483,7 +1483,7 @@ let aiEditingQuoteId=null;
 let aiOpeningExistingDraft=false;
 async function aiEditDraftQuote(id){
  const quote=(window.aiCrmSavedQuotes||[]).find(x=>x.id===id);
- if(!quote||quote.status!=='Draft')throw Error('Only draft quotes can be edited.');
+ if(!quote)throw Error('Quote not found.');
  await load();
  const form=q('ai-quote-form');
  form.reset();
@@ -1503,7 +1503,7 @@ async function aiEditDraftQuote(id){
   addItem({...line,supplier_cost:c.supplier_cost===null?null:Number(c.supplier_cost),decoration_cost:Number(c.decoration_cost||0),labor_cost:Number(c.labor_cost||0),other_cost:Number(c.other_cost||0)});
  });
  aiEditingQuoteId=id;
- q('ai-quote-dialog-title').textContent='Edit Draft · '+quote.quote_number;
+ q('ai-quote-dialog-title').textContent='Edit Quote · '+quote.quote_number;
  form.querySelector('button[type="submit"]').textContent='Save Changes';
  aiOpeningExistingDraft=true;
  q('ai-open-quote').click();
@@ -1639,7 +1639,7 @@ q('ai-quote-form').addEventListener('submit',async e=>{
   const subtotal=payload.items.reduce((a,b)=>a+Math.round(b.quantity*b.unit_price*100)/100,0);
   if(Number(payload.discount_amount)>subtotal)throw Error('Discount exceeds subtotal.');
   const {data:created,error}=aiEditingQuoteId?await db.rpc('ai_apparel_crm_update_draft_quote',{p_quote_id:aiEditingQuoteId,p_payload:payload}):await db.rpc('ai_apparel_crm_quotes',{p_action:'create',p_payload:payload});
-  if(error)throw Error(error.message);
+  if(error)throw Error(error.message+(aiEditingQuoteId?' — The server-side quote update permission may need to be expanded for non-draft quotes. No invoice or job was changed.':''));
   // Internal-only cost records: separate admin-protected RPC, never part of customer quote payload.
   const internalCosts=[...q('ai-quote-items').querySelectorAll('.ai-quote-row')].map(row=>({
    supplier_cost:row.querySelector('.qi-cost').value===''?null:Number(row.querySelector('.qi-cost').value),
