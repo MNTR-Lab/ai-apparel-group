@@ -352,6 +352,14 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 #revenue .ai-goat-period-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:850px){#revenue .ai-goat-period-grid{grid-template-columns:1fr}}
 </style>
+<style>
+/* Quote artwork removal: compact controls matching existing CRM */
+.ai-sq-card .ai-proof-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:7px 0}
+.ai-sq-card .ai-proof-row a{flex:1;min-width:140px;overflow-wrap:anywhere;text-decoration:underline;color:#006fba}
+.ai-sq-card .ai-remove-proof{border:1px solid #e2bcc4;background:#fff;color:#9f2d42;border-radius:7px;padding:5px 10px;font-size:12px;font-weight:700}
+.ai-sq-card .ai-remove-proof:hover{background:#fff1f3}
+.ai-sq-card .ai-remove-proof:disabled{opacity:.55;cursor:wait}
+</style>
 </head>
 <body><div class="shell">
 <aside><div class="brand"><img src="https://cdn.shopify.com/s/files/1/0633/8556/7419/files/Ai_Apparel_Logo_BLUE.png?v=1791762856" alt="AI Apparel Group blue logo"><div class="brand-name" style="color:#FFFFFF">AI APPAREL GROUP</div><small>OPERATIONS CRM</small></div>
@@ -1220,13 +1228,23 @@ async function uploadProofs(quoteId,files){
 async function viewProofs(quoteId,target){
  const {data,error}=await db.rpc('ai_apparel_crm_quote_proofs',{p_quote_id:quoteId});
  if(error)throw Error(error.message);
- target.innerHTML='';
- if(!data.length){target.textContent='No artwork uploaded yet.';return;}
- for(const proof of data){
+ target.replaceChildren();
+ if(!data?.length){target.textContent='No artwork uploaded yet.';return;}
+ const ordered=[...data].sort((a,b)=>{
+  const ta=Date.parse(a.created_at||a.uploaded_at||'')||0;
+  const tb=Date.parse(b.created_at||b.uploaded_at||'')||0;
+  return tb-ta;
+ });
+ for(const proof of ordered){
+  const row=document.createElement('div');row.className='ai-proof-row';
   const {data:link,error:linkError}=await db.storage.from('ai-apparel-quote-proofs').createSignedUrl(proof.path,300);
-  const a=document.createElement('a');a.textContent=proof.filename;a.style.cssText='display:block;margin:7px 0;text-decoration:underline';
-  if(linkError){a.textContent=proof.filename+' (unable to open)';}else{a.href=link.signedUrl;a.target='_blank';a.rel='noopener noreferrer';}
-  target.appendChild(a);
+  const a=document.createElement('a');a.textContent=proof.filename||'Artwork';
+  if(linkError){a.textContent+=' (unable to open)';}else{a.href=link.signedUrl;a.target='_blank';a.rel='noopener noreferrer';}
+  row.appendChild(a);
+  const remove=document.createElement('button');remove.type='button';remove.className='ai-remove-proof';
+  remove.textContent='Remove';remove.dataset.quoteId=quoteId;remove.dataset.path=proof.path;
+  remove.dataset.filename=proof.filename||'Artwork';
+  row.appendChild(remove);target.appendChild(row);
  }
 }
 const AI_SAGE_PRODUCTS_URL='https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-sage-products';
@@ -1743,6 +1761,24 @@ q('ai-quotes-list').addEventListener('toggle',async e=>{
   panel.dataset.loaded='yes';
  }catch(err){body.textContent='Could not load internal costs: '+err.message}
 },true);
+q('ai-quotes-list').addEventListener('click',async e=>{
+ const btn=e.target.closest('.ai-remove-proof');if(!btn)return;
+ const quoteId=btn.dataset.quoteId,path=btn.dataset.path;
+ if(!quoteId||!path)return;
+ if(!confirm('Remove "'+btn.dataset.filename+'" from this quote? This cannot be undone.'))return;
+ btn.disabled=true;btn.textContent='Removing…';
+ try{
+  // Server-side function must verify staff authorization and quote ownership,
+  // delete the attachment record, and remove the storage object.
+  const {error}=await db.rpc('ai_apparel_crm_delete_quote_proof',{
+   p_quote_id:quoteId,p_path:path
+  });
+  if(error)throw Error(error.message);
+  const target=btn.closest('.ai-proof-list');
+  await viewProofs(quoteId,target);
+  status('Artwork removed from quote.');
+ }catch(err){btn.disabled=false;btn.textContent='Remove';status('Could not remove artwork: '+err.message);alert('Could not remove artwork: '+err.message)}
+});
 q('ai-quotes-list').addEventListener('click',async e=>{
  const btn=e.target.closest('.ai-view-proofs');if(!btn)return;
  const target=[...q('ai-quotes-list').querySelectorAll('.ai-proof-list')].find(el=>el.dataset.id===btn.dataset.id);
