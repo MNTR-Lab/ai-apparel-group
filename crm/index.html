@@ -2223,7 +2223,7 @@ addItem();
  const manual=detail('Add a Non-Shopify Sale','Historical sales are imported separately');const note=mk('p','info','The historical order summary has been imported into the accounting ledger. New manual sales entry is not enabled from this panel; use the approved historical import process to prevent duplicates.');manual.append(note);
  page.append(mk('h3','ai-goat-title','Sales Tax Reporting'));
  const taxGrid=mk('div','ai-goat-grid');page.append(taxGrid);
- [['Taxable sales','rev-verified-taxable','Pending payment-allocated sales reconciliation'],['Non-taxable sales','rev-verified-nontaxable','Shopify orders without charged tax; requires paid-sales allocation'],['Shopify tax on paid orders','rev-cash-tax-evidence','Tax charged by Shopify on orders with verified payment; not necessarily payment-allocated'],['Sales tax due','rev-verified-tax-due','Not filing-ready until payment allocations, refunds and jurisdictions reconcile']].forEach(([label,id,note])=>{
+ [['Taxable sales','rev-verified-taxable','Pending payment-allocated sales reconciliation'],['Non-taxable sales','rev-verified-nontaxable','Shopify orders without charged tax; requires paid-sales allocation'],['Shopify tax collected (evidence)','rev-cash-tax-evidence','Tax charged by Shopify on orders with verified payment; not necessarily payment-allocated'],['Sales tax due','rev-verified-tax-due','Not filing-ready until payment allocations, refunds and jurisdictions reconcile']].forEach(([label,id,note])=>{
   const tile=mk('div','ai-goat-tile'),val=mk('strong','','—');tile.append(mk('small','',label),val,mk('span','note',note));if(id)val.id=id;taxGrid.append(tile);
  });
  page.append(mk('div','ai-goat-banner','Financial reporting note. Approved quotes are excluded from collected sales. Refunds, payment processing fees, overhead, incomplete order costs and tax obligations require reconciliation before treating these amounts as final accounting profit.'));
@@ -2583,11 +2583,12 @@ addItem();
   if(document.getElementById('ai-verified-tax-panel'))return true;
   const grid=evidence.closest('.ai-goat-grid');
   if(!grid)return;
-  const panel=document.createElement('section');
+  const panel=document.createElement('details');
   panel.className='panel';panel.id='ai-verified-tax-panel';
   panel.style.cssText='margin:12px 0 22px;padding:18px';
-  const heading=document.createElement('h3');
-  heading.textContent='Shopify Sales Tax · Verified Payments';
+  const heading=document.createElement('summary');
+  heading.textContent='View Shopify payment and tax details';
+  heading.style.cssText='cursor:pointer;font-weight:750;color:#193956;padding:4px 0';
   const info=document.createElement('p');
   info.className='info';
   info.setAttribute('role','status');
