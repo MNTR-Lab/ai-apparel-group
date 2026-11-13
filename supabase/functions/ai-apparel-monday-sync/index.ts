@@ -160,7 +160,7 @@ Deno.serve(async req=>{
  if(!id){const error=JSON.stringify(result.errors||[{message:"Monday did not confirm write"}]).slice(0,1800);await rpc("ack",{kind:row.kind,source_id:row.id,item_id:itemId,error});failed++;errors.push({kind:row.kind,id:row.id,error});return;}
  // Persist ID before group update so a later failure cannot duplicate the item.
  await rpc("ack",{kind:row.kind,source_id:row.id,item_id:id,fingerprint:hash,group_title:row.group});
- if(itemId&&chunk[i].old?.group_title!==row.group){try{await monday("mutation($i:ID!,$g:String!){move_item_to_group(item_id:$i,group_id:$g){id}}",{i:id,g:group});}catch(e){await rpc("ack",{kind:row.kind,source_id:row.id,item_id:id,error:String(e)});failed++;return;}}
+ if(itemId&&chunk[i].old?.group_title!==row.group){try{await monday("mutation($i:ID!,$g:String!){move_item_to_group(item_id:$i,group_id:$g){id}}",{i:id,g:group});}catch(e){await rpc("ack",{kind:row.kind,source_id:row.id,item_id:id,error:String(e),group_title:chunk[i].old?.group_title||"__unknown__"});failed++;return;}}
  synced++;
  }));
  if(result.errors?.some((e:any)=>/limit|budget|throttl/i.test(JSON.stringify(e))))break;
