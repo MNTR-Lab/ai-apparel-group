@@ -193,7 +193,7 @@ Deno.serve(async req=>{
  }));
  if(result.errors?.some((e:any)=>/limit|budget|throttl/i.test(JSON.stringify(e))))break;
  }
- return out({ok:failed===0,total:rows.length,synced,failed,pending:pending.length-synced,errors,proofs:proofResults});
+ return out({ok:failed===0&&proofResults.every(x=>x.ok),total:rows.length,synced,failed,pending:pending.length-synced,errors,proofs:proofResults});
  }catch(e){return out({error:String(e)},500);}
  finally{if(acquired)await rpc("release",{owner}).catch(()=>{});}
 });
