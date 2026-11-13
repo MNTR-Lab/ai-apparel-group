@@ -5,7 +5,7 @@ Exports business accounts with contacts, online customers and company associatio
 
 This is a one-way CRM-to-Monday projection. Associates may use Monday for visibility and collaboration. Monday comments, board-only fields and unchanged records are untouched. CRM-controlled values can be refreshed when the CRM source changes. Monday edits do not update the CRM. Records removed from the CRM are not automatically deleted from Monday.
 
-Invoice status and payment status come from the existing CRM workflow. Cash receipts, collected tax and actual costs are not guessed from quote amounts. Internal quote cost estimates are included in job accounting details. This does not replace the separate Shopify financial reconciliation. Proof filenames are included; private proof files remain accessible in the CRM and are not published as public URLs. Mailboxes and email bodies are outside these six boards.
+Invoice status and payment status come from the existing CRM workflow. Cash receipts, collected tax and actual costs are not guessed from quote amounts. Internal quote cost estimates are included in job accounting details. This does not replace the separate Shopify financial reconciliation. Private proof files are copied into the quote board CRM Files column using authenticated download and upload, with per-proof tracking and filename recovery to avoid duplicates. Source files remain private in CRM storage. Mailboxes and email bodies are outside these six boards.
 
 The function authenticates using the existing AI_APPAREL_FINANCIAL_CRON_TOKEN in a header. Its SQL RPC is service-role only and the two tracking tables have RLS enabled with no public policies. MONDAY_API_TOKEN remains server-side. Do not expose either key in frontend code.
 
