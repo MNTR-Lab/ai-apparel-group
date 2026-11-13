@@ -52,6 +52,7 @@ elsif p_action='snapshot' then
  'production',(select coalesce(jsonb_agg(to_jsonb(t) order by t.id),'[]') from ai_crm.job_production t),
  'stages',(select coalesce(jsonb_agg(to_jsonb(t) order by t.id),'[]') from ai_crm.production_stages t),
  'costs',(select coalesce(jsonb_agg(to_jsonb(t) order by t.quote_id,t.line_position),'[]') from ai_crm.quote_internal_costs t),
+ 'files',(select coalesce(jsonb_agg(to_jsonb(t) order by t.id),'[]') from ai_crm.quote_proofs t),
  'state',(select coalesce(jsonb_agg(to_jsonb(t) order by t.kind,t.source_id),'[]') from ai_crm.monday_sync_state t)
  ) into v; return v;
 end if;
