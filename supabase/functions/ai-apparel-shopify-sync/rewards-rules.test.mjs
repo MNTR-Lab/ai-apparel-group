@@ -1,0 +1,23 @@
+import assert from "node:assert/strict";
+import {classifyOrder} from "./rewards-rules.mjs";
+const org=(id,name,tag)=>({id,name,tag,status:"active"});
+const context={organizations:[org("ce","Carolina ENT","CAROLINA_ENT"),org("lr","Lenoir-Rhyne Bears","LENOIR_RHYNE"),org("qf","Quality Foods","QUALITY_FOODS"),org("df","Design Foundry","DESIGN_FOUNDRY")],integrations:["ce","lr","qf","df"].map((id,i)=>({provider:"shopify",enabled:true,organization_id:id,product_title_matcher:["Carolina ENT","Lenoir-Rhyne","Quality Foods","Design Foundry"][i]})),quotes:[]};
+const line=(title,quantity,price,original=price)=>({title,quantity,currentQuantity:quantity,originalUnitPriceSet:{shopMoney:{amount:String(original),currencyCode:"USD"}},discountedUnitPriceAfterAllDiscountsSet:{shopMoney:{amount:String(price),currencyCode:"USD"}},taxLines:[]});
+const order=(lines,extra={})=>({id:"order1",name:"#AIO-100",createdAt:"2026-11-13",sourceName:"web",displayFinancialStatus:"PAID",lineItems:{nodes:lines,pageInfo:{hasNextPage:false}},...extra});
+assert.equal(classifyOrder(order([line("Carolina ENT | Shirt",2,21.5)]),context).rows[0].rewards_points,86);
+assert.equal(classifyOrder(order([line("Carolina ENT | Shirt",2,21.5)],{displayFinancialStatus:"PENDING"}),context).rows[0].rewards_points,0);
+assert.equal(classifyOrder(order([line("Carolina ENT | Shirt",2,21.5)],{cancelledAt:"today"}),context).rows[0].rewards_points,0);
+assert.equal(classifyOrder(order([line("Generic polo",2,25)],{sourceName:"shopify_draft_order",tags:["LENOIR_RHYNE"]}),context).rows[0].rewards_points,50);
+assert.equal(classifyOrder(order([line("Generic polo",2,25)],{customer:{tags:["CAROLINA_ENT"]}}),context).rows[0].organization_id,"ce");
+assert.equal(classifyOrder(order([line("Non-Design Foundry | Shirt",1,20)]),context).rows.length,0);
+const mixed=classifyOrder(order([line("Carolina ENT | Shirt",1,10),line("Quality Foods | Shirt",1,20)]),context);
+assert.deepEqual(mixed.rows.map(r=>[r.organization_id,r.rewards_points]),[["ce",20],["qf",40]]);
+const deferred=classifyOrder(order([line("Quality Foods | Shirt",1,0,25)],{discountCodes:["QkBTQu"]}),context);
+assert.equal(deferred.rows[0].rewards_points,0);assert.equal(deferred.review[0].original_merchandise,25);
+const refunded=line("Carolina ENT | Shirt",3,20);refunded.currentQuantity=1;
+assert.equal(classifyOrder(order([refunded],{displayFinancialStatus:"PARTIALLY_REFUNDED"}),context).rows[0].rewards_points,40);
+assert.equal(classifyOrder(order([line("Carolina ENT | Shirt",1,20)],{test:true}),context).rows[0].rewards_points,0);
+const tax=line("Carolina ENT | Shirt",1,22);tax.taxLines=[{priceSet:{shopMoney:{amount:"2"}}}];
+assert.equal(classifyOrder(order([tax],{taxesIncluded:true}),context).rows[0].rewards_points,40);
+console.log("11 rewards rule scenarios passed");
+
