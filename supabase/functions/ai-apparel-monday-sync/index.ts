@@ -135,7 +135,28 @@ Deno.serve(async req=>{
  }catch(e){await rpc("ack",{kind:"proofs",source_id:sourceId,error:String(e).slice(0,1800)});proofResults.push({id:sourceId,ok:false});}
  if(Date.now()-started>80000)break;
  }
- if(!pending.length)return out({ok:proofResults.every(x=>x.ok),total:rows.length,synced:0,pending:0,proofs:proofResults});
+ const detailResults:any[]=[];
+ for(const row of rows.filter(x=>x.details.length>1800)){
+ const sourceId=row.kind+":"+row.id,hash=await fingerprint(row),record:any=state.get(sourceId),old:any=state.get("details:"+sourceId);
+ if(!record?.item_id||(old?.fingerprint===hash&&!old?.last_error))continue;
+ try{
+ const esc=(v:string)=>v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+ const heading="CRM details (automatically synchronized)";
+ const body="<p><strong>"+heading+"</strong></p><p>"+esc(row.details).replace(/\n/g,"<br />")+"</p>";
+ let updateId=old?.item_id;
+ if(!updateId){
+ const existing=(await monday("query($ids:[ID!]!){items(ids:$ids){updates(limit:100){id body}}}",{ids:[record.item_id]})).data.items[0]?.updates||[];
+ updateId=existing.find((u:any)=>u.body?.includes(heading))?.id;
+ }
+ const result=updateId?await monday("mutation($id:ID!,$body:String!){edit_update(id:$id,body:$body){id body}}",{id:updateId,body}):await monday("mutation($item:ID!,$body:String!){create_update(item_id:$item,body:$body){id body}}",{item:record.item_id,body});
+ const update=result.data.edit_update||result.data.create_update;
+ if(!update?.id||!update.body?.includes(esc(row.details.split("\n").pop()||"")))throw Error("Full detail update was not confirmed");
+ await rpc("ack",{kind:"details",source_id:sourceId,item_id:update.id,fingerprint:hash});
+ detailResults.push({id:sourceId,ok:true});
+ }catch(e){await rpc("ack",{kind:"details",source_id:sourceId,item_id:old?.item_id,error:String(e).slice(0,1800)});detailResults.push({id:sourceId,ok:false});}
+ if(Date.now()-started>80000)break;
+ }
+ if(!pending.length)return out({ok:proofResults.every(x=>x.ok)&&detailResults.every(x=>x.ok),total:rows.length,synced:0,pending:0,proofs:proofResults,details:detailResults});
  const batch=pending.slice(0,200),kinds=[...new Set(batch.map(x=>x.row.kind))];
  const boards:any={};
  for(const kind of kinds){
@@ -172,7 +193,7 @@ Deno.serve(async req=>{
  else if(c.type==="email")values[c.id]=value?{email:value,text:value}:null;
  else if(c.type==="phone"){const phone=text(value).replace(/[^\d+]/g,"");values[c.id]=phone.length>=7?{phone,countryShortName:"US"}:null;}
  else if(c.type==="dropdown")values[c.id]={labels:[value]};
- else if(c.type==="long_text")values[c.id]={text:text(value)};
+ else if(c.type==="long_text")values[c.id]={text:text(value).length>1800?text(value).slice(0,1800)+"\n\nFull details are in this item’s Updates section.":text(value)};
  else values[c.id]=text(value);
  }
  const id=old?.item_id||b.existing.get(row.id);chunk[i].itemId=id;chunk[i].group=b.groups.find((g:any)=>g.title===row.group)?.id;
@@ -193,7 +214,7 @@ Deno.serve(async req=>{
  }));
  if(result.errors?.some((e:any)=>/limit|budget|throttl/i.test(JSON.stringify(e))))break;
  }
- return out({ok:failed===0&&proofResults.every(x=>x.ok),total:rows.length,synced,failed,pending:pending.length-synced,errors,proofs:proofResults});
+ return out({ok:failed===0&&proofResults.every(x=>x.ok)&&detailResults.every(x=>x.ok),total:rows.length,synced,failed,pending:pending.length-synced,errors,proofs:proofResults});
  }catch(e){return out({error:String(e)},500);}
  finally{if(acquired)await rpc("release",{owner}).catch(()=>{});}
 });
