@@ -107,7 +107,35 @@ Deno.serve(async req=>{
  const s=await rpc("snapshot"),rows=exportRows(s),state=new Map(s.state.map((x:any)=>[x.kind+":"+x.source_id,x]));
  const pending:any[]=[];
  for(const row of rows){const hash=await fingerprint(row),old:any=state.get(row.kind+":"+row.id);if(old?.fingerprint!==hash||old?.last_error)pending.push({row,hash,old});}
- if(!pending.length)return out({ok:true,total:rows.length,synced:0,pending:0});
+ const proofResults:any[]=[];
+ for(const proof of s.files||[]){
+ const sourceId=proof.id,hash=proof.storage_path,old:any=state.get("proofs:"+sourceId);
+ if(old?.fingerprint===hash&&!old?.last_error)continue;
+ const quote:any=state.get("quotes:"+proof.quote_id);if(!quote?.item_id)continue;
+ try{
+ const b=(await monday("query($ids:[ID!]!){boards(ids:$ids){columns{id title}}}",{ids:[CONFIG.quotes.board]})).data.boards[0];
+ let column=b.columns.find((c:any)=>c.title==="CRM Files");
+ if(!column)column=(await monday("mutation($b:ID!){create_column(board_id:$b,title:\"CRM Files\",column_type:file){id title}}",{b:CONFIG.quotes.board})).data.create_column;
+ const filename=proof.filename.replace(/(\\.[^.]+)?$/,(_:string,ext:string)=>" ["+proof.id+"]"+(ext||""));
+ const assets=(await monday("query($ids:[ID!]!){items(ids:$ids){assets{id name}}}",{ids:[quote.item_id]})).data.items[0]?.assets||[];
+ let asset=assets.find((a:any)=>a.name===filename);
+ if(!asset){
+ const {data,error}=await db.storage.from("ai-apparel-quote-proofs").download(proof.storage_path);if(error||!data)throw Error(error?.message||"Proof file unavailable");
+ const form=new FormData();
+ form.append("query","mutation($file:File!){add_file_to_column(item_id:"+quote.item_id+",column_id:"+JSON.stringify(column.id)+",file:$file){id name}}");
+ form.append("map",JSON.stringify({file:"variables.file"}));
+ form.append("file",data,filename);
+ const response=await fetch("https://api.monday.com/v2/file",{method:"POST",headers:{"Authorization":mondayToken},body:form,signal:AbortSignal.timeout(35000)});
+ const result=await response.json();
+ if(!response.ok||result.errors?.length||!result.data?.add_file_to_column?.id)throw Error(JSON.stringify(result.errors||{status:response.status}));
+ asset=result.data.add_file_to_column;
+ }
+ await rpc("ack",{kind:"proofs",source_id:sourceId,item_id:asset.id,fingerprint:hash});
+ proofResults.push({id:sourceId,ok:true});
+ }catch(e){await rpc("ack",{kind:"proofs",source_id:sourceId,error:String(e).slice(0,1800)});proofResults.push({id:sourceId,ok:false});}
+ if(Date.now()-started>80000)break;
+ }
+ if(!pending.length)return out({ok:proofResults.every(x=>x.ok),total:rows.length,synced:0,pending:0,proofs:proofResults});
  const batch=pending.slice(0,200),kinds=[...new Set(batch.map(x=>x.row.kind))];
  const boards:any={};
  for(const kind of kinds){
@@ -165,7 +193,7 @@ Deno.serve(async req=>{
  }));
  if(result.errors?.some((e:any)=>/limit|budget|throttl/i.test(JSON.stringify(e))))break;
  }
- return out({ok:failed===0,total:rows.length,synced,failed,pending:pending.length-synced,errors});
+ return out({ok:failed===0,total:rows.length,synced,failed,pending:pending.length-synced,errors,proofs:proofResults});
  }catch(e){return out({error:String(e)},500);}
  finally{if(acquired)await rpc("release",{owner}).catch(()=>{});}
 });
