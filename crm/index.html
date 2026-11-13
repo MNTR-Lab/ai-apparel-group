@@ -2809,7 +2809,7 @@ document.querySelector('button[data-page="emailinbox"]').addEventListener("click
 })();
 </script><script src="./vendor/JsBarcode.code128.min.js"></script><script src="./product-catalog.js"></script><script>
 document.querySelector('[data-page="catalog"]').addEventListener('click',()=>window.CrmProductCatalog.mount(document.getElementById('crm-catalog-host'),{
-brand:'AI Apparel',prefix:'AI',
+brand:'AI Apparel',prefix:'AI',shopifyNotice:'Catalog, SKUs and barcode labels are ready. The AI Apparel Shopify connection needs write_products permission before it can create draft products. Your catalog entries and Shopify setup details can be saved now.',
 rpc:async(action,payload)=>{const {data,error}=await db.rpc('crm_product_catalog',{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data;},
 shopify:async(id,check=false)=>{const {data}=await db.auth.getSession();if(!data?.session)throw Error('Sign in to the CRM first.');const r=await fetch(CRM_SUPABASE_URL+'/functions/v1/crm-catalog-shopify-draft',{method:'POST',headers:{'Content-Type':'application/json',apikey:CRM_PUBLISHABLE_KEY,Authorization:'Bearer '+data.session.access_token},body:JSON.stringify(check?{action:'check_connection'}:{id})});const j=await r.json();if(!r.ok)throw Error(j.error||'Shopify draft failed');return j;}
 }));
