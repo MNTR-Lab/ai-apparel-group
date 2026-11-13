@@ -383,6 +383,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <button class="nav" data-page="emailinbox">✉ &nbsp; Email Inbox <span id="crm-mail-unread" style="float:right"></span></button>
 <button class="nav" data-page="clients">♙ &nbsp; Clients</button>
 <button class="nav" data-page="businesses">▦ &nbsp; Business Accounts</button>
+<button class="nav" data-page="catalog">▦ &nbsp; Product Catalog &amp; SKUs</button>
 <button class="nav" data-page="quotes">▤ &nbsp; Quotes & Estimates</button>
 <button class="nav" data-page="jobs">▣ &nbsp; Jobs & Projects</button>
 <button class="nav" data-page="production">⚙ &nbsp; Production</button>
@@ -529,6 +530,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 @media(max-width:950px){#quotes .ai-quote-builder-grid{grid-template-columns:1fr}#quotes .ai-quote-modal{width:100%;height:95vh}}
 @media(max-width:650px){#quotes .ai-quote-overlay{padding:4px}#quotes .ai-quote-modal-header{padding:15px}#quotes .ai-quote-builder-grid{padding:10px}#quotes .ai-quote-footer{flex-wrap:wrap}#quotes .ai-quote-footer-buttons{width:100%}#quotes .ai-quote-footer-buttons button{flex:1}}
 </style>
+<section id="catalog" hidden><div id="crm-catalog-host"></div></section>
 <section id="quotes" class="ai-modern-quotes ai-quote-redesign" hidden>
 <div class="ai-quote-header"><div><span class="ai-quote-eyebrow">AI APPAREL GROUP · QUOTE BUILDER</span><h2>Quotes &amp; Estimates</h2><p>Build a detailed customer quote, attach artwork, and move approved work into production.</p></div><span class="ai-quote-header-chip">Customer estimates</span></div>
 <div class="ai-quote-toolbar"><button type="button" id="ai-open-quote" class="action">+ Create a quote</button><span>Manage drafts and approved customer estimates below.</span></div>
@@ -666,7 +668,7 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 </section>
 </div></main></div>
 <script>
-const names={orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",emailinbox:"Email Inbox",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",shipping:"Shipping/Delivery",archivedjobs:"Archived Jobs",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts",revenue:"Revenue & Accounting"};
+const names={catalog:"Product Catalog & SKUs",orderreviews:"Order Match Review",matching:"Business Matching Rules",dashboard:"Dashboard",emailinbox:"Email Inbox",clients:"Clients",quotes:"Quotes & Estimates",jobs:"Jobs & Projects",production:"Production",shipping:"Shipping/Delivery",archivedjobs:"Archived Jobs",employees:"Employees & Tasks",rewards:"Rewards Integration",businesses:"Business Accounts",revenue:"Revenue & Accounting"};
 document.querySelectorAll("button[data-page]").forEach(button=>button.addEventListener("click",()=>{
 const page=button.dataset.page;
 document.querySelectorAll("button[data-page]").forEach(b=>b.classList.toggle("active",b===button));
@@ -2805,4 +2807,10 @@ el("crm-mail-compose").addEventListener("submit",async e=>{
 });
 document.querySelector('button[data-page="emailinbox"]').addEventListener("click",load);
 })();
+</script><script src="./vendor/JsBarcode.code128.min.js"></script><script src="./product-catalog.js"></script><script>
+document.querySelector('[data-page="catalog"]').addEventListener('click',()=>window.CrmProductCatalog.mount(document.getElementById('crm-catalog-host'),{
+brand:'AI Apparel',prefix:'AI',
+rpc:async(action,payload)=>{const {data,error}=await db.rpc('crm_product_catalog',{p_action:action,p_payload:payload});if(error)throw Error(error.message);return data;},
+shopify:async(id,check=false)=>{const {data}=await db.auth.getSession();if(!data?.session)throw Error('Sign in to the CRM first.');const r=await fetch(CRM_SUPABASE_URL+'/functions/v1/crm-catalog-shopify-draft',{method:'POST',headers:{'Content-Type':'application/json',apikey:CRM_PUBLISHABLE_KEY,Authorization:'Bearer '+data.session.access_token},body:JSON.stringify(check?{action:'check_connection'}:{id})});const j=await r.json();if(!r.ok)throw Error(j.error||'Shopify draft failed');return j;}
+}));
 </script></body></html>
