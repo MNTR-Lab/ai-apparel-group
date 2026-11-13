@@ -1608,12 +1608,14 @@
     let PROMOTIONAL_PREVIOUS_ORDERS = [];
     let ORGANIZATION_UNPAID_INVOICES = [];
     let CRM_ORGANIZATION_QUOTES = [];
+    let ORGANIZATION_REWARDS = null;
 
     async function loadOrganizationProfile() {
       const url = "https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-org-feed" + (ORGANIZATION.id ? "?organization_id="+encodeURIComponent(ORGANIZATION.id) : "");
       const response = await fetch(url,{headers:{Authorization:"Bearer "+PORTAL_ACCESS_TOKEN}});
       if (!response.ok) throw new Error("Unable to load organization profile.");
       const payload = await response.json();
+      ORGANIZATION_REWARDS = payload.rewards || null;
       CRM_ORGANIZATION_QUOTES = Array.isArray(payload.currentQuotes) ? payload.currentQuotes.filter(q => q.source === "CRM") : [];
       const org = payload.organization || {};
       const integrations = payload.integrations || [];
@@ -1787,6 +1789,8 @@
       }
 
       const payload = await response.json();
+
+      ORGANIZATION_REWARDS = payload.rewards || ORGANIZATION_REWARDS;
 
       return (payload.orders || []).map(order => ({
         ...order,
@@ -2177,18 +2181,17 @@
 
     function renderRewards(orders) {
 
-      const totalPoints =
-        orders.reduce(
-          (sum, order) =>
-            sum + Number(order.points || 0),
-          0
-        );
+      if (!ORGANIZATION_REWARDS || !Number.isFinite(Number(ORGANIZATION_REWARDS.balance))) {
+        throw new Error("Rewards balance is temporarily unavailable. Please refresh.");
+      }
+      const totalPoints = Number(ORGANIZATION_REWARDS.balance);
+      const tierPoints = Number(ORGANIZATION_REWARDS.tier_points || 0);
 
 
       const {
         currentTier,
         nextTier
-      } = getTier(totalPoints);
+      } = getTier(tierPoints);
 
 
       document.getElementById(
@@ -2222,7 +2225,7 @@
       document.getElementById(
         "availableCredit"
       ).textContent =
-        formatMoney(totalPoints / 100);
+        formatMoney(Number(ORGANIZATION_REWARDS.available_credit || 0));
 
 
       if (nextTier) {
@@ -2230,7 +2233,7 @@
         const pointsNeeded =
           Math.max(
             0,
-            nextTier.min - totalPoints
+            nextTier.min - tierPoints
           );
 
 
@@ -2268,7 +2271,7 @@
 
 
         const tierProgress =
-          totalPoints -
+          tierPoints -
           currentTier.min;
 
 
