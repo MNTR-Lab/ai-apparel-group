@@ -38,22 +38,24 @@ export function classifyOrder(order,context) {
  const original=round(selected.reduce((s,l)=>s+Number(l.originalUnitPriceSet?.shopMoney?.amount||0)*Number(l.currentQuantity||0),0));
  const discount=round(Math.max(0,original-subtotal));
  const direct=order.sourceName==="shopify_draft_order"||linkedOrg.includes(org);
- const multiplier=direct?1:2;
+
  const eligible=!order.cancelledAt&&!order.test&&["PAID","PARTIALLY_REFUNDED"].includes(order.displayFinancialStatus);
  const codes=values(order.discountCodes);
- const couponReview=eligible&&subtotal===0&&original>0&&codes.length>0;
+ const deferred=codes.some(code=>values(cfg.metadata?.deferred_coupon_codes).some(approved=>String(approved).toLowerCase()===String(code).toLowerCase()));
+ const multiplier=deferred?1:direct?1:2;
+ const couponReview=eligible&&!deferred&&subtotal===0&&original>0&&codes.length>0;
  if(couponReview)review.push({order:order.name,organization_id:org,reason:"full_discount_coupon_needs_classification",coupon_codes:codes,original_merchandise:original});
  rows.push({
  organization_id:org,external_order_id:order.id,order_number:order.name,
  order_type:direct?"QUOTE":"ONLINE",source:"shopify",
  customer_name:[order.customer?.firstName,order.customer?.lastName].filter(Boolean).join(" ")||null,
  customer_email:order.customer?.email||null,subtotal,rewards_multiplier:multiplier,
- rewards_points:eligible&&!couponReview?round(subtotal*multiplier):0,
+ rewards_points:eligible&&!couponReview?round((deferred?original:subtotal)*multiplier):0,
  payment_status:order.cancelledAt?"CANCELLED":order.displayFinancialStatus,
  fulfillment_status:order.displayFulfillmentStatus,ordered_at:order.createdAt,
  discount_codes:codes,discount_amount:discount,
  raw_data:{matcher:cfg.product_title_matcher||cfg.organization.name,shopify_updated_at:order.updatedAt,eligible,review_required:couponReview?"full_discount_coupon_needs_classification":null,
- original_qualifying_subtotal:original,qualifying_items:selected.map(l=>({title:l.title,quantity:l.currentQuantity})),linked_quotes:linked.filter(q=>q.organization_id===org).map(q=>({id:q.id,kind:q.kind})),rewards_rule:direct?"direct_quote_1x":"online_store_2x"}
+ original_qualifying_subtotal:original,...(deferred?{rewards_entry_method:"deferred_coupon",rewards_only_credit:true}:{}),qualifying_items:selected.map(l=>({title:l.title,quantity:l.currentQuantity})),linked_quotes:linked.filter(q=>q.organization_id===org).map(q=>({id:q.id,kind:q.kind})),rewards_rule:deferred?"deferred_coupon_original_merchandise_1x":direct?"direct_quote_1x":"online_store_2x"}
  });
  }
  return {rows,review};
