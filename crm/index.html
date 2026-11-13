@@ -172,6 +172,21 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 #businesses .crm-business-arrow{font-size:19px}
 @media(max-width:900px){#businesses .business-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){#businesses .business-form-grid{grid-template-columns:1fr}#businesses .business-create-heading,#businesses #new-business-form,#businesses .business-directory-panel{padding:18px}#businesses .business-directory-header{align-items:stretch}#businesses .business-search-label{width:100%}#businesses .business-form-actions{width:100%;justify-content:flex-end}}
+
+/* Quote catalog navigation and SAGE picker, matching GOAT's product workflow. */
+.ai-catalog-hidden{display:none!important}.ai-catalog-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.ai-catalog-tabs [aria-selected="false"]{background:#fff;color:#334155;border:1px solid #cbd5e1}
+.ai-sage-searchbar{display:flex;gap:8px;margin:12px 0}.ai-sage-searchbar input{flex:1;min-width:0;padding:10px;border:1px solid #cbd5e1;border-radius:8px}
+.ai-sage-message{font-size:12px;line-height:1.5;color:#64748b;padding:8px 0}.ai-sage-message.error{color:#b42318}
+.ai-sage-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;max-height:370px;overflow:auto;margin:12px 0}
+.ai-sage-product{display:flex;flex-direction:column;padding:10px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;min-width:0}
+.ai-sage-product img{width:100%;height:105px;object-fit:contain;background:#f8fafc;border-radius:7px}
+.ai-sage-product h4{font-size:13px;margin:9px 0 4px}.ai-sage-product small{display:block;margin:4px 0 8px;color:#64748b}.ai-sage-product button{margin-top:auto;width:100%}
+.ai-sage-detail{padding:16px;margin:14px 0;border:1px solid #cbd5e1;border-radius:10px;background:#fafbfc}.ai-sage-detail h4{margin:0 0 8px}
+.ai-sage-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ai-sage-field{display:grid;gap:6px;font-size:12px;font-weight:700;color:#334155}
+.ai-sage-field input,.ai-sage-field select{width:100%;min-width:0;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:inherit}
+.ai-sage-description,.ai-sage-reference{font-size:12px;line-height:1.6;white-space:pre-line;color:#64748b}.ai-sage-reference{padding:10px;background:#eef3f8;border-radius:7px}
+@media(max-width:640px){.ai-sage-fields{grid-template-columns:1fr}.ai-sage-searchbar{flex-wrap:wrap}.ai-sage-searchbar input{min-width:180px}.ai-catalog-tabs button{flex:1}}
+
 </style><style>
 .ai-quote-archive-section{margin-top:28px;padding-top:24px;border-top:1px solid #dfe6ef}
 .ai-quote-archive-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
@@ -526,9 +541,20 @@ input{font:inherit;border:1px solid #ccd8e4;border-radius:8px}table{width:100%;b
 <div class="ai-quote-builder-grid">
 <div class="ai-quote-main">
 <div class="ai-quote-block"><div class="ai-quote-block-heading"><h3>1. Add Products &amp; Services</h3><span>Itemized pricing</span></div><p class="ai-quote-help">Add store items by description or SKU, or create custom embroidery, screen printing, uniforms, and other services. Search live SAGE/PromoPlace products or add custom products and services. Verify supplier pricing before sending a quote.</p>
-<div id="ai-sage-picker" style="border:1px solid #cbd5e1;border-radius:12px;padding:14px;margin:12px 0;background:#f8fbff"><strong>PromoPlace · SAGE Product Search</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="ai-sage-search" type="search" placeholder="Search promotional products (e.g. tumblers, pens)" style="flex:1;min-width:200px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button id="ai-sage-search-btn" type="button" class="ai-quote-add-btn">Search products</button></div><div id="ai-sage-message" role="status" style="font-size:12px;margin:8px 0;color:#475569">Uses your existing SAGE Connect integration. Searches may consume API credits.</div><div id="ai-sage-results" style="display:grid;gap:8px;max-height:270px;overflow:auto"></div></div>
-<div id="ai-ss-picker" style="border:1px solid #cbd5e1;border-radius:12px;padding:14px;margin:12px 0;background:#f8fbff"><strong>S&amp;S Activewear · Catalog Search</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="ai-ss-search" type="search" placeholder="Search by style, brand or product" style="flex:1;min-width:200px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button id="ai-ss-search-btn" type="button" class="ai-quote-add-btn">Search S&amp;S</button></div><div id="ai-ss-message" role="status" style="font-size:12px;margin:8px 0;color:#475569">Choose a style, then a size/color SKU. Set your own customer selling price.</div><div id="ai-ss-results" style="display:grid;gap:8px;max-height:320px;overflow:auto"></div></div>
-<div id="ai-sanmar-picker" style="border:1px solid #cbd5e1;border-radius:12px;padding:14px;margin:12px 0;background:#f8fbff"><strong>SanMar · Catalog Search</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="ai-sanmar-search" type="search" placeholder="Enter SanMar style number (e.g. LOG105)" style="flex:1;min-width:200px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button id="ai-sanmar-search-btn" type="button" class="ai-quote-add-btn">Search SanMar</button></div><div id="ai-sanmar-message" role="status" style="font-size:12px;margin:8px 0;color:#475569">Search a SanMar style to load colors and sizes. Supplier pricing and inventory still require separate API verification.</div><div id="ai-sanmar-results" style="display:grid;gap:8px;max-height:320px;overflow:auto"></div></div>
+<div class="ai-catalog-tabs" role="tablist" aria-label="Product catalog">
+<button type="button" class="ai-quote-add-btn" id="ai-sage-tab" role="tab" data-ai-catalog="sage" aria-controls="ai-sage-picker" aria-selected="true">Promotional / SAGE</button>
+<button type="button" class="ai-quote-add-btn" id="ai-ss-tab" role="tab" data-ai-catalog="ss" aria-controls="ai-ss-picker" aria-selected="false" tabindex="-1">S&amp;S Activewear</button>
+<button type="button" class="ai-quote-add-btn" id="ai-sanmar-tab" role="tab" data-ai-catalog="sanmar" aria-controls="ai-sanmar-picker" aria-selected="false" tabindex="-1">SanMar</button>
+</div>
+<div id="ai-sage-picker" role="tabpanel" aria-labelledby="ai-sage-tab">
+<div class="ai-sage-searchbar"><input id="ai-sage-search" type="search" placeholder="Search SAGE by item name or product code (e.g. pens, tumblers, bags)" aria-label="Search SAGE products" autocomplete="off"><button id="ai-sage-search-btn" type="button" class="ai-quote-add-btn">Search SAGE</button></div>
+<div id="ai-sage-message" class="ai-sage-message" role="status">Search promotional products by keyword or product code. Catalog prices are references; confirm your selling price.</div>
+<div id="ai-sage-results" class="ai-sage-results" aria-live="polite"></div>
+<button type="button" id="ai-sage-more" class="ai-quote-add-btn ai-catalog-hidden">Show more products</button>
+<div id="ai-sage-detail" class="ai-sage-detail ai-catalog-hidden"></div>
+</div>
+<div id="ai-ss-picker" role="tabpanel" aria-labelledby="ai-ss-tab" hidden style="border:1px solid #cbd5e1;border-radius:12px;padding:14px;margin:12px 0;background:#f8fbff"><strong>S&amp;S Activewear · Catalog Search</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="ai-ss-search" type="search" placeholder="Search by style, brand or product" style="flex:1;min-width:200px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button id="ai-ss-search-btn" type="button" class="ai-quote-add-btn">Search S&amp;S</button></div><div id="ai-ss-message" role="status" style="font-size:12px;margin:8px 0;color:#475569">Choose a style, then a size/color SKU. Set your own customer selling price.</div><div id="ai-ss-results" style="display:grid;gap:8px;max-height:320px;overflow:auto"></div></div>
+<div id="ai-sanmar-picker" role="tabpanel" aria-labelledby="ai-sanmar-tab" hidden style="border:1px solid #cbd5e1;border-radius:12px;padding:14px;margin:12px 0;background:#f8fbff"><strong>SanMar · Catalog Search</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="ai-sanmar-search" type="search" placeholder="Enter SanMar style number (e.g. LOG105)" style="flex:1;min-width:200px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button id="ai-sanmar-search-btn" type="button" class="ai-quote-add-btn">Search SanMar</button></div><div id="ai-sanmar-message" role="status" style="font-size:12px;margin:8px 0;color:#475569">Search a SanMar style to load colors and sizes. Supplier pricing and inventory still require separate API verification.</div><div id="ai-sanmar-results" style="display:grid;gap:8px;max-height:320px;overflow:auto"></div></div>
 <div id="ai-quote-items"></div><button type="button" id="ai-quote-add-item" class="ai-quote-add-btn">+ Add product or service</button></div>
 <div class="ai-quote-block"><div class="ai-quote-block-heading"><h3>2. Project Details</h3><span>Quote ownership</span></div>
 <div class="ai-quote-field-grid"><label class="ai-quote-wide">Quote title<input name="title" required maxlength="200" placeholder="e.g. Carolina ENT embroidered polos"></label>
@@ -1247,44 +1273,142 @@ async function viewProofs(quoteId,target){
   row.appendChild(remove);target.appendChild(row);
  }
 }
-const AI_SAGE_PRODUCTS_URL='https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-sage-products';
-let aiSageSearchResults=[];
-const aiSageText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function aiSagePrice(v){const n=Number(String(v??'').replace(/[$,]/g,''));return Number.isFinite(n)&&n>=0?n:0}
-async function aiSageSearch(){
- const field=document.getElementById('ai-sage-search'),target=document.getElementById('ai-sage-results'),message=document.getElementById('ai-sage-message');
- const query=field.value.trim();if(query.length<2){message.textContent='Enter at least two characters.';return}
- const button=document.getElementById('ai-sage-search-btn');button.disabled=true;message.textContent='Searching SAGE catalog…';target.replaceChildren();
- try{
-  const response=await fetch(AI_SAGE_PRODUCTS_URL+'?q='+encodeURIComponent(query),{method:'GET'});
-  const payload=await response.json();if(!response.ok||!payload.ok)throw Error(payload.error||payload.errMsg||'Catalog search failed');
-  aiSageSearchResults=(Array.isArray(payload.products)?payload.products:[]).slice(0,30);
-  message.textContent=aiSageSearchResults.length+' products found. Select an item to add it to this quote; verify pricing.';
-  target.innerHTML=aiSageSearchResults.map((p,i)=>'<div style="display:flex;align-items:center;gap:10px;background:white;border:1px solid #e2e8f0;border-radius:8px;padding:9px">'+(p.image?'<img src="'+aiSageText(p.image)+'" alt="" style="width:54px;height:54px;object-fit:contain" loading="lazy">':'')+'<div style="flex:1;min-width:0"><b>'+aiSageText(p.name||'Promotional product')+'</b><div style="font-size:12px;color:#475569">'+aiSageText(p.code||p.id||'')+(p.price?' · Catalog price: $'+aiSageText(p.price):' · Pricing on request')+'</div></div><button type="button" class="ai-quote-add-btn" data-ai-sage-index="'+i+'">Add to quote</button></div>').join('')||'<div>No matching products. Try another search.</div>';
- }catch(err){message.textContent='SAGE search unavailable: '+err.message+'. You can still add a custom item.'}
- finally{button.disabled=false}
-}
-async function aiSageSelect(index){
- const p=aiSageSearchResults[index];if(!p)return;
- const message=document.getElementById('ai-sage-message');message.textContent='Loading product details…';
- let name=p.name||'Promotional product',sku=p.code||'',price=aiSagePrice(p.price),variant='';
- try{
-  const response=await fetch(AI_SAGE_PRODUCTS_URL+'?productId='+encodeURIComponent(p.id));
-  const payload=await response.json();if(!response.ok||!payload.ok)throw Error(payload.error||'Product details unavailable');
-  const detail=payload.product?.product||payload.product||{};
-  name=detail.prName||detail.name||name;sku=detail.spc||detail.itemNumber||detail.code||sku;
-  const qty=Array.isArray(detail.qty)?detail.qty:[],prices=Array.isArray(detail.prc)?detail.prc:[];
-  const first=prices.findIndex((v,i)=>aiSagePrice(v)>0&&Number(qty[i])>0);
-  if(first>=0)price=aiSagePrice(prices[first]);
-  variant=detail.colors?'Colors: '+String(detail.colors).slice(0,150):'';
- }catch(err){message.textContent='Added search result; detailed pricing unavailable. Verify supplier pricing.'}
- addItem({item_type:'custom',description:name,sku,variant_title:variant,quantity:1,unit_price:price});
- const row=document.querySelector('#ai-quote-items .ai-quote-row:last-child');if(row){row.querySelector('.qi-type').value='custom';row.querySelector('.qi-price').focus()}
- message.textContent='Added '+name+' to quote. Confirm quantity, decoration, and selling price before saving.';
-}
-document.getElementById('ai-sage-search-btn').addEventListener('click',aiSageSearch);
-document.getElementById('ai-sage-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aiSageSearch()}});
-document.getElementById('ai-sage-results').addEventListener('click',e=>{const b=e.target.closest('[data-ai-sage-index]');if(b)aiSageSelect(Number(b.dataset.aiSageIndex))});
+/* AI Apparel quote catalog: reuse the existing read-only SAGE connection. */
+(() => {
+ 'use strict';
+ const get = id => document.getElementById(id);
+ const panel = get('ai-sage-picker');
+ if (!panel) return;
+ const endpoint = 'https://qpavspvpdebtbbffdcmo.supabase.co/functions/v1/ai-apparel-sage-products';
+ let products = [], visible = 30, selected = null, detail = null, breaks = [], epoch = 0, controller = null, priceEdited = false;
+ const money = value => Number(value).toLocaleString('en-US',{style:'currency',currency:'USD'});
+ const numeric = value => {
+  if (value === null || value === undefined || String(value).trim() === '') return null;
+  const s = String(value).replace(/[$,]/g,'').trim();
+  if (!/^\d+(?:\.\d+)?$/.test(s)) return null;
+  const n = Number(s); return Number.isFinite(n) ? n : null;
+ };
+ const imageUrl = value => {try {const u=new URL(String(value));return ['https:','http:'].includes(u.protocol)?u.href:''}catch{return ''}};
+ const message = (value,bad=false) => {get('ai-sage-message').textContent=value;get('ai-sage-message').classList.toggle('error',bad)};
+ function tab(source) {
+  const buttons=[...document.querySelectorAll('[data-ai-catalog]')];
+  for(const button of buttons){
+   const active=button.dataset.aiCatalog===source;
+   button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;
+   get(button.getAttribute('aria-controls')).hidden=!active;
+  }
+ }
+ for(const button of document.querySelectorAll('[data-ai-catalog]')){
+  button.addEventListener('click',()=>tab(button.dataset.aiCatalog));
+  button.addEventListener('keydown',e=>{
+   if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+   e.preventDefault();const buttons=[...document.querySelectorAll('[data-ai-catalog]')],index=buttons.indexOf(button);
+   const next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(index+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;
+   tab(buttons[next].dataset.aiCatalog);buttons[next].focus();
+  });
+ }
+ async function request(params,signal) {
+  const r=await fetch(endpoint+'?'+new URLSearchParams(params),{signal});
+  const data=await r.json();
+  if(!r.ok||!data.ok)throw Error(data.error||data.errMsg||'SAGE catalog could not be loaded');
+  return data;
+ }
+ function renderResults() {
+  get('ai-sage-results').innerHTML=products.slice(0,visible).map((p,i)=>{
+   const image=imageUrl(p.image);
+   return '<article class="ai-sage-product">'+(image?'<img loading="lazy" src="'+esc(image)+'" alt="">':'')+
+   '<h4>'+esc(p.name||'Promotional product')+'</h4><small>'+esc(p.code||p.id||'')+'</small>'+
+   '<small>Catalog price: '+esc(p.price||'Request pricing')+'</small>'+
+   '<button class="ai-quote-add-btn" type="button" data-sage-view="'+i+'">View details &amp; pricing</button></article>';
+  }).join('');
+  get('ai-sage-more').classList.toggle('ai-catalog-hidden',visible>=products.length);
+ }
+ async function search() {
+  const query=get('ai-sage-search').value.trim();
+  if(query.length<2){message('Enter at least 2 characters.',true);return}
+  if(controller)controller.abort();controller=new AbortController();const current=++epoch;
+  get('ai-sage-search-btn').disabled=true;get('ai-sage-results').replaceChildren();get('ai-sage-detail').classList.add('ai-catalog-hidden');get('ai-sage-more').classList.add('ai-catalog-hidden');
+  selected=null;products=[];message('Searching SAGE catalog…');
+  try{
+   const data=await request({q:query},controller.signal);if(current!==epoch)return;
+   products=Array.isArray(data.products)?data.products.filter(p=>p&&p.id):[];visible=30;renderResults();
+   message(products.length?'Showing '+Math.min(visible,products.length)+' of '+products.length+' results. Refine your search or view more products.':'No matching products. Try another item name or product code.');
+  }catch(e){if(e.name!=='AbortError'&&current===epoch)message(e.message+'. You can still add a custom product.',true)}
+  finally{if(current===epoch)get('ai-sage-search-btn').disabled=false}
+ }
+ function tierFor(quantity) {return breaks.filter(b=>b.qty<=quantity).at(-1)||breaks[0]}
+ function updateReference() {
+  const quantity=Number(get('ai-sage-quantity').value),tier=tierFor(quantity);
+  if(!priceEdited&&tier)get('ai-sage-selling-price').value=tier.price.toFixed(2);
+  get('ai-sage-quantityNote').textContent=breaks.length&&quantity<breaks[0].qty?'Catalog pricing starts at '+breaks[0].qty+' units. Confirm lower-quantity pricing with the supplier.':'Confirm decoration, setup and freight before saving.';
+ }
+ function showDetail() {
+  const d=detail||{},p=selected;
+  const qty=Array.isArray(d.qty)?d.qty:[],prices=Array.isArray(d.prc)?d.prc:[];
+  breaks=prices.map((price,i)=>({price:numeric(price),qty:Number(qty[i])})).filter(b=>b.price!==null&&Number.isInteger(b.qty)&&b.qty>0).sort((a,b)=>a.qty-b.qty);
+  const colors=String(d.colors||'').split(',').map(c=>c.trim()).filter(Boolean);
+  const name=d.prName||d.name||p.name||'Promotional product';
+  const code=d.itemNum||d.itemNumber||d.spc||p.code||'';
+  const initial=breaks[0]||{qty:1,price:numeric(p.price)??0};
+  const notes=[d.lineName?'Catalog line: '+d.lineName:'',d.priceIncludes?'Price includes: '+d.priceIncludes:'',d.setupChg?'Catalog setup charge: '+d.setupChg:'',d.prodTime?'Production: '+d.prodTime:''].filter(Boolean);
+  get('ai-sage-detail').innerHTML='<h4>'+esc(name)+'</h4><p class="muted">'+esc(code)+'</p>'+
+   (d.description?'<p class="ai-sage-description">'+esc(d.description)+'</p>':'')+
+   (notes.length?'<p class="ai-sage-reference">'+notes.map(esc).join('<br>')+'</p>':'')+
+   '<div class="ai-sage-fields">'+
+   '<label class="ai-sage-field"><span>Catalog quantity pricing</span><select id="ai-sage-tier"><option value="">Custom quantity / price</option>'+breaks.map((b,i)=>'<option value="'+i+'">'+b.qty+'+ units · '+money(b.price)+' each</option>').join('')+'</select></label>'+
+   '<label class="ai-sage-field"><span>Color / variation</span><input id="ai-sage-color" maxlength="100" list="ai-sage-colors" placeholder="Enter color or variation"><datalist id="ai-sage-colors">'+colors.map(c=>'<option value="'+esc(c)+'"></option>').join('')+'</datalist></label>'+
+   '<label class="ai-sage-field"><span>Quote quantity</span><input id="ai-sage-quantity" type="number" min="1" max="100000" step="1" value="'+initial.qty+'"></label>'+
+   '<label class="ai-sage-field"><span>Your unit selling price ($)</span><input id="ai-sage-selling-price" type="number" min="0" max="100000000" step=".01" value="'+initial.price.toFixed(2)+'"></label></div>'+
+   '<p id="ai-sage-quantityNote" class="ai-sage-message"></p><button class="ai-quote-add-btn" id="ai-sage-add" type="button">+ Add to quote</button>';
+  get('ai-sage-detail').classList.remove('ai-catalog-hidden');priceEdited=false;get('ai-sage-tier').value=breaks.length?'0':'';
+  get('ai-sage-tier').addEventListener('change',()=>{
+   const i=get('ai-sage-tier').value;if(i==='')return;const b=breaks[Number(i)];if(!b)return;
+   get('ai-sage-quantity').value=b.qty;get('ai-sage-selling-price').value=b.price.toFixed(2);priceEdited=false;updateReference();
+  });
+  get('ai-sage-quantity').addEventListener('input',updateReference);
+  get('ai-sage-selling-price').addEventListener('input',()=>{priceEdited=true;get('ai-sage-tier').value=''});
+  get('ai-sage-add').addEventListener('click',add);
+  updateReference();
+ }
+ async function view(index) {
+  const p=products[index];if(!p)return;
+  if(controller)controller.abort();controller=new AbortController();const current=++epoch;
+  selected=p;detail=null;get('ai-sage-detail').classList.add('ai-catalog-hidden');message('Loading SAGE product details…');
+  try {
+   const data=await request({productId:String(p.id)},controller.signal);if(current!==epoch)return;
+   detail=data.product?.product||data.product||{};showDetail();message('Choose quantity and selling price, then add this product to your AI Apparel quote.');
+  }catch(e){if(e.name!=='AbortError'&&current===epoch){showDetail();message('Detailed pricing is unavailable. Confirm the quantity and selling price before adding.',true)}}
+ }
+ function add() {
+  if(!selected)return;
+  const qty=Number(get('ai-sage-quantity').value),price=numeric(get('ai-sage-selling-price').value),color=get('ai-sage-color').value.trim();
+  if(!Number.isInteger(qty)||qty<1||qty>100000||price===null||price>100000000){message('Enter a whole-number quantity and a valid nonnegative selling price.',true);return}
+  const d=detail||{},name=d.prName||d.name||selected.name||'Promotional product';
+  const code=d.itemNum||d.itemNumber||d.spc||selected.code||'';
+  // Remove only an untouched empty placeholder, preserving every entered cost or product.
+  for(const row of get('ai-quote-items').querySelectorAll('.ai-quote-row')){
+   const blank=['.qi-description','.qi-sku','.qi-variant'].every(selector=>!row.querySelector(selector).value.trim());
+   const noAmounts=['.qi-price','.qi-cost','.qi-decoration','.qi-labor','.qi-other'].every(selector=>!Number(row.querySelector(selector)?.value||0));
+   if(blank&&noAmounts&&Number(row.querySelector('.qi-quantity').value)===1)row.remove();
+  }
+  addItem({item_type:'custom',description:name,sku:String(code),variant_title:color,quantity:qty,unit_price:price});
+  message('Added '+name+' to this quote. Quantity and selling price can be edited below.');
+  get('ai-quote-items').querySelector('.ai-quote-row:last-child .qi-price')?.focus();
+ }
+ window.aiSageReset=()=>{
+  ++epoch;if(controller)controller.abort();products=[];selected=null;detail=null;breaks=[];priceEdited=false;
+  get('ai-sage-search').value='';get('ai-sage-results').replaceChildren();get('ai-sage-detail').replaceChildren();get('ai-sage-detail').classList.add('ai-catalog-hidden');get('ai-sage-more').classList.add('ai-catalog-hidden');get('ai-sage-search-btn').disabled=false;
+  message('Search promotional products by keyword or product code. Catalog prices are references; confirm your selling price.');tab('sage');
+ };
+ get('ai-sage-search-btn').addEventListener('click',search);
+ get('ai-sage-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();search()}});
+ get('ai-sage-results').addEventListener('click',e=>{const button=e.target.closest('[data-sage-view]');if(button)view(Number(button.dataset.sageView))});
+ get('ai-sage-more').addEventListener('click',()=>{visible+=30;renderResults();message('Showing '+Math.min(visible,products.length)+' of '+products.length+' results.')});
+ get('ai-open-quote').addEventListener('click',()=>window.aiSageReset());
+ get('ai-close-quote').addEventListener('click',()=>window.aiSageReset());
+ get('ai-cancel-quote').addEventListener('click',()=>window.aiSageReset());
+})();
+
 const AI_SS_URL=CRM_SUPABASE_URL+'/functions/v1/ai-apparel-ss-products';
 let aiSsStyles=[],aiSsProducts=[];
 async function aiSsFetch(params){
