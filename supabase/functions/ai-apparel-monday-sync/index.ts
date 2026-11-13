@@ -13,15 +13,26 @@ const day=(v:any)=>v?String(v).slice(0,10):null;
 const text=(v:any)=>v==null?"":String(v);
 const norm=(v:any)=>text(v).toLowerCase().replace(/[_-]/g," ").trim();
 const title=(v:any)=>text(v).toLowerCase().replace(/\b\w/g,(c:string)=>c.toUpperCase());
+function readable(value:any,depth=0):string{
+ if(value==null)return "";
+ if(Array.isArray(value))return value.map((v,i)=>"Item "+(i+1)+"\n"+readable(v,depth+1)).join("\n\n");
+ if(typeof value!=="object")return String(value);
+ const hidden=new Set(["id","client_id","business_id","online_customer_id","quote_id","job_id","staff_id","auth_user_id","source_quote_request_id","product_id","variant_id"]);
+ return Object.entries(value).filter(([k,v])=>v!=null&&v!==""&&!hidden.has(k)).map(([k,v])=>{
+ const label=k.replace(/_/g," ").replace(/\b\w/g,(c)=>c.toUpperCase());
+ return typeof v==="object"?label+"\n"+readable(v,depth+1):label+": "+v;
+ }).join("\n");
+}
 function exportRows(s:any):Row[]{
  const rows:Row[]=[];
  const by=(a:any[],id:string)=>a.find(x=>x.id===id);
  const workflow=(id:string)=>s.workflows.find((x:any)=>x.quote_id===id)||{};
  const jobFor=(id:string)=>s.jobs.find((x:any)=>x.quote_id===id)||{};
  const lines=(id:string)=>s.lines.filter((x:any)=>x.quote_id===id);
+ const costs=(id:string)=>(s.costs||[]).filter((x:any)=>x.quote_id===id);
  const customer=(x:any)=>by(s.businesses,x.business_id)?.name||by(s.clients,x.client_id)?.name||[by(s.customers,x.online_customer_id)?.first_name,by(s.customers,x.online_customer_id)?.last_name].filter(Boolean).join(" ")||by(s.customers,x.online_customer_id)?.email||"Unassigned customer";
  const customerId=(x:any)=>x.business_id?"business:"+x.business_id:x.client_id?"client:"+x.client_id:x.online_customer_id?"online:"+x.online_customer_id:"";
- const add=(kind:string,id:string,name:string,group:string,values:any,details:any)=>rows.push({kind,id,name,group,values,details:typeof details==="string"?details:JSON.stringify(details,null,2)});
+ const add=(kind:string,id:string,name:string,group:string,values:any,details:any)=>rows.push({kind,id,name,group,values,details:typeof details==="string"?details:readable(details)});
  for(const b of s.businesses){
  const contacts=s.contacts.filter((x:any)=>x.business_id===b.id);
  add("customers","business:"+b.id,b.name,norm(b.status)==="inactive"?"Inactive":"Active",{
@@ -55,7 +66,7 @@ function exportRows(s:any):Row[]{
  },{job:j,customer:customer(j),production,line_items:lines(j.quote_id),crm_url:CRM});
  add("accounting",j.id,j.job_number+" | "+j.title,status==="Completed"?"Completed Jobs":status==="Cancelled"?"Archived":"Active Jobs",{
  "CRM Job ID":j.id,"CRM Quote ID":j.quote_id||"","Job Number":j.job_number,"Quote Number":q.quote_number||"","Customer Name":customer(j),"Customer Subtotal USD":q.subtotal,"Discount USD":q.discount_amount,"Shipping & Handling Charged USD":q.shipping_amount,"Total Due USD":w.shopify_invoice_total??q.total,"Quantity":lines(j.quote_id).reduce((n:number,l:any)=>n+Number(l.quantity||0),0),"Shopify Draft Order Number":w.shopify_draft_name||w.shopify_draft_order_id||"","Shopify Order Number":j.shopify_order_id||"","Shopify Invoice Link":w.shopify_invoice_url||"","Invoice Date":w.invoice_sent_at,"Payment Date":w.paid_at,"Payment Status":norm(w.payment_status)==="paid"?"Paid":norm(w.payment_status)==="partial"?"Partial Payment":w.shopify_draft_order_id?"Invoiced":"Not Invoiced","Tracking Number":j.tracking_number||"","Fulfillment Status":j.status
- },{job:j,quote_number:q.quote_number,line_items:lines(j.quote_id),payment_status:w.payment_status||"UNPAID",note:"Quote/invoice amounts only. Cash receipts, taxes collected, costs and profit are not inferred. Verify payment and costs before financial reporting."});
+ },{job:j,quote_number:q.quote_number,line_items:lines(j.quote_id),payment_status:w.payment_status||"UNPAID",internal_cost_estimates:costs(j.quote_id),note:"Quote/invoice amounts only. Cash receipts, taxes collected, costs and profit are not inferred. Verify payment and costs before financial reporting."});
  }
  for(const w of s.workflows.filter((x:any)=>x.shopify_draft_order_id||x.shopify_invoice_url)){
  const q=by(s.quotes,w.quote_id)||{},j=jobFor(w.quote_id);
@@ -97,7 +108,7 @@ Deno.serve(async req=>{
  const pending:any[]=[];
  for(const row of rows){const hash=await fingerprint(row),old:any=state.get(row.kind+":"+row.id);if(old?.fingerprint!==hash||old?.last_error)pending.push({row,hash,old});}
  if(!pending.length)return out({ok:true,total:rows.length,synced:0,pending:0});
- const batch=pending.slice(0,100),kinds=[...new Set(batch.map(x=>x.row.kind))];
+ const batch=pending.slice(0,200),kinds=[...new Set(batch.map(x=>x.row.kind))];
  const boards:any={};
  for(const kind of kinds){
  const cfg=CONFIG[kind];
@@ -144,14 +155,14 @@ Deno.serve(async req=>{
  else{variables["n"+i]=row.name;variables["g"+i]=chunk[i].group;decl.push("$n"+i+":String!","$g"+i+":String!");mut.push("r"+i+":create_item(board_id:$b"+i+",item_name:$n"+i+",group_id:$g"+i+",column_values:$v"+i+"){id}");}
  }
  const result=await monday("mutation("+decl.join(",")+"){"+mut.join(" ")+"}",variables,true);
- for(let i=0;i<chunk.length;i++){
+ await Promise.all(chunk.map(async (_:any,i:number)=>{
  const {row,hash,itemId,group}=chunk[i],id=result.data?.["r"+i]?.id;
- if(!id){const error=JSON.stringify(result.errors||[{message:"Monday did not confirm write"}]).slice(0,1800);await rpc("ack",{kind:row.kind,source_id:row.id,item_id:itemId,error});failed++;errors.push({kind:row.kind,id:row.id,error});continue;}
+ if(!id){const error=JSON.stringify(result.errors||[{message:"Monday did not confirm write"}]).slice(0,1800);await rpc("ack",{kind:row.kind,source_id:row.id,item_id:itemId,error});failed++;errors.push({kind:row.kind,id:row.id,error});return;}
  // Persist ID before group update so a later failure cannot duplicate the item.
- await rpc("ack",{kind:row.kind,source_id:row.id,item_id:id,fingerprint:hash});
- if(itemId){try{await monday("mutation($i:ID!,$g:String!){move_item_to_group(item_id:$i,group_id:$g){id}}",{i:id,g:group});}catch(e){await rpc("ack",{kind:row.kind,source_id:row.id,item_id:id,error:String(e)});failed++;continue;}}
+ await rpc("ack",{kind:row.kind,source_id:row.id,item_id:id,fingerprint:hash,group_title:row.group});
+ if(itemId&&chunk[i].old?.group_title!==row.group){try{await monday("mutation($i:ID!,$g:String!){move_item_to_group(item_id:$i,group_id:$g){id}}",{i:id,g:group});}catch(e){await rpc("ack",{kind:row.kind,source_id:row.id,item_id:id,error:String(e)});failed++;return;}}
  synced++;
- }
+ }));
  if(result.errors?.some((e:any)=>/limit|budget|throttl/i.test(JSON.stringify(e))))break;
  }
  return out({ok:failed===0,total:rows.length,synced,failed,pending:pending.length-synced,errors});
