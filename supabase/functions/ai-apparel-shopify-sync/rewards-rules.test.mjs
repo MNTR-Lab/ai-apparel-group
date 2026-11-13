@@ -19,5 +19,16 @@ assert.equal(classifyOrder(order([refunded],{displayFinancialStatus:"PARTIALLY_R
 assert.equal(classifyOrder(order([line("Carolina ENT | Shirt",1,20)],{test:true}),context).rows[0].rewards_points,0);
 const tax=line("Carolina ENT | Shirt",1,22);tax.taxLines=[{priceSet:{shopMoney:{amount:"2"}}}];
 assert.equal(classifyOrder(order([tax],{taxesIncluded:true}),context).rows[0].rewards_points,40);
-console.log("11 rewards rule scenarios passed");
+
+const approvedContext={...context,integrations:context.integrations.map(i=>i.organization_id==="qf"?{...i,metadata:{deferred_coupon_codes:["QkBTQu"]}}:i)};
+const approved=classifyOrder(order([line("Quality Foods | Shirt",2,0,25)],{discountCodes:["QkBTQu"]}),approvedContext);
+assert.equal(approved.rows[0].rewards_points,50);
+assert.equal(approved.rows[0].rewards_multiplier,1);
+assert.equal(approved.rows[0].subtotal,0);
+assert.equal(approved.review.length,0);
+assert.equal(classifyOrder(order([line("Quality Foods | Shirt",1,20)]),approvedContext).rows[0].rewards_points,40);
+assert.equal(classifyOrder(order([line("Quality Foods | Shirt",1,0,25)],{discountCodes:["QkBTQu"],cancelledAt:"today"}),approvedContext).rows[0].rewards_points,0);
+assert.equal(classifyOrder(order([line("Quality Foods | Shirt",1,0,25)],{discountCodes:["OTHER"]}),approvedContext).rows[0].rewards_points,0);
+console.log("Deferred billing earns 1x original merchandise; ordinary purchases stay 2x; no extra subtotal; cancellation and unapproved coupons stay protected.");
+
 
