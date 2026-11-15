@@ -1,1 +1,19 @@
-{"type":"custom.catalog","name":"Product catalog","sections":{"catalog":{"type":"ai-catalog","settings":{"api_url":"https://catalog-stage-ai-apparel-sanmar-api.bikard.workers.dev","form_url":"https://forms.monday.com/forms/a13133118b421eeaf4ba8d6c1b9471ab?r=use1"}}},"order":["catalog"]}
+{
+  "type": "custom.catalog",
+  "name": "Product catalog",
+  "sections": {
+    "catalog": {
+      "type": "ai-catalog",
+      "settings": {
+        "api_url": "https://ai-apparel-sanmar-api.bikard.workers.dev",
+        "form_url": "https://forms.monday.com/forms/a13133118b421eeaf4ba8d6c1b9471ab?r=use1",
+        "heading": "Apparel, promotional",
+        "accent": "products & more.",
+        "eyebrow": "AI Apparel Group / Shop Products"
+      }
+    }
+  },
+  "order": [
+    "catalog"
+  ]
+}
